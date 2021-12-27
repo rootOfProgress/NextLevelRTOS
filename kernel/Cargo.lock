@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "os_kernel"
+name = "kernel"
 version = "0.1.0"
 dependencies = [
  "runtime",
