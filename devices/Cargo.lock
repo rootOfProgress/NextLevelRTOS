@@ -5,15 +5,3 @@ version = 3
 [[package]]
 name = "devices"
 version = "0.1.0"
-
-[[package]]
-name = "kernel"
-version = "0.1.0"
-dependencies = [
- "devices",
- "runtime",
-]
-
-[[package]]
-name = "runtime"
-version = "0.1.0"
