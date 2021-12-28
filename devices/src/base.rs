@@ -1,3 +1,4 @@
+use super::bus::rcc;
 use super::generic::platform::stm32f3x;
 
 pub mod gpio {
@@ -5,6 +6,7 @@ pub mod gpio {
     use super::stm32f3x::bitfields;
     use super::stm32f3x::offsets;
 
+    use super::rcc;
     use core::ptr;
 
     pub enum OutputTypes {
@@ -33,16 +35,49 @@ pub mod gpio {
         pub fn new(port_mnemonic: &str, pin_number: u8) -> GpioPort {
             GpioPort {
                 gpio_base_adress: match port_mnemonic {
-                    "A" => adresses::gpio::GPIOA_BASE,
-                    "B" => adresses::gpio::GPIOB_BASE,
-                    "C" => adresses::gpio::GPIOC_BASE,
-                    "E" => adresses::gpio::GPIOE_BASE,
+                    "A" => {
+                        rcc::activate_gpio_bus_clock("A");
+                        adresses::gpio::GPIOA_BASE
+                    }
+                    "E" => {
+                        rcc::activate_gpio_bus_clock("E");
+                        adresses::gpio::GPIOE_BASE
+                    }
                     _ => adresses::gpio::GPIOA_BASE,
                 },
                 pin_number,
             }
         }
-        pub fn set_moder(&self, moder_type: ModerTypes) {
+
+        pub fn as_output(self) -> GpioPort {
+            self.set_moder(ModerTypes::GeneralPurposeOutputMode);
+            self
+        }
+
+        pub fn as_input(self) -> GpioPort {
+            self.set_moder(ModerTypes::InputMode);
+            self
+        }
+
+        pub fn as_push_pull(self) -> GpioPort {
+            self.set_otyper(OutputTypes::PushPull);
+            self
+        }
+
+        pub fn as_open_drain(self) -> GpioPort {
+            self.set_otyper(OutputTypes::OpenDrain);
+            self
+        }
+
+        pub fn turn_on(&self) {
+            self.set_odr(OutputState::High);
+        }
+
+        pub fn turn_off(&self) {
+            self.set_odr(OutputState::High);
+        }
+
+        fn set_moder(&self, moder_type: ModerTypes) {
             let mode_register = self.gpio_base_adress | offsets::gpio::GPIO_MODER;
             unsafe {
                 match moder_type {
@@ -57,7 +92,7 @@ pub mod gpio {
                         ptr::write_volatile(
                             mode_register as *mut u32,
                             ptr::read_volatile(mode_register as *const u32)
-                                | bitfields::gpio::GENERALPURPOSEOUTPUT << (self.pin_number * 2),
+                                | (bitfields::gpio::GENERALPURPOSEOUTPUT << (self.pin_number * 2)),
                         );
                     }
                     ModerTypes::AlternateFunctionMode => {
@@ -79,7 +114,7 @@ pub mod gpio {
         }
 
         // 11.4.6 GPIO port output data register (GPIOx_ODR) (x = A..H)
-        pub fn set_odr(&self, odr_type: OutputState) {
+        fn set_odr(&self, odr_type: OutputState) {
             let output_data_register = self.gpio_base_adress | offsets::gpio::GPIO_ODR;
             unsafe {
                 match odr_type {
@@ -94,14 +129,14 @@ pub mod gpio {
                         ptr::write_volatile(
                             output_data_register as *mut u32,
                             ptr::read_volatile(output_data_register as *const u32)
-                                & !(0b0 as u32) << self.pin_number,
+                                | (0b1 as u32) << self.pin_number + 16,
                         );
                     }
                 };
             }
         }
         // p237 -> 11.4.2 GPIO port output type register
-        pub fn set_otyper(&self, output_type: OutputTypes) {
+        fn set_otyper(&self, output_type: OutputTypes) {
             let output_type_register = self.gpio_base_adress | offsets::gpio::GPIO_OTYPER;
             unsafe {
                 match output_type {
@@ -109,7 +144,7 @@ pub mod gpio {
                         ptr::write_volatile(
                             output_type_register as *mut u32,
                             ptr::read_volatile(output_type_register as *const u32)
-                                & !(0b1 as u32) << self.pin_number,
+                                & (!(0b1 as u32) << self.pin_number),
                         );
                     }
                     OutputTypes::OpenDrain => {
@@ -122,7 +157,7 @@ pub mod gpio {
                 };
             }
         }
-        pub fn into_af(&self, af_number: u32) {
+        fn into_af(&self, af_number: u32) {
             let gpiox_af_offset = if self.pin_number < 8 {
                 offsets::gpio::GPIO_AFRL
             } else {
