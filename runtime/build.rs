@@ -1,3 +1,4 @@
+// source: https://docs.rust-embedded.org/embedonomicon/main.html
 use std::{env, error::Error, fs::File, io::Write, path::PathBuf};
 
 fn main() -> Result<(), Box<dyn Error>> {
