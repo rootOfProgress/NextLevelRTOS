@@ -1,7 +1,15 @@
+//!
+//! This module provides basic access to the gpio registers.
+//! The configuration of the ports can easily be done with
+//! a provided builder.
+//!
 use super::bus::rcc;
 use super::generic::platform::stm32f3x;
 
 pub mod gpio {
+    //---------------------------------------------------------------//
+    //----------------------------IMPORTS----------------------------//
+    //---------------------------------------------------------------//
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;
     use super::stm32f3x::offsets;
@@ -9,6 +17,9 @@ pub mod gpio {
     use super::rcc;
     use core::ptr;
 
+    //---------------------------------------------------------------//
+    //------------------------TYPE DEFINITONS------------------------//
+    //---------------------------------------------------------------//
     pub enum OutputTypes {
         PushPull,
         OpenDrain,
@@ -26,12 +37,26 @@ pub mod gpio {
         Low,
     }
 
+    //---------------------------------------------------------------//
+    //-----------------------STRUCT-DEFINITONS-----------------------//
+    //---------------------------------------------------------------//
     pub struct GpioPort {
         gpio_base_adress: u32,
         pin_number: u8,
     }
 
+    //---------------------------------------------------------------//
+    //---------------------STRUCT-IMPLEMENTATIONS--------------------//
+    //---------------------------------------------------------------//
     impl GpioPort {
+        ///
+        /// Returns a GPIO Object which can be configured to different function modes.
+        /// 
+        /// # Arguments
+        /// 
+        /// * `port_mnemonic` - A string that describes the port name, e.g. "A" .
+        /// * `pin_number` - An u8 variable to set the pin according to selected port .
+        ///
         pub fn new(port_mnemonic: &str, pin_number: u8) -> GpioPort {
             GpioPort {
                 gpio_base_adress: match port_mnemonic {
