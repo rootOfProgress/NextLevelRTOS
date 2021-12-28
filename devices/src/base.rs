@@ -163,7 +163,7 @@ pub mod gpio {
                 };
             }
         }
-        // p237 -> 11.4.2 GPIO port output type register
+        // 11.4.2 GPIO port output type register
         fn set_otyper(&self, output_type: OutputTypes) {
             let output_type_register = self.gpio_base_adress | offsets::gpio::GPIO_OTYPER;
             unsafe {
