@@ -12,6 +12,7 @@ use core::ptr;
 ///
 /// Mandatory resetfunction at adress 0x08000004.
 /// Gets called after power on the cpu.
+/// source: https://docs.rust-embedded.org/embedonomicon/main.html
 ///
 #[no_mangle]
 pub unsafe extern "C" fn Reset() -> ! {
