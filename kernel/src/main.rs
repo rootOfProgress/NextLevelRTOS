@@ -1,5 +1,5 @@
 //!
-//! Main crate for Kernelimplementation. Depends on lake_rtos_rt
+//! Main crate for Kernelimplementation. Depends on runtime
 //! and the main function gets called after successful power on. 
 //!
 #![no_std]
