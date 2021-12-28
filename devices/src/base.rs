@@ -57,6 +57,9 @@ pub mod gpio {
         /// * `port_mnemonic` - A string that describes the port name, e.g. "A" .
         /// * `pin_number` - An u8 variable to set the pin according to selected port .
         ///
+        /// # Returns
+        /// * `GpioPort Struct Object`
+        /// 
         pub fn new(port_mnemonic: &str, pin_number: u8) -> GpioPort {
             GpioPort {
                 gpio_base_adress: match port_mnemonic {
