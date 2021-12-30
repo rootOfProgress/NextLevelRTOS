@@ -24,6 +24,10 @@ pub mod stm32f3x {
         pub mod dma {
             pub const DMA_ISR: u32 = 0x00;
             pub const DMA_CCR: u32 = 0x08 + 0x0d20;
+            pub const DMA_CNDTR: u32 = 0x0C + 0x0d20;
+            pub const DMA_CPAR: u32 = 0x10 + 0x0d20;
+            pub const DMA_CMAR: u32 = 0x14 + 0x0d20;
+
         }
 
         pub mod gpio {
