@@ -1,5 +1,9 @@
 pub mod stm32f3x {
     pub mod adresses {
+        pub mod dma {
+            pub const DMA1_BASE: u32 = 0x4002_0000;
+        }
+
         pub mod gpio {
             pub const GPIOA_BASE: u32 = 0x4800_0000;
             pub const GPIOB_BASE: u32 = 0x4800_0400;
@@ -17,6 +21,11 @@ pub mod stm32f3x {
     }
 
     pub mod offsets {
+        pub mod dma {
+            pub const DMA_ISR: u32 = 0x00;
+            pub const DMA_CCR: u32 = 0x08 + 0x0d20;
+        }
+
         pub mod gpio {
             pub const GPIO_MODER: u32 = 0x00;
             pub const GPIO_OTYPER: u32 = 0x04;

@@ -14,7 +14,6 @@ extern crate runtime;
 ///
 #[no_mangle]
 pub fn kernel_init() -> ! {
-
     let gpio_port_a1 = devices::base::gpio::GpioPort::new("A", 1)
         .as_output()
         .as_push_pull();
