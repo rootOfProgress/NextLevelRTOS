@@ -34,4 +34,11 @@ pub mod rcc {
             };
         }
     }
+
+    pub fn activate_usart_bus_clock() {
+        unsafe {
+            let rcc_apb2enr: u32 = adresses::RCC | offsets::rcc::RCC_APB2ENR;
+            ptr::write_volatile(rcc_apb2enr as *mut u32, ptr::read_volatile(rcc_apb2enr as *const u32) | ((0b1 << bitfields::rcc::USART1EN) | bitfields::rcc::SYSCFGEN));
+        }
+    }
 }

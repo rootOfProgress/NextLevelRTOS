@@ -1,9 +1,13 @@
 use super::super::generic::cpu;
 use super::super::generic::platform;
+use super::super::bus::rcc;
+use super::super::base::gpio;
 
 // connected to dma ch  4 (tx) / 5 (rx) 
 pub mod uart {
     use super::cpu::system;
+    use super::rcc;
+    use super::gpio;
     use super::platform::stm32f3x::{adresses, offsets};
 
     const USART1_BASE: u32 = adresses::USART1_BASEADRESS;
@@ -16,6 +20,8 @@ pub mod uart {
         baudrate: u32,
     }
     pub fn new(bus_number: u8, baudrate: u32) -> UsartX {
+        rcc::activate_usart_bus_clock();
+        gpio::GpioPort::new("A", 9).as_alternate().as_push_pull().into_alternate_function(7);
         UsartX {
             usart_base_adress: match bus_number {
                 1 => USART1_BASE,

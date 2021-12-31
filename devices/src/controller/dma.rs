@@ -40,7 +40,7 @@ pub mod dma {
         unsafe {
             write_volatile(DMA_CMARX as *mut u32, mem_adress);
         }
-        enable_dma_channel();
+        // enable_dma_channel();
     }
 
     // destination
@@ -49,14 +49,14 @@ pub mod dma {
         unsafe {
             write_volatile(DMA_CPARX as *mut u32, periph_adress);
         }
-        enable_dma_channel();
+        // enable_dma_channel();
     }
 
     pub fn set_number_of_bytes_to_process(num_of_bytes: u32) {
         disable_dma_channel();
         unsafe {
-            write_volatile(DMA_CNDTR as *mut u32, read_volatile(DMA_CNDTR as *const u32) | num_of_bytes);
+            write_volatile(DMA_CNDTRX as *mut u32, read_volatile(DMA_CNDTR as *const u32) | num_of_bytes);
         }
-        enable_dma_channel();
+        // enable_dma_channel();
     }
 }

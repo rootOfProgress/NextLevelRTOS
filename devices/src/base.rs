@@ -82,6 +82,11 @@ pub mod gpio {
             self
         }
 
+        pub fn as_alternate(self) -> GpioPort {
+            self.set_moder(ModerTypes::AlternateFunctionMode);
+            self
+        }
+
         pub fn as_input(self) -> GpioPort {
             self.set_moder(ModerTypes::InputMode);
             self
@@ -94,6 +99,11 @@ pub mod gpio {
 
         pub fn as_open_drain(self) -> GpioPort {
             self.set_otyper(OutputTypes::OpenDrain);
+            self
+        }
+
+        pub fn into_alternate_function(self, af_number: u32) -> GpioPort {
+            self.into_af(af_number);
             self
         }
 
