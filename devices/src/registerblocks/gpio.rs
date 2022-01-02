@@ -1,3 +1,7 @@
+//!
+//! This file contains a struct containing the registers for the gpio device. The fields of the struct are in C presentation 
+//! to prevent compiler mangling. The fields then match the offsets of the according register.
+//!
 #[repr(C)]
 pub struct GPIO {
     pub moder: u32,

@@ -1,15 +1,11 @@
-
 //!
 //! This module provides basic access to the clock bus
 //! system. It provides different functions to
 //! seperate the activation for the devices actually needed.
 //!
 use super::super::generic::platform::stm32f3x;
-use super::super::generic::traits::PrimitiveExtensions;
+use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::rcc::RCC;
-
-// // const foo: &'static RCC = RCC::new(123);
-
 
 pub mod rcc {
 
@@ -18,27 +14,26 @@ pub mod rcc {
     //---------------------------------------------------------------//
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;
-    use super::PrimitiveExtensions::BitOps;
+    use super::primitive_extensions::BitOps;
 
     use super::RCC;
 
     ///
     /// Activates the GPIO Clock for the given Port Name .
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `port_mnemonic` - A string that describes the port name, e.g. "A" .
     ///
     /// # Returns
     /// * `None`
-    /// 
+    ///
     pub unsafe fn activate_gpio_bus_clock(port_mnemonic: &str) {
-
         let rcc_bus = RCC::new(adresses::RCC);
-            match port_mnemonic {
-                "A" =>  (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPAEN),
-                "E" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPEEN),
-                _ => {}
-            };
+        match port_mnemonic {
+            "A" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPAEN),
+            "E" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPEEN),
+            _ => {}
+        };
     }
 }

@@ -5,7 +5,7 @@
 //!
 use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
-use super::super::generic::traits::PrimitiveExtensions;
+use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::gpio::GPIO;
 
 pub mod gpio {
@@ -15,7 +15,7 @@ pub mod gpio {
     use super::rcc;
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;
-    use super::PrimitiveExtensions::BitOps;
+    use super::primitive_extensions::BitOps;
     use super::GPIO;
     use core::ptr;
 
