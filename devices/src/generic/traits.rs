@@ -7,7 +7,10 @@ pub mod primitive_extensions {
     pub trait BitOps {
         fn get_addr(&self) -> *const u32;
         fn set_bit(&self, bit_number: u32);
+        fn set_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32);
         fn clear_bit(&self, bit_number: u32);
+        fn clear_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32);
+        fn write_whole_register(&self, register_content: u32);
     }
 
     impl BitOps for u32 {
@@ -43,6 +46,25 @@ pub mod primitive_extensions {
         fn clear_bit(&self, bit_number: u32) {
             unsafe {
                 let address = self.get_addr();
+                core::ptr::write(address as *mut u32, core::ptr::read(address) & !(bit_number));
+            }
+        }
+        fn write_whole_register(&self, register_content: u32) {
+            unsafe {
+                let address = self.get_addr();
+                core::ptr::write(address as *mut u32, core::ptr::read(address) | register_content);
+            }
+        }
+
+        fn set_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32) {
+            unsafe {
+                let address = (self.get_addr() as u32 + extra_offset) as *const u32;
+                core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
+            }
+        }
+        fn clear_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32) {
+            unsafe {
+                let address = (self.get_addr() as u32 + extra_offset) as *const u32;
                 core::ptr::write(address as *mut u32, core::ptr::read(address) & !bit_number);
             }
         }

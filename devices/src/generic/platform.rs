@@ -10,6 +10,9 @@ pub mod stm32f3x {
         pub const TIM3_BASEADRESS: u32 = 0x4000_0400;
         pub const USART1_BASEADRESS: u32 = 0x4001_3800;
 
+        pub mod dma {
+            pub const DMA1: u32 = 0x4002_0000;
+        }
 
         // manuel page 55
         pub const RCC: u32 = 0x4002_1000;
