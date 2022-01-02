@@ -18,6 +18,12 @@ pub struct GPIO {
 }
 
 impl GPIO {
+    ///
+    /// Returns a new GPIO Struct based on the registers base adress. This adress gets
+    /// casted to the struct, as a result the first field will equals the base
+    /// adress. The following ones are stacked ontop each other with an offset of
+    /// 4 byte / 32 bit.
+    ///
     pub fn new(gpio_base_adress: u32) -> &'static GPIO {
         unsafe { &mut *(gpio_base_adress as *mut GPIO) }
     }
