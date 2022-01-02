@@ -5,20 +5,18 @@
 //!
 use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
+use super::super::generic::traits::PrimitiveExtensions;
 use super::super::registerblocks::gpio::GPIO;
-
 
 pub mod gpio {
     //---------------------------------------------------------------//
     //----------------------------IMPORTS----------------------------//
     //---------------------------------------------------------------//
-    use super::stm32f3x::adresses;
-    use super::GPIO;
-    use super::stm32f3x::bitfields;
-    use super::stm32f3x::offsets;
-
     use super::rcc;
-    use core::panic;
+    use super::stm32f3x::adresses;
+    use super::stm32f3x::bitfields;
+    use super::PrimitiveExtensions::BitOps;
+    use super::GPIO;
     use core::ptr;
 
     //---------------------------------------------------------------//
@@ -46,7 +44,7 @@ pub mod gpio {
     //---------------------------------------------------------------//
     pub struct GpioDevice {
         port: &'static GPIO,
-        pin: u8,
+        pin: u32,
     }
 
     //---------------------------------------------------------------//
@@ -55,28 +53,39 @@ pub mod gpio {
     impl GpioDevice {
         ///
         /// Returns a GPIO Object which can be configured to different function modes.
-        /// 
+        ///
         /// # Arguments
-        /// 
+        ///
         /// * `port_mnemonic` - A string that describes the port name, e.g. "A" .
         /// * `pin_number` - An u8 variable to set the pin according to selected port .
         ///
         /// # Returns
         /// * `GpioPort Struct Object`
-        /// 
-        pub fn new(port_mnemonic: &str, pin_number: u8) -> /* *mut  */GpioDevice {
-            
+        ///
+        pub unsafe fn new(port_mnemonic: &str, pin_number: u32) -> GpioDevice {
             let gpio_base = match port_mnemonic {
-                "A" => { rcc::rcc::activate_gpio_bus_clock(port_mnemonic); adresses::gpio::GPIOA_BASE},
-                "B" => { rcc::rcc::activate_gpio_bus_clock(port_mnemonic); adresses::gpio::GPIOB_BASE},
-                "C" => { rcc::rcc::activate_gpio_bus_clock(port_mnemonic); adresses::gpio::GPIOC_BASE},
-                "E" => { rcc::rcc::activate_gpio_bus_clock(port_mnemonic); adresses::gpio::GPIOE_BASE},
-                _ => panic!("Wrong value!")
+                "A" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOA_BASE
+                }
+                "B" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOB_BASE
+                }
+                "C" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOC_BASE
+                }
+                "E" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOE_BASE
+                }
+                _ => adresses::gpio::GPIOA_BASE,
             };
 
-            /* &mut  */GpioDevice {
+            GpioDevice {
                 port: GPIO::new(gpio_base),
-                pin: pin_number
+                pin: pin_number,
             }
         }
 
@@ -109,82 +118,51 @@ pub mod gpio {
         }
 
         fn set_moder(&self, moder_type: ModerTypes) {
-            // let mode_register = self.gpio_base_adress | offsets::gpio::GPIO_MODER;
-            unsafe {
-                match moder_type {
-                    ModerTypes::InputMode => {
-                        ptr::write_volatile(
-                            self.port.moder as *mut u32,
-                            ptr::read_volatile(self.port.moder as *const u32)
-                                | bitfields::gpio::INPUT << (self.pin * 2),
-                        );
-                    }
-                    ModerTypes::GeneralPurposeOutputMode => {
-                        ptr::write_volatile(
-                            self.port.moder as *mut u32,
-                            ptr::read_volatile(self.port.moder as *const u32)
-                                | (bitfields::gpio::GENERALPURPOSEOUTPUT << (self.pin * 2)),
-                        );
-                    }
-                    ModerTypes::AlternateFunctionMode => {
-                        ptr::write_volatile(
-                            self.port.moder as *mut u32,
-                            ptr::read_volatile(self.port.moder as *const u32)
-                                | bitfields::gpio::ALTERNATE << (self.pin * 2),
-                        );
-                    }
-                    ModerTypes::AnalogMode => {
-                        ptr::write_volatile(
-                            self.port.moder as *mut u32,
-                            ptr::read_volatile(self.port.moder as *const u32)
-                                | bitfields::gpio::ANALOG << (self.pin * 2),
-                        );
-                    }
-                };
-            }
+            match moder_type {
+                ModerTypes::InputMode => {
+                    self.port
+                        .moder
+                        .set_bit(bitfields::gpio::INPUT << self.pin * 2);
+                }
+                ModerTypes::GeneralPurposeOutputMode => {
+                    self.port
+                        .moder
+                        .set_bit(bitfields::gpio::GENERALPURPOSEOUTPUT << self.pin * 2);
+                }
+                ModerTypes::AlternateFunctionMode => {
+                    self.port
+                        .moder
+                        .set_bit(bitfields::gpio::ALTERNATE << self.pin * 2);
+                }
+                ModerTypes::AnalogMode => {
+                    self.port
+                        .moder
+                        .set_bit(bitfields::gpio::ANALOG << self.pin * 2);
+                }
+            };
         }
 
         // 11.4.6 GPIO port output data register (GPIOx_ODR) (x = A..H)
         fn set_odr(&self, odr_type: OutputState) {
-            unsafe {
-                match odr_type {
-                    OutputState::High => {
-                        ptr::write_volatile(
-                            self.port.odr as *mut u32,
-                            ptr::read_volatile(self.port.odr as *const u32)
-                                | (0b1 as u32) << self.pin,
-                        );
-                    }
-                    OutputState::Low => {
-                        ptr::write_volatile(
-                            self.port.odr as *mut u32,
-                            ptr::read_volatile(self.port.odr as *const u32)
-                                | (0b1 as u32) << self.pin + 16,
-                        );
-                    }
-                };
-            }
+            match odr_type {
+                OutputState::High => {
+                    self.port.odr.set_bit((0b1 as u32) << self.pin);
+                }
+                OutputState::Low => {
+                    self.port.odr.set_bit((0b1 as u32) << self.pin + 16);
+                }
+            };
         }
         // 11.4.2 GPIO port output type register
         fn set_otyper(&self, output_type: OutputTypes) {
-            unsafe {
-                match output_type {
-                    OutputTypes::PushPull => {
-                        ptr::write_volatile(
-                            self.port.otyper as *mut u32,
-                            ptr::read_volatile(self.port.otyper as *const u32)
-                                & (!(0b1 as u32) << self.pin),
-                        );
-                    }
-                    OutputTypes::OpenDrain => {
-                        ptr::write_volatile(
-                            self.port.otyper as *mut u32,
-                            ptr::read_volatile(self.port.otyper as *const u32)
-                                | (0b1 as u32) << self.pin,
-                        );
-                    }
-                };
-            }
+            match output_type {
+                OutputTypes::PushPull => {
+                    self.port.otyper.clear_bit(0b1 << self.pin);
+                }
+                OutputTypes::OpenDrain => {
+                    self.port.otyper.set_bit(0b1 << self.pin);
+                }
+            };
         }
         fn into_af(&self, af_number: u32) {
             let alternate_function_register = if self.pin < 8 {
