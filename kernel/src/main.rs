@@ -8,6 +8,7 @@
 extern crate devices;
 extern crate runtime;
 
+use devices::generic::platform::stm32f3x::{adresses, offsets};
 ///
 /// Target function after hardware initialization,
 /// acts as the first kernel function.
@@ -31,7 +32,16 @@ pub unsafe fn kernel_init() -> ! {
 
     let usi = devices::controller::uart::usart::UsartDevice::new(9600);
     usi.enable();
-    usi.print_str("morgeeeen\n\r");
+    // usi.print_str("morgeeeen\n\r");
+    // asm!("bkpt");
+    let mystr = "hello dma".as_bytes();
+    let bar = core::ptr::addr_of!(mystr[0]);
+    let dma = devices::controller::dma::dma::DmaDevice::new(4).disable();
+    dma.memory_is_source()
+        .peripherial_target_addr(adresses::USART1_BASEADRESS | offsets::usart1::TDR)
+        .mem_target_addr((bar as *const u32) as u32)
+        .transfer_amount(8)
+        .enable();
     asm!("bkpt");
 
     loop {}

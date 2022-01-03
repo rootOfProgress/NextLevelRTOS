@@ -15,7 +15,8 @@ pub mod primitive_extensions {
         fn read_register(&self) -> u32;
     }
 
-    impl BitOps for u32 {
+    impl BitOps for u32    
+    {
         fn get_addr(&self) -> *const u32 {
             unsafe { *core::ptr::addr_of!(self) }
         }
@@ -81,11 +82,13 @@ pub mod primitive_extensions {
             unsafe {
                 let address = (self.get_addr() as u32 + extra_offset) as *const u32;
                 core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
+                asm!("bkpt");
             }
         }
         fn clear_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32) {
             unsafe {
                 let address = (self.get_addr() as u32 + extra_offset) as *const u32;
+                // asm!("bkpt");
                 core::ptr::write(address as *mut u32, core::ptr::read(address) & !bit_number);
             }
         }
