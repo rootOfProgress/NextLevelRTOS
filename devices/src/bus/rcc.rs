@@ -6,7 +6,6 @@
 use super::super::generic::platform::stm32f3x;
 use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::rcc::RCC;
-
 pub mod rcc {
 
     //---------------------------------------------------------------//
@@ -35,5 +34,12 @@ pub mod rcc {
             "E" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPEEN),
             _ => {}
         };
+    }
+
+    pub unsafe fn activate_usart1_bus_clock() {
+        let rcc_bus = RCC::new(adresses::RCC);
+        let foo = (0b1 << bitfields::rcc::USART1EN) | bitfields::rcc::SYSCFGEN;
+        (*rcc_bus).apb2enr.set_bit((0b1 << bitfields::rcc::USART1EN) | bitfields::rcc::SYSCFGEN);
+        asm!("bkpt");
     }
 }

@@ -11,6 +11,8 @@ pub mod primitive_extensions {
         fn clear_bit(&self, bit_number: u32);
         fn clear_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32);
         fn write_whole_register(&self, register_content: u32);
+        fn replace_whole_register(&self, register_content: u32);
+        fn read_register(&self) -> u32;
     }
 
     impl BitOps for u32 {
@@ -46,13 +48,32 @@ pub mod primitive_extensions {
         fn clear_bit(&self, bit_number: u32) {
             unsafe {
                 let address = self.get_addr();
-                core::ptr::write(address as *mut u32, core::ptr::read(address) & !(bit_number));
+                core::ptr::write(
+                    address as *mut u32,
+                    core::ptr::read(address) & !(bit_number),
+                );
             }
         }
+
+        fn read_register(&self) -> u32 {
+            let address = self.get_addr();
+            unsafe { core::ptr::read(address) }
+        }
+
         fn write_whole_register(&self, register_content: u32) {
             unsafe {
                 let address = self.get_addr();
-                core::ptr::write(address as *mut u32, core::ptr::read(address) | register_content);
+                core::ptr::write(
+                    address as *mut u32,
+                    core::ptr::read(address) | register_content,
+                );
+            }
+        }
+
+        fn replace_whole_register(&self, register_content: u32) {
+            unsafe {
+                let address = self.get_addr();
+                core::ptr::write(address as *mut u32, register_content);
             }
         }
 
