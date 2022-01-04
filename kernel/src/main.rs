@@ -4,9 +4,14 @@
 //!
 #![no_std]
 #![no_main]
-
+#![feature(asm)]
 extern crate devices;
 extern crate runtime;
+extern crate process;
+
+mod proc;
+
+use proc::sched::spawn;
 
 ///
 /// Target function after hardware initialization,
@@ -24,5 +29,9 @@ pub unsafe fn kernel_init() -> ! {
         .as_push_pull();
     gpio_port_e14.turn_on();
 
+    let p = process::new_process(0x1234_ABCD).unwrap();
+    spawn(p);
+    let y = process::new_process(0xABCD_EBEB).unwrap();
+    spawn(y);
     loop {}
 }
