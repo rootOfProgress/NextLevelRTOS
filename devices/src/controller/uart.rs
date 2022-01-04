@@ -23,9 +23,18 @@ pub mod usart {
             }
         }
 
+        pub fn dma_tx(self) -> UsartDevice {
+            self.enable_dma_tx();
+            self
+        }
+
         pub fn enable(&self) -> &UsartDevice {
             self.setup_usart_controller();
             self
+        }
+
+        fn enable_dma_tx(&self) {
+            self.device.cr3.set_bit(0b1 << 7);
         }
 
         fn setup_usart_controller(&self) {

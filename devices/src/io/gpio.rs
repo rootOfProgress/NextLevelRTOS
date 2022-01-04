@@ -182,7 +182,6 @@ pub mod gpio {
                 self.port.afrh.clear_bit((0xF as u32) << pin * 4);
                 self.port.afrh.set_bit(af_number << pin * 4);
             };
-            unsafe{asm!("bkpt");}
             // unsafe {
             //     ptr::write_volatile(
             //         alternate_function_register as *mut u32,

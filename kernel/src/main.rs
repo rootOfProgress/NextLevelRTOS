@@ -31,18 +31,30 @@ pub unsafe fn kernel_init() -> ! {
         .as_af(7);
 
     let usi = devices::controller::uart::usart::UsartDevice::new(9600);
-    usi.enable();
+    usi.dma_tx().enable();
     // usi.print_str("morgeeeen\n\r");
     // asm!("bkpt");
-    let mystr = "hello dma".as_bytes();
-    let bar = core::ptr::addr_of!(mystr[0]);
-    let dma = devices::controller::dma::dma::DmaDevice::new(4).disable();
-    dma.memory_is_source()
-        .peripherial_target_addr(adresses::USART1_BASEADRESS | offsets::usart1::TDR)
-        .mem_target_addr((bar as *const u32) as u32)
-        .transfer_amount(8)
-        .enable();
+    let mystr = "hello dma";
+    let bar = core::ptr::addr_of!(mystr);
+    let mut dma = devices::controller::dma::dma::DmaDevice::new(4).disable();
+    
+    for i in (0x2000_0200..0x2000_0500).step_by(0x04) {
+        core::ptr::write_volatile(i as *mut u32, 0x5859_5859);
+    }
     asm!("bkpt");
+    dma = dma.mem_size(8)
+        .periph_size(8)
+        .memory_is_source()
+        .peripherial_target_addr(adresses::USART1_BASEADRESS | offsets::usart1::TDR)
+        .mem_target_addr(0x2000_0300)
+        .transfer_amount(65535)
+        .enable();
+
+    dma.disable()
+        .mem_target_addr(0x2000_0500)
+        .transfer_amount(600)
+        .enable();
+    // asm!("bkpt");
 
     loop {}
 }
