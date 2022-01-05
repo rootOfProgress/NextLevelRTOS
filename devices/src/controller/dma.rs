@@ -1,62 +1,130 @@
-use super::super::generic::platform;
+use super::super::bus::rcc;
+use super::super::generic::platform::stm32f3x;
+use super::super::generic::traits::primitive_extensions;
+use super::super::registerblocks::dma::DMA;
 
 pub mod dma {
-    use crate::generic::platform::stm32f3x::offsets::dma::DMA_CNDTR;
+    use super::primitive_extensions::BitOps;
+    use super::rcc;
+    use super::stm32f3x::adresses;
+    use super::DMA;
 
-    use super::platform::stm32f3x::{adresses, offsets};
-    use core::ptr::{read_volatile, write_volatile};
-    const DMA_CCRX: u32 = adresses::dma::DMA1_BASE + offsets::dma::DMA_CCR + 0x3;
-    const DMA_CMARX: u32 = adresses::dma::DMA1_BASE + offsets::dma::DMA_CMAR + 0x3;
-    const DMA_CPARX: u32 = adresses::dma::DMA1_BASE + offsets::dma::DMA_CPAR + 0x3;
-    const DMA_CNDTRX: u32 = adresses::dma::DMA1_BASE + offsets::dma::DMA_CNDTR + 0x3;
-
-    pub fn enable_dma_channel() {
-        unsafe {
-            write_volatile(DMA_CCRX as *mut u32, read_volatile(DMA_CCRX as *const u32) | 0b1);
-        }
+    pub struct DmaDevice {
+        device: DMA,
+        // offset_adder: u32,
     }
 
-    pub fn disable_dma_channel() {
-        unsafe {
-            write_volatile(DMA_CCRX as *mut u32, read_volatile(DMA_CCRX as *const u32) & !(0b1));
+    impl DmaDevice {
+        pub unsafe fn new(channel: u32) -> DmaDevice {
+            rcc::rcc::activate_dma1_bus_clock();
+            DmaDevice {
+                device: DMA::new(adresses::dma::DMA1, channel),
+                // offset_adder: 0x14 * (channel - 1)
+            }
         }
-    }
 
-    pub fn read_from_peripherial() {
-        unsafe {
-            write_volatile(DMA_CCRX as *mut u32, read_volatile(DMA_CCRX as *const u32) & !(0b1 << 4));
+        pub fn enable(self) -> DmaDevice {
+            self.enable_dma_channel();
+            self
         }
-    }
 
-    pub fn read_from_memory() {
-        unsafe {
-            write_volatile(DMA_CCRX as *mut u32, read_volatile(DMA_CCRX as *const u32) | 0b1 << 4);
+        pub fn mem_size(self, width: u32) -> DmaDevice {
+            self.set_mem_register_width(width);
+            self
         }
-    }
 
-    // source
-    pub fn write_memory_adress(mem_adress: u32) {
-        disable_dma_channel();
-        unsafe {
-            write_volatile(DMA_CMARX as *mut u32, mem_adress);
+        pub fn periph_size(self, width: u32) -> DmaDevice {
+            self.set_peripherial_register_width(width);
+            self
         }
-        // enable_dma_channel();
-    }
 
-    // destination
-    pub fn write_peripherial_adress(periph_adress: u32) {
-        disable_dma_channel();
-        unsafe {
-            write_volatile(DMA_CPARX as *mut u32, periph_adress);
+        pub fn disable(self) -> DmaDevice {
+            self.disable_dma_channel();
+            self
         }
-        // enable_dma_channel();
-    }
 
-    pub fn set_number_of_bytes_to_process(num_of_bytes: u32) {
-        disable_dma_channel();
-        unsafe {
-            write_volatile(DMA_CNDTRX as *mut u32, read_volatile(DMA_CNDTR as *const u32) | num_of_bytes);
+        pub fn peripherial_is_source(self) -> DmaDevice {
+            self.read_from_peripherial();
+            self
         }
-        // enable_dma_channel();
+
+        pub fn memory_is_source(self) -> DmaDevice {
+            self.read_from_memory();
+            self
+        }
+
+        pub fn mem_target_addr(self, mem_adress: u32) -> DmaDevice {
+            self.set_memory_adress(mem_adress);
+            self
+        }
+
+        pub fn peripherial_target_addr(self, peripherial_adress: u32) -> DmaDevice {
+            self.set_peripherial_adress(peripherial_adress);
+            self
+        }
+
+        pub fn transfer_amount(self, amount: u16) -> DmaDevice {
+            self.set_number_of_bytes_to_process(amount);
+            self
+        }
+
+        fn set_mem_register_width(&self, width: u32) {
+            let bit_pattern = match width {
+                8 => 0b00,
+                16 => 0b01,
+                32 => 0b10,
+                _ => 0b00,
+            };
+            self.device.dynamic.ccrx.set_bit(bit_pattern << 10);
+        }
+
+        fn set_peripherial_register_width(&self, width: u32) {
+            let bit_pattern = match width {
+                8 => 0b00,
+                16 => 0b01,
+                32 => 0b10,
+                _ => 0b00,
+            };
+            self.device.dynamic.ccrx.set_bit(bit_pattern << 8);
+        }
+
+        fn enable_dma_channel(&self) {
+            self.device.dynamic.ccrx.set_bit(0b1);
+        }
+
+        fn disable_dma_channel(&self) {
+            self.device.dynamic.ccrx.clear_bit(0b1);
+        }
+
+        fn read_from_peripherial(&self) {
+            self.device.dynamic.ccrx.clear_bit(0b1 << 4);
+        }
+
+        fn read_from_memory(&self) {
+            self.device.dynamic.ccrx.set_bit(0b1 << 4);
+            // when reading from memory, increment ptr also! (MINC)
+            self.device.dynamic.ccrx.set_bit(0b1 << 7);
+
+        }
+
+        // addr to read from
+        fn set_memory_adress(&self, mem_adress: u32) {
+            self.device.dynamic.cmarx.replace_whole_register(mem_adress);
+        }
+
+        // destination
+        fn set_peripherial_adress(&self, periph_adress: u32) {
+            self.device
+                .dynamic
+                .cparx
+                .replace_whole_register(periph_adress);
+        }
+
+        fn set_number_of_bytes_to_process(&self, num_of_bytes: u16) {
+            self.device
+                .dynamic
+                .cndtrx
+                .write_whole_register(num_of_bytes as u32);
+        }
     }
 }
