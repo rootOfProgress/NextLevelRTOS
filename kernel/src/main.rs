@@ -17,7 +17,6 @@ fn user_init() {
     loop {
         // unsafe { asm!("bkpt") };
     }
-    
 }
 
 use devices::generic::platform::stm32f3x::{adresses, offsets};
@@ -51,7 +50,6 @@ pub unsafe fn kernel_init() -> ! {
     spawn(early_user_land);
     // let y = process::new_process(0xABCD_EBEB).unwrap();
     // spawn(y);
-
 
     loop {}
 }
