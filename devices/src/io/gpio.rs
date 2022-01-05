@@ -17,7 +17,6 @@ pub mod gpio {
     use super::stm32f3x::bitfields;
     use super::primitive_extensions::BitOps;
     use super::GPIO;
-    use core::ptr;
 
     //---------------------------------------------------------------//
     //------------------------TYPE DEFINITONS------------------------//
@@ -94,6 +93,11 @@ pub mod gpio {
             self
         }
 
+        pub fn as_alternate_function(self) -> GpioDevice {
+            self.set_moder(ModerTypes::AlternateFunctionMode);
+            self
+        }
+
         pub fn as_input(self) -> GpioDevice {
             self.set_moder(ModerTypes::InputMode);
             self
@@ -115,6 +119,11 @@ pub mod gpio {
 
         pub fn turn_off(&self) {
             self.set_odr(OutputState::High);
+        }
+
+        pub fn as_af(self, af_port: u32) -> GpioDevice {
+            self.into_af(af_port);
+            self
         }
 
         fn set_moder(&self, moder_type: ModerTypes) {
@@ -166,27 +175,25 @@ pub mod gpio {
         }
         fn into_af(&self, af_number: u32) {
             let alternate_function_register = if self.pin < 8 {
-                self.port.afrl
+                self.port.afrl.clear_bit((0xF as u32) << self.pin * 4);
+                self.port.afrl.set_bit(af_number << self.pin * 4);
             } else {
-                self.port.afrh
+                let pin = self.pin - 8;
+                self.port.afrh.clear_bit((0xF as u32) << pin * 4);
+                self.port.afrh.set_bit(af_number << pin * 4);
             };
-
-            let mut pin = self.pin;
-            if self.pin > 7 {
-                pin -= 8;
-            }
-            unsafe {
-                ptr::write_volatile(
-                    alternate_function_register as *mut u32,
-                    ptr::read_volatile(alternate_function_register as *const u32)
-                        & !(0xF as u32) << pin * 4,
-                );
-                ptr::write_volatile(
-                    alternate_function_register as *mut u32,
-                    ptr::read_volatile(alternate_function_register as *const u32)
-                        | af_number << pin * 4,
-                );
-            }
+            // unsafe {
+            //     ptr::write_volatile(
+            //         alternate_function_register as *mut u32,
+            //         ptr::read_volatile(alternate_function_register as *const u32)
+            //             & !(0xF as u32) << pin * 4,
+            //     );
+            //     ptr::write_volatile(
+            //         alternate_function_register as *mut u32,
+            //         ptr::read_volatile(alternate_function_register as *const u32)
+            //             | af_number << pin * 4,
+            //     );
+            // }
         }
     }
 }
