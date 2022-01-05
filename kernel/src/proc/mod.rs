@@ -1,2 +1,2 @@
-pub mod tcb;
 pub mod sched;
+pub mod tcb;

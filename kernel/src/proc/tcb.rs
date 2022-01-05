@@ -13,7 +13,7 @@ pub struct TCB {
     // Task number
     pid: u32,
     memory_consumption: u32,
-    runtime: u32
+    runtime: u32,
 }
 
 ///

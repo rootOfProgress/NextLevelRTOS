@@ -13,6 +13,4 @@ pub fn new_process(target: u32) -> Option<blueprint::Frame> {
         None => None,
     };
     process
-    // process.set_target_addr(target);
-    // process
 }

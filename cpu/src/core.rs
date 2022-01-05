@@ -16,7 +16,7 @@ pub struct CoreRegister {
     r12: u32,
     pub lr: u32,
     pub pc: u32,
-    psr: u32,
+    pub psr: u32,
 }
 
 impl CoreRegister {

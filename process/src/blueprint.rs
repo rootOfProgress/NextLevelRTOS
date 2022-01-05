@@ -21,7 +21,19 @@ impl Frame {
     }
     pub fn set_target_addr(&mut self, target: u32) {
         self.initialized_core_registers.pc = target;
+        // just for testing
+        self.initialized_core_registers.lr = target;
+        self.initialized_core_registers.psr = 0x21000000;
     }
+
+    pub fn get_target_addr(&mut self) -> u32 {
+        self.initialized_core_registers.pc
+    }
+
+    pub fn set_end_destination_addr(&mut self, destination: u32) {
+        self.initialized_core_registers.lr = destination;
+    }
+
     pub fn get_r4_location(&self) -> u32 {
         core::ptr::addr_of!(self.initialized_core_registers.r4) as u32
     }

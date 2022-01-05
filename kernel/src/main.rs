@@ -6,12 +6,16 @@
 #![no_main]
 #![feature(asm)]
 extern crate devices;
-extern crate runtime;
 extern crate process;
+extern crate runtime;
 
 mod proc;
 
 use proc::sched::spawn;
+
+fn user_init() {
+    loop {}
+}
 
 ///
 /// Target function after hardware initialization,
@@ -29,9 +33,10 @@ pub unsafe fn kernel_init() -> ! {
         .as_push_pull();
     gpio_port_e14.turn_on();
 
-    let p = process::new_process(0x1234_ABCD).unwrap();
-    spawn(p);
-    let y = process::new_process(0xABCD_EBEB).unwrap();
-    spawn(y);
+    let early_user_land = process::new_process(user_init as *const () as u32).unwrap();
+
+    spawn(early_user_land);
+    // let y = process::new_process(0xABCD_EBEB).unwrap();
+    // spawn(y);
     loop {}
 }

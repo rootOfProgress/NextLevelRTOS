@@ -22,7 +22,8 @@ that unresolved symbols may take place in the final binary so they
 can survice the compile process. These functions are splitted 
 into two symbol names because of their return type. See lib.rs 
 for more info. */
-EXTERN(RESET_VECTOR);
+EXTERN(RESET);
+EXTERN(EXCEPTIONS);
 
 /* Description of what the memory contains and how it will be located . */
 SECTIONS
@@ -35,7 +36,10 @@ SECTIONS
     LONG(ORIGIN(SRAM) + LENGTH(SRAM));
     
     /* Entry 1: Reset Function. Gets called after power up device. */
-    KEEP(*(.vector_table.reset_vector));
+    KEEP(*(.vector_table.reset));
+
+    /* Entry 2: Any other exception handlers. */
+    KEEP(*(.vector_table.exceptions));
   } > FLASH
   .text :
   {
