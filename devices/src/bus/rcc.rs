@@ -3,6 +3,10 @@
 //! system. It provides different functions to
 //! seperate the activation for the devices actually needed.
 //!
+
+//---------------------------------------------------------------//
+//----------------------------IMPORTS----------------------------//
+//---------------------------------------------------------------//
 use super::super::generic::platform::stm32f3x;
 use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::rcc::RCC;
@@ -10,7 +14,7 @@ use super::super::registerblocks::rcc::RCC;
 pub mod rcc {
 
     //---------------------------------------------------------------//
-    //----------------------------IMPORTS----------------------------//
+    //-------------------------LOCAL-IMPORTS-------------------------//
     //---------------------------------------------------------------//
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;

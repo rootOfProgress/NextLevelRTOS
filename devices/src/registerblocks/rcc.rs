@@ -2,6 +2,10 @@
 //! This file contains a struct containing the registers for the rcc bus. The fields of the struct are in C presentation
 //! to prevent compiler mangling. The fields then match the offsets of the according register.
 //!
+
+//---------------------------------------------------------------//
+//-----------------------STRUCT-DEFINITONS-----------------------//
+//---------------------------------------------------------------//
 #[repr(C)]
 pub struct RCC {
     pub cr: u32,
@@ -19,6 +23,10 @@ pub struct RCC {
     pub cfgr3: u32,
 }
 
+
+//---------------------------------------------------------------//
+//---------------------STRUCT-IMPLEMENTATIONS--------------------//
+//---------------------------------------------------------------//
 impl RCC {
     ///
     /// Returns a new RCC Struct based on the registers base adress. This adress gets

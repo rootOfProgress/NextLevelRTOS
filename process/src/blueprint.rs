@@ -1,10 +1,17 @@
 extern crate cpu;
+
+//---------------------------------------------------------------//
+//-----------------------STRUCT-DEFINITONS-----------------------//
+//---------------------------------------------------------------//
 #[repr(C)]
 pub struct Frame {
     buffer: core::alloc::Layout,
     initialized_core_registers: cpu::core::CoreRegister,
 }
 
+//---------------------------------------------------------------//
+//---------------------STRUCT-IMPLEMENTATIONS--------------------//
+//---------------------------------------------------------------//
 impl Frame {
     pub fn new(core: cpu::core::CoreRegister, buffer_size: u32) -> Option<Self> {
         let dynamic_buffer = core::alloc::Layout::from_size_align(buffer_size as usize, 4);
