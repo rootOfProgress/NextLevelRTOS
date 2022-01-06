@@ -17,16 +17,16 @@ pub struct TASKMETA {
 /// Task Control Block, 32 Bit aligned.
 ///
 #[repr(C)]
-#[repr(align(4))]
+// #[repr(align(4))]
 pub struct TCB {
     // Current stack pointer value
     pub sp: u32,
     //Task condition according to TaskStates
-    pub state: TaskStates,
+    // pub state: TaskStates,
     // Task number
-    pub pid: u32,
-    pub start_adress: u32,
-    pub runtime: u32,
+    // pub pid: u32,
+    // pub start_adress: u32,
+    // pub runtime: u32,
 }
 
 ///

@@ -10,7 +10,8 @@ MEMORY
   /* Block first 255 bytes for tcb table */
   TCBMETA (rwx) : ORIGIN = 0x20000000, LENGTH = 4
   TCBPTR (rwx) : ORIGIN = 0x20000004, LENGTH = 32
-  TCBBLK (rwx) : ORIGIN = 0x20000024, LENGTH = 219
+  TCBBLK (rwx) : ORIGIN = 0x20000024, LENGTH = 32
+  MEM (rwx) : ORIGIN = 0x20000044, LENGTH = 187
   SRAM (rwx) : ORIGIN = 0x200000FF, LENGTH = 39745
 }
 
