@@ -26,6 +26,11 @@ impl Frame {
             }
         }
     }
+
+    pub fn get_frame_size(&mut self) -> u32 {
+        core::mem::size_of::<cpu::core::CoreRegister>() as u32
+    }
+
     pub fn set_target_addr(&mut self, target: u32) {
         self.initialized_core_registers.pc = target;
         // just for testing

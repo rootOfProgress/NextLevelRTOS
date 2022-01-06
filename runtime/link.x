@@ -7,7 +7,11 @@ MEMORY
   FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
 
   /* also sram area starts @20000000 */
-  SRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 40K
+  /* Block first 255 bytes for tcb table */
+  TCBMETA (rwx) : ORIGIN = 0x20000000, LENGTH = 4
+  TCBPTR (rwx) : ORIGIN = 0x20000004, LENGTH = 32
+  TCBBLK (rwx) : ORIGIN = 0x20000024, LENGTH = 219
+  SRAM (rwx) : ORIGIN = 0x200000FF, LENGTH = 39745
 }
 
 /* The Entry section expects the symbol name of the first executable 
@@ -53,6 +57,21 @@ SECTIONS
   {
     *(.rodata .rodata.*);
   } > FLASH
+
+  .tcbmeta :
+  {
+    KEEP(*(.tcbmeta)) 
+  } > TCBMETA
+
+  .tcbptr :
+  {
+    KEEP(*(.tcbptr)) 
+  } > TCBPTR
+
+  .tcbblk :
+  {
+    KEEP(*(.tcbblk)) 
+  } > TCBBLK
 
   /* .bss is where uninitialized global variables are placed. */
   .bss :
