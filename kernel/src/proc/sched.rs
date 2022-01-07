@@ -53,7 +53,7 @@ pub fn context_switch() {
         let old_sp = __save_process_context();
         let list = &mut *(TASK_LIST_ADDR as *mut List);
         list.update_tcb(old_sp);
-        let tcb = &mut *(shift_task() as *mut TCB);
+        let tcb = &mut *(list.sr_cursor() as *mut TCB);
         __load_process_context(tcb.sp);
     }
 }
