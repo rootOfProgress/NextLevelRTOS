@@ -61,7 +61,7 @@ pub unsafe fn kernel_init() -> ! {
     sched::spawn(quix);
     sched::spawn(quax);
     // activate systick here
-    devices::sys::tick::init_systick(1000);
+    devices::sys::tick::init_systick(1);
     // devices::sys::tick::enable_systick();
     sched::start_init_process();
 

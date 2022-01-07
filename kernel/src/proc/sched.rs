@@ -60,6 +60,5 @@ pub fn context_switch() {
 
 #[no_mangle]
 pub extern "C" fn SysTick() {
-    unsafe { asm!("bkpt") };
     context_switch();
 }
