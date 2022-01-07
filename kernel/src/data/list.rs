@@ -41,6 +41,7 @@ impl List {
             node.next = mem_for_new_node as *const u32;
             self.tail = mem_for_new_node as *const u32;
             self.head = mem_for_new_node as *const u32;
+            self.cursor = mem_for_new_node as *const u32;
         } else {
             node.next = self.head;
             let tail_node = unsafe { &mut *(self.tail as *mut Node) };
@@ -48,20 +49,14 @@ impl List {
             self.head = mem_for_new_node as *const u32;
         }
         self.size += 1;
-        // self.head = mem_for_new_node as *const u32;
     }
-    pub fn next(&mut self) -> u32 {
-        if self.cursor == core::ptr::null() {
-            self.cursor = self.head;
-        } else {
-            let node = unsafe { &mut *(self.cursor as *mut Node) };
-            self.cursor = node.next;
-        }
-        let test = unsafe { &mut *(self.cursor as *mut Node) };
+    pub fn sr_cursor(&mut self) -> u32 {
+        let node = unsafe { &mut *(self.cursor as *mut Node) };
+        self.cursor = node.next;
         self.cursor as u32
-        // let current = unsafe { &mut *(self.cursor as *mut Node) };
-        //
-        // let list = unsafe { &mut *(self.cursor as *mut List) };
-        // node.next as u32
+    }
+    pub fn update_tcb(&mut self, value: u32) {
+        let node = unsafe { &mut *(self.cursor as *mut Node) };
+        node.data.sp = value;
     }
 }

@@ -1,4 +1,4 @@
-use super::tcb::{TaskStates, TCB, TCB_BLK, TCB_PTR, TCB_SIZE, TCB_META};
+use super::tcb::{TaskStates, TCB, TCB_BLK, TCB_META, TCB_PTR, TCB_SIZE};
 
 // pub fn insert(proc_size: u32, stack_pointer: u32, pid: u32) -> u32 {
 //     let tcb_location = (pid * TCB_SIZE) + TCB_BLK;
@@ -20,7 +20,7 @@ use super::tcb::{TaskStates, TCB, TCB_BLK, TCB_PTR, TCB_SIZE, TCB_META};
 //     pid + 1
 // }
 
-pub fn create(/* proc_size: u32,  */stack_pointer: u32) -> TCB { 
+pub fn create(/* proc_size: u32,  */ stack_pointer: u32) -> TCB {
     TCB {
         sp: stack_pointer,
         // state: TaskStates::READY,

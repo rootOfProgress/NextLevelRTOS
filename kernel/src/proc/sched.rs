@@ -1,14 +1,11 @@
 //---------------------------------------------------------------//
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
-use super::super::data::list;
+use super::super::data::list::List;
 use super::task;
-use core::sync::atomic::{AtomicU32, Ordering};
+use super::tcb::TCB;
 use process::blueprint::Frame;
-// static NUM_OF_TASKS: AtomicU32 = AtomicU32::new(0);
-static mut CURRENT_TASK_TCB: u32 = 0;
 static mut TASK_LIST_ADDR: u32 = 0;
-static mut TASK_LIST_ADADR: Option<list::List> = None;
 
 extern "C" {
     ///
@@ -17,47 +14,52 @@ extern "C" {
     fn __br_to_init();
     fn __trap();
     fn __load_process_context(stack_addr: u32);
+    fn __save_process_context() -> u32;
 }
 
 pub fn init() {
-    unsafe { TASK_LIST_ADDR = list::List::new() };
+    unsafe { TASK_LIST_ADDR = List::new() };
+    // unsafe { TASK_LIST = list::List::new() };
 }
 
 pub fn destroy() {}
 
-pub fn next_task() -> u32 {
-    let list = unsafe { &mut *(TASK_LIST_ADDR as *mut list::List) };
-    list.next()
+pub fn shift_task() -> u32 {
+    let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
+    list.sr_cursor()
 }
 
-pub fn spawn(mut p: Frame) {
-    let list = unsafe { &mut *(TASK_LIST_ADDR as *mut list::List) };
+pub fn start_init_process() {
+    let i = unsafe { &mut *(shift_task() as *mut TCB) };
+    unsafe {
+        __load_process_context(i.sp);
+        core::ptr::write_volatile(
+            0xE000_E010 as *mut u32,
+            core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
+        );
+        __trap();
+    }
+}
+
+pub fn spawn(p: Frame) {
+    let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
     let r4 = p.get_r4_location();
     let tcb = task::create(r4);
     list.insert(tcb);
-    // match process {
-    //     Some(p) => {
-    //         let r4 = p.get_r4_location();
-    //         unsafe{asm!("bkpt");}
-    //     },
-    //     None => {/*assert kernel panic*/}
-    // }
-
-    // let pid = task::insert(p.get_frame_size(), r4, NUM_OF_TASKS.load(Ordering::Relaxed));
-
-    // if pid == 1 {
-    //     unsafe {
-    //         __load_process_context(r4);
-    //         __trap();
-    //     }
-    // } else {
-    //     // activate scheduler
-    // }
 }
 
-pub fn run(task: u32) {
+pub fn context_switch() {
     unsafe {
-        __load_process_context(task);
-        __trap();
+        let old_sp = __save_process_context();
+        let list = &mut *(TASK_LIST_ADDR as *mut List);
+        list.update_tcb(old_sp);
+        let tcb = &mut *(shift_task() as *mut TCB);
+        __load_process_context(tcb.sp);
     }
+}
+
+#[no_mangle]
+pub extern "C" fn SysTick() {
+    unsafe { asm!("bkpt") };
+    context_switch();
 }
