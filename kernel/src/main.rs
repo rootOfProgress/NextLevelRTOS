@@ -28,6 +28,13 @@ fn bar() {
 }
 
 fn user_init() {
+
+    let foo = process::new_process(bar as *const () as u32).unwrap();
+    let quix = process::new_process(quix as *const () as u32).unwrap();
+    let quax = process::new_process(quax as *const () as u32).unwrap();
+    sched::spawn(foo);
+    sched::spawn(quix);
+    sched::spawn(quax);
     loop {}
 }
 ///
@@ -52,14 +59,10 @@ pub unsafe fn kernel_init() -> ! {
     usart.print_str("hello world!\n\r");
 
     let early_user_land = process::new_process(user_init as *const () as u32).unwrap();
-    let foo = process::new_process(bar as *const () as u32).unwrap();
-    let quix = process::new_process(quix as *const () as u32).unwrap();
-    let quax = process::new_process(quax as *const () as u32).unwrap();
+
     usart.print_str("spawn userland!\n\r");
-    sched::spawn(foo);
     sched::spawn(early_user_land);
-    sched::spawn(quix);
-    sched::spawn(quax);
+
     // activate systick here
     devices::sys::tick::init_systick(1);
     // devices::sys::tick::enable_systick();
@@ -69,7 +72,7 @@ pub unsafe fn kernel_init() -> ! {
     // devices::sys::tick::enable_systick();
 
     loop {
-        // usart.print_str("!! KERNEL PANIC - NO INIT FOUND !!\n\r");
-        // asm!("bkpt");
+        usart.print_str("!! KERNEL PANIC - NO INIT FOUND !!\n\r");
+        asm!("bkpt");
     }
 }
