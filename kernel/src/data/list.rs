@@ -56,14 +56,8 @@ impl List {
         } else {
             let node = unsafe { &mut *(self.cursor as *mut Node) };
             self.cursor = node.next;
-            unsafe {
-                asm!("bkpt");
-            }
         }
         let test = unsafe { &mut *(self.cursor as *mut Node) };
-        unsafe {
-            asm!("bkpt");
-        }
         self.cursor as u32
         // let current = unsafe { &mut *(self.cursor as *mut Node) };
         //

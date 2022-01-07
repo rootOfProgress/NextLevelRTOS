@@ -8,6 +8,8 @@ use process::blueprint::Frame;
 // static NUM_OF_TASKS: AtomicU32 = AtomicU32::new(0);
 static mut CURRENT_TASK_TCB: u32 = 0;
 static mut TASK_LIST_ADDR: u32 = 0;
+static mut TASK_LIST_ADADR: Option<list::List> = None;
+
 extern "C" {
     ///
     /// Points to extern asm instruction.
