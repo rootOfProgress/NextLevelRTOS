@@ -4,8 +4,8 @@ use super::super::proc::tcb::TCB;
 // use super::super::mem::malloc;
 #[repr(C)]
 struct Node {
-    data: TCB,
     next: *const u32,
+    data: TCB,
 }
 
 #[repr(C)]
@@ -53,7 +53,9 @@ impl List {
     pub fn sr_cursor(&mut self) -> u32 {
         let node = unsafe { &mut *(self.cursor as *mut Node) };
         self.cursor = node.next;
-        self.cursor as u32
+        let node_new = unsafe { &mut *(node.next as *mut Node) };
+        let t =  &mut *( &mut node_new.data as &mut TCB) ;
+        core::ptr::addr_of!(*t) as *const u32 as u32
     }
     pub fn update_tcb(&mut self, value: u32) {
         let node = unsafe { &mut *(self.cursor as *mut Node) };

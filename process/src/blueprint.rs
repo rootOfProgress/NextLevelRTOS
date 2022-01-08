@@ -5,7 +5,7 @@ extern crate cpu;
 //---------------------------------------------------------------//
 #[repr(C)]
 pub struct Frame {
-    buffer: core::alloc::Layout,
+    buffer: [u32; 256],/* core::alloc::Layout */
     initialized_core_registers: cpu::core::CoreRegister,
 }
 
@@ -17,7 +17,7 @@ impl Frame {
         let dynamic_buffer = core::alloc::Layout::from_size_align(buffer_size as usize, 4);
         match dynamic_buffer {
             Ok(buffer) => Some(Frame {
-                buffer,
+                buffer: unsafe { core::mem::zeroed() },
                 initialized_core_registers: core,
             }),
             Err(_) => {

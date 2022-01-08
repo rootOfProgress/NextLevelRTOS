@@ -22,6 +22,7 @@ use super::tcb::{TaskStates, TCB, TCB_BLK, TCB_META, TCB_PTR, TCB_SIZE};
 
 pub fn create(/* proc_size: u32,  */ stack_pointer: u32) -> TCB {
     TCB {
+        foo: 123123,
         sp: stack_pointer,
         // state: TaskStates::READY,
         // start_adress: stack_pointer - proc_size,

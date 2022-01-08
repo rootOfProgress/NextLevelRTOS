@@ -18,6 +18,7 @@ pub struct TASKMETA {
 // #[repr(align(4))]
 pub struct TCB {
     // Current stack pointer value
+    pub foo: u32,
     pub sp: u32,
     //Task condition according to TaskStates
     // pub state: TaskStates,

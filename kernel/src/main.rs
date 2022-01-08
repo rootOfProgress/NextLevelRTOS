@@ -15,16 +15,42 @@ use devices::io::gpio::gpio::GpioDevice;
 
 use proc::sched;
 
+fn fibonacci(n: u32) -> u32 {
+    match n {
+        0 => 1,
+        1 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+
+
 fn quix() {
-    loop {}
+    loop {
+        unsafe {
+            let mut reg_content = core::ptr::read_volatile(0x4800_1014 as *mut u32);
+            reg_content &= !((0b1_u32) << 12);
+            core::ptr::write_volatile(0x4800_1014 as *mut u32, reg_content);
+        }
+    }
 }
 
 fn quax() {
-    loop {}
+    loop {
+
+
+        unsafe {
+            let mut reg_content = core::ptr::read_volatile(0x4800_1014 as *mut u32);
+            reg_content |= (0b1_u32) << 12;
+            core::ptr::write_volatile(0x4800_1014 as *mut u32, reg_content);
+        }
+    }
 }
 
 fn bar() {
-    loop {}
+
+    loop {
+        fibonacci(22);
+    }
 }
 
 fn user_init() {
@@ -46,7 +72,7 @@ pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
 
-    let gpio_port_e14 = GpioDevice::new("E", 14).as_output().as_push_pull();
+    let gpio_port_e14 = GpioDevice::new("E", 12).as_output().as_push_pull();
     gpio_port_e14.turn_on();
 
     GpioDevice::new("A", 9)
@@ -64,7 +90,7 @@ pub unsafe fn kernel_init() -> ! {
     sched::spawn(early_user_land);
 
     // activate systick here
-    devices::sys::tick::init_systick(1);
+    devices::sys::tick::init_systick(80);
     // devices::sys::tick::enable_systick();
     sched::start_init_process();
 
