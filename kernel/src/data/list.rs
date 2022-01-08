@@ -50,6 +50,13 @@ impl List {
         }
         self.size += 1;
     }
+    pub fn sr_cursor_sp(&mut self) -> u32 {
+        let node = unsafe { &mut *(self.cursor as *mut Node) };
+        self.cursor = node.next;
+        let node_new = unsafe { &mut *(node.next as *mut Node) };
+        let t =  &mut *( &mut node_new.data as &mut TCB) ;
+        t.sp
+    }
     pub fn sr_cursor(&mut self) -> u32 {
         let node = unsafe { &mut *(self.cursor as *mut Node) };
         self.cursor = node.next;

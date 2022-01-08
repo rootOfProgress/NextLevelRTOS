@@ -26,13 +26,13 @@ pub fn destroy() {}
 
 pub fn shift_task() -> u32 {
     let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
-    list.sr_cursor()
+    list.sr_cursor_sp()
 }
 
 pub fn start_init_process() {
-    let i = unsafe { &mut *(shift_task() as *mut TCB) };
+    // let i = unsafe { &mut *(shift_task() as *mut TCB) };
     unsafe {
-        __load_process_context(i.sp);
+        __load_process_context(shift_task());
         core::ptr::write_volatile(
             0xE000_E010 as *mut u32,
             core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
@@ -53,9 +53,9 @@ pub fn context_switch() {
         let old_sp = __save_process_context();
         let list = &mut *(TASK_LIST_ADDR as *mut List);
         list.update_tcb(old_sp);
-        let tcb = &mut *(list.sr_cursor() as *mut TCB);
+        let sp = list.sr_cursor_sp();
 
-        __load_process_context(tcb.sp);
+        __load_process_context(sp);
     }
 }
 
