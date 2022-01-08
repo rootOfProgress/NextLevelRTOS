@@ -58,9 +58,10 @@ fn user_init() {
     let foo = process::new_process(bar as *const () as u32).unwrap();
     let quix = process::new_process(quix as *const () as u32).unwrap();
     let quax = process::new_process(quax as *const () as u32).unwrap();
-    sched::spawn(foo);
-    sched::spawn(quix);
-    sched::spawn(quax);
+    sched::spawn(1,foo);
+    sched::spawn(2, quix);
+    sched::spawn(3, quax);
+    unsafe{asm!("bkpt");}
     loop {}
 }
 ///
@@ -87,7 +88,7 @@ pub unsafe fn kernel_init() -> ! {
     let early_user_land = process::new_process(user_init as *const () as u32).unwrap();
 
     usart.print_str("spawn userland!\n\r");
-    sched::spawn(early_user_land);
+    sched::spawn(0, early_user_land);
 
     // activate systick here
     devices::sys::tick::init_systick(80);

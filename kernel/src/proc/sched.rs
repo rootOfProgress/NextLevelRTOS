@@ -1,7 +1,7 @@
 //---------------------------------------------------------------//
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
-use super::super::data::list::List;
+use super::super::data::list::{List, POINTER_TO_CURRENT_TCB};
 use super::task;
 use super::tcb::TCB;
 use process::blueprint::Frame;
@@ -41,10 +41,10 @@ pub fn start_init_process() {
     }
 }
 
-pub fn spawn(p: Frame) {
+pub fn spawn(pid: u32, p: Frame) {
     let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
     let r4 = p.get_r4_location();
-    let tcb = task::create(r4);
+    let tcb = task::create(r4,pid);
     list.insert(tcb);
 }
 

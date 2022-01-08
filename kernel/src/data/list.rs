@@ -1,5 +1,5 @@
 use crate::mem::malloc::get_mem;
-
+pub static mut POINTER_TO_CURRENT_TCB: u32 = 0;
 use super::super::proc::tcb::TCB;
 // use super::super::mem::malloc;
 #[repr(C)]
@@ -43,20 +43,37 @@ impl List {
             self.head = mem_for_new_node as *const u32;
             self.cursor = mem_for_new_node as *const u32;
         } else {
+            // append to front
+            // node.next = self.head;
+            // let tail_node = unsafe { &mut *(self.tail as *mut Node) };
+            // tail_node.next = mem_for_new_node as *const u32;
+            // self.head = mem_for_new_node as *const u32;
             node.next = self.head;
             let tail_node = unsafe { &mut *(self.tail as *mut Node) };
             tail_node.next = mem_for_new_node as *const u32;
-            self.head = mem_for_new_node as *const u32;
+            self.tail = mem_for_new_node as *const u32;
         }
         self.size += 1;
     }
     pub fn sr_cursor_sp(&mut self) -> u32 {
-        let node = unsafe { &mut *(self.cursor as *mut Node) };
-        self.cursor = node.next;
-        let node_new = unsafe { &mut *(node.next as *mut Node) };
+        let current_node = unsafe { &mut *(self.head as *mut Node) };
+        self.head = current_node.next;
+        let tail_node = unsafe { &mut *(self.tail as *mut Node) };
+        self.tail = tail_node.next;
+        let node_new = unsafe { &mut *(self.head as *mut Node) };
         let t =  &mut *( &mut node_new.data as &mut TCB) ;
+        unsafe {
+            // asm!("bkpt");
+        }
         t.sp
     }
+    // pub fn sr_cursor_sp(&mut self) -> u32 {
+    //     let node = unsafe { &mut *(self.cursor as *mut Node) };
+    //     self.cursor = node.next;
+    //     let node_new = unsafe { &mut *(node.next as *mut Node) };
+    //     let t =  &mut *( &mut node_new.data as &mut TCB) ;
+    //     t.sp
+    // }
     pub fn sr_cursor(&mut self) -> u32 {
         let node = unsafe { &mut *(self.cursor as *mut Node) };
         self.cursor = node.next;
@@ -65,7 +82,13 @@ impl List {
         core::ptr::addr_of!(*t) as *const u32 as u32
     }
     pub fn update_tcb(&mut self, value: u32) {
-        let node = unsafe { &mut *(self.cursor as *mut Node) };
+        let node = unsafe { &mut *(self.head as *mut Node) };
+        unsafe {
+            // asm!("bkpt");
+        }
         node.data.sp = value;
+        unsafe {
+            // asm!("bkpt");
+        }
     }
 }
