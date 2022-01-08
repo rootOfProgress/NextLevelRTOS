@@ -1,9 +1,8 @@
 //---------------------------------------------------------------//
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
-use super::super::data::list::{List, POINTER_TO_CURRENT_TCB};
+use super::super::data::list::{List};
 use super::task;
-use super::tcb::TCB;
 use process::blueprint::Frame;
 static mut TASK_LIST_ADDR: u32 = 0;
 
@@ -22,7 +21,7 @@ pub fn init() {
     // unsafe { TASK_LIST = list::List::new() };
 }
 
-pub fn destroy() {}
+pub fn _destroy() {}
 
 pub fn shift_task() -> u32 {
     let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
@@ -30,7 +29,6 @@ pub fn shift_task() -> u32 {
 }
 
 pub fn start_init_process() {
-    // let i = unsafe { &mut *(shift_task() as *mut TCB) };
     unsafe {
         __load_process_context(shift_task());
         core::ptr::write_volatile(
@@ -44,7 +42,7 @@ pub fn start_init_process() {
 pub fn spawn(pid: u32, p: Frame) {
     let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
     let r4 = p.get_r4_location();
-    let tcb = task::create(r4,pid);
+    let tcb = task::create(r4, pid);
     list.insert(tcb);
 }
 

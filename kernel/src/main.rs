@@ -23,7 +23,6 @@ fn fibonacci(n: u32) -> u32 {
     }
 }
 
-
 fn quix() {
     loop {
         unsafe {
@@ -36,8 +35,6 @@ fn quix() {
 
 fn quax() {
     loop {
-
-
         unsafe {
             let mut reg_content = core::ptr::read_volatile(0x4800_1014 as *mut u32);
             reg_content |= (0b1_u32) << 12;
@@ -47,21 +44,21 @@ fn quax() {
 }
 
 fn bar() {
-
     loop {
         fibonacci(22);
     }
 }
 
 fn user_init() {
-
     let foo = process::new_process(bar as *const () as u32).unwrap();
     let quix = process::new_process(quix as *const () as u32).unwrap();
     let quax = process::new_process(quax as *const () as u32).unwrap();
-    sched::spawn(1,foo);
+    sched::spawn(1, foo);
     sched::spawn(2, quix);
     sched::spawn(3, quax);
-    unsafe{asm!("bkpt");}
+    unsafe {
+        asm!("bkpt");
+    }
     loop {}
 }
 ///
@@ -72,6 +69,7 @@ fn user_init() {
 pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
+    devices::sys::tick::init_systick(80);
 
     let gpio_port_e14 = GpioDevice::new("E", 12).as_output().as_push_pull();
     gpio_port_e14.turn_on();
@@ -82,21 +80,14 @@ pub unsafe fn kernel_init() -> ! {
         .as_af(7);
 
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
+    
     usart.enable();
     usart.print_str("hello world!\n\r");
 
     let early_user_land = process::new_process(user_init as *const () as u32).unwrap();
 
-    usart.print_str("spawn userland!\n\r");
     sched::spawn(0, early_user_land);
-
-    // activate systick here
-    devices::sys::tick::init_systick(80);
-    // devices::sys::tick::enable_systick();
     sched::start_init_process();
-
-    // devices::sys::tick::init_systick(1000);
-    // devices::sys::tick::enable_systick();
 
     loop {
         usart.print_str("!! KERNEL PANIC - NO INIT FOUND !!\n\r");
