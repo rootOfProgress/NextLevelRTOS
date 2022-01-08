@@ -5,7 +5,7 @@ extern crate cpu;
 //---------------------------------------------------------------//
 #[repr(C)]
 pub struct Frame {
-    buffer: core::alloc::Layout,
+    buffer: [u32; 256],/* core::alloc::Layout */
     initialized_core_registers: cpu::core::CoreRegister,
 }
 
@@ -17,7 +17,7 @@ impl Frame {
         let dynamic_buffer = core::alloc::Layout::from_size_align(buffer_size as usize, 4);
         match dynamic_buffer {
             Ok(buffer) => Some(Frame {
-                buffer,
+                buffer: unsafe { core::mem::zeroed() },
                 initialized_core_registers: core,
             }),
             Err(_) => {
@@ -26,6 +26,11 @@ impl Frame {
             }
         }
     }
+
+    pub fn get_frame_size(&mut self) -> u32 {
+        core::mem::size_of::<cpu::core::CoreRegister>() as u32
+    }
+
     pub fn set_target_addr(&mut self, target: u32) {
         self.initialized_core_registers.pc = target;
         // just for testing

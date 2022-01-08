@@ -4,7 +4,7 @@
 //! code build on top of it.
 //!
 #![no_std]
-
+#![feature(asm)]
 use core::panic::PanicInfo;
 use core::ptr;
 
@@ -51,6 +51,13 @@ pub union VectorDivergentFn {
     _reserved: u32,
     handler: unsafe extern "C" fn() -> !,
 }
+
+
+extern "C" {
+    fn SysTick();
+}
+
+
 ///
 /// Manually create a section with points to the adress of
 /// the reset function.
@@ -75,7 +82,7 @@ pub static EXCEPTIONS: [Vector; 15] = [
     Vector { reserved: 0 },
     Vector { reserved: 0 },
     Vector { reserved: 0 },
-    Vector { reserved: 0 },
+    Vector { handler: SysTick },
     Vector { reserved: 0 },
 ];
 
@@ -87,6 +94,7 @@ pub static EXCEPTIONS: [Vector; 15] = [
 pub extern "C" fn SVCall() {
     unsafe { __br_to_init() };
 }
+
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
