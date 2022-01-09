@@ -16,38 +16,43 @@ pub struct List {
 
 impl List {
     pub fn new() -> u32 {
-        let mem_start = get_mem(core::mem::size_of::<List>() as u32);
-        let list = unsafe { &mut *(mem_start as *mut List) };
-        *list = List {
-            size: 0,
-            cursor: core::ptr::null(),
-            head: core::ptr::null(),
-            tail: core::ptr::null(),
-        };
-        mem_start
+        unsafe {
+            let mem_start = get_mem(core::mem::size_of::<List>() as u32);
+            let list = &mut *(mem_start as *mut List);
+            *list = List {
+                size: 0,
+                cursor: core::ptr::null(),
+                head: core::ptr::null(),
+                tail: core::ptr::null(),
+            };
+            mem_start
+        }
     }
     pub fn insert(&mut self, tcb: TCB) {
-        let mem_for_new_node = get_mem(core::mem::size_of::<Node>() as u32);
-        let node = unsafe { &mut *(mem_for_new_node as *mut Node) };
+        unsafe {
+            let mem_for_new_node = get_mem(core::mem::size_of::<Node>() as u32);
+            let node = &mut *(mem_for_new_node as *mut Node);
 
-        *node = Node {
-            data: tcb,
-            next: core::ptr::null(),
-        };
+            *node = Node {
+                data: tcb,
+                next: core::ptr::null(),
+            };
 
-        if self.head == core::ptr::null() {
-            node.next = mem_for_new_node as *const u32;
-            self.tail = mem_for_new_node as *const u32;
-            self.head = mem_for_new_node as *const u32;
-            self.cursor = mem_for_new_node as *const u32;
-        } else {
-            // append to tail / fifo
-            node.next = self.head;
-            let tail_node = unsafe { &mut *(self.tail as *mut Node) };
-            tail_node.next = mem_for_new_node as *const u32;
-            self.tail = mem_for_new_node as *const u32;
+            if self.head == core::ptr::null() {
+                node.next = mem_for_new_node as *const u32;
+                self.tail = mem_for_new_node as *const u32;
+                self.head = mem_for_new_node as *const u32;
+                self.cursor = mem_for_new_node as *const u32;
+            } else {
+                // append to tail / fifo
+                node.next = self.head;
+                let tail_node = &mut *(self.tail as *mut Node);
+                tail_node.next = mem_for_new_node as *const u32;
+                self.tail = mem_for_new_node as *const u32;
+            }
+            asm!("bkpt");
+            self.size += 1;
         }
-        self.size += 1;
     }
     // returns sp only and shifts pointer 1 node
     pub fn sr_cursor_sp(&mut self) -> u32 {

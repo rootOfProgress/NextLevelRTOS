@@ -80,7 +80,7 @@ pub unsafe fn kernel_init() -> ! {
         .as_af(7);
 
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
-    
+
     usart.enable();
     usart.print_str("hello world!\n\r");
 

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------//
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
-use super::super::data::list::{List};
+use super::super::data::list::List;
 use super::task;
 use process::blueprint::Frame;
 static mut TASK_LIST_ADDR: u32 = 0;

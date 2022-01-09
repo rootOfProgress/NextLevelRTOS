@@ -1,12 +1,12 @@
-Date : 2022-01-05 10:36:50
+Date : 2022-01-09 21:17:52
 Directory : /home/benni/development/os_dev/NextLevelRTOS
-Total : 33 files,  1121 codes, 237 comments, 290 blanks, all 1648 lines
+Total : 41 files,  1390 codes, 253 comments, 330 blanks, all 1973 lines
 
 Languages
 +------------------+------------+------------+------------+------------+------------+
 | language         | files      | code       | comment    | blank      | total      |
 +------------------+------------+------------+------------+------------+------------+
-| Rust             |         27 |        787 |        234 |        138 |      1,159 |
+| Rust             |         35 |      1,056 |        250 |        178 |      1,484 |
 | Markdown         |          4 |        311 |          0 |        146 |        457 |
 | GAS/AT&T x86/x64 |          1 |         21 |          0 |          4 |         25 |
 | Properties       |          1 |          2 |          3 |          2 |          7 |
@@ -16,25 +16,28 @@ Directories
 +--------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
 | path                                                                                 | files      | code       | comment    | blank      | total      |
 +--------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
-| .                                                                                    |         33 |      1,121 |        237 |        290 |      1,648 |
+| .                                                                                    |         41 |      1,390 |        253 |        330 |      1,973 |
 | cpu                                                                                  |          2 |         27 |          6 |          3 |         36 |
 | cpu/src                                                                              |          2 |         27 |          6 |          3 |         36 |
-| devices                                                                              |         17 |        568 |        163 |         85 |        816 |
-| devices/src                                                                          |         17 |        568 |        163 |         85 |        816 |
+| devices                                                                              |         20 |        606 |        175 |         94 |        875 |
+| devices/src                                                                          |         20 |        606 |        175 |         94 |        875 |
 | devices/src/bus                                                                      |          2 |         26 |         21 |          7 |         54 |
 | devices/src/controller                                                               |          3 |        150 |          5 |         30 |        185 |
-| devices/src/generic                                                                  |          4 |        152 |         43 |         17 |        212 |
+| devices/src/generic                                                                  |          4 |        153 |         43 |         16 |        212 |
 | devices/src/io                                                                       |          2 |        141 |         42 |         18 |        201 |
-| devices/src/registerblocks                                                           |          5 |         92 |         52 |         11 |        155 |
+| devices/src/registerblocks                                                           |          6 |        105 |         62 |         15 |        182 |
+| devices/src/sys                                                                      |          2 |         23 |          2 |          7 |         32 |
 | documentation                                                                        |          3 |        311 |          0 |        145 |        456 |
-| kernel                                                                               |          6 |         94 |         38 |         29 |        161 |
-| kernel/src                                                                           |          5 |         92 |         35 |         27 |        154 |
+| kernel                                                                               |         11 |        318 |         42 |         54 |        414 |
+| kernel/src                                                                           |         10 |        316 |         39 |         52 |        407 |
 | kernel/src/asm                                                                       |          1 |         21 |          0 |          4 |         25 |
-| kernel/src/proc                                                                      |          3 |         36 |         24 |         11 |         71 |
-| process                                                                              |          2 |         49 |          8 |          8 |         65 |
-| process/src                                                                          |          2 |         49 |          8 |          8 |         65 |
-| runtime                                                                              |          2 |         72 |         22 |         19 |        113 |
-| runtime/src                                                                          |          1 |         62 |         18 |         15 |         95 |
+| kernel/src/data                                                                      |          2 |         73 |          3 |          6 |         82 |
+| kernel/src/mem                                                                       |          2 |         64 |          2 |          9 |         75 |
+| kernel/src/proc                                                                      |          4 |         83 |         26 |         19 |        128 |
+| process                                                                              |          2 |         52 |          8 |         10 |         70 |
+| process/src                                                                          |          2 |         52 |          8 |         10 |         70 |
+| runtime                                                                              |          2 |         76 |         22 |         23 |        121 |
+| runtime/src                                                                          |          1 |         66 |         18 |         19 |        103 |
 +--------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
 
 Files
@@ -50,29 +53,37 @@ Files
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/controller/mod.rs           | Rust             |          2 |          0 |          0 |          2 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/controller/uart.rs          | Rust             |         45 |          0 |          7 |         52 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/generic/cpu.rs              | Rust             |         26 |          1 |          3 |         30 |
-| /home/benni/development/os_dev/NextLevelRTOS/devices/src/generic/mod.rs              | Rust             |          2 |          0 |          1 |          3 |
+| /home/benni/development/os_dev/NextLevelRTOS/devices/src/generic/mod.rs              | Rust             |          3 |          0 |          0 |          3 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/generic/platform.rs         | Rust             |         74 |          1 |          7 |         82 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/generic/traits.rs           | Rust             |         50 |         41 |          6 |         97 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/io/gpio.rs                  | Rust             |        140 |         42 |         18 |        200 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/io/mod.rs                   | Rust             |          1 |          0 |          0 |          1 |
-| /home/benni/development/os_dev/NextLevelRTOS/devices/src/lib.rs                      | Rust             |          7 |          0 |          2 |          9 |
+| /home/benni/development/os_dev/NextLevelRTOS/devices/src/lib.rs                      | Rust             |          8 |          0 |          1 |          9 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/dma.rs       | Rust             |         29 |         10 |          4 |         43 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/gpio.rs      | Rust             |         19 |         16 |          2 |         37 |
-| /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/mod.rs       | Rust             |          4 |          0 |          0 |          4 |
+| /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/mod.rs       | Rust             |          5 |          0 |          0 |          5 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/rcc.rs       | Rust             |         21 |         16 |          4 |         41 |
+| /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/sys.rs       | Rust             |         12 |         10 |          4 |         26 |
 | /home/benni/development/os_dev/NextLevelRTOS/devices/src/registerblocks/usart.rs     | Rust             |         19 |         10 |          1 |         30 |
+| /home/benni/development/os_dev/NextLevelRTOS/devices/src/sys/mod.rs                  | Rust             |          1 |          0 |          0 |          1 |
+| /home/benni/development/os_dev/NextLevelRTOS/devices/src/sys/tick.rs                 | Rust             |         22 |          2 |          7 |         31 |
 | /home/benni/development/os_dev/NextLevelRTOS/documentation/part1_boot_procedure.md   | Markdown         |        285 |          0 |        132 |        417 |
 | /home/benni/development/os_dev/NextLevelRTOS/documentation/part2_device_access_en.md | Markdown         |         12 |          0 |          5 |         17 |
 | /home/benni/development/os_dev/NextLevelRTOS/documentation/part2_device_access_ru.md | Markdown         |         14 |          0 |          8 |         22 |
 | /home/benni/development/os_dev/NextLevelRTOS/kernel/openocd.cfg                      | Properties       |          2 |          3 |          2 |          7 |
 | /home/benni/development/os_dev/NextLevelRTOS/kernel/src/asm/context_mng.s            | GAS/AT&T x86/x64 |         21 |          0 |          4 |         25 |
-| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/main.rs                      | Rust             |         35 |         11 |         12 |         58 |
-| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/mod.rs                  | Rust             |          2 |          0 |          1 |          3 |
-| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/sched.rs                | Rust             |         13 |         13 |          5 |         31 |
-| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/tcb.rs                  | Rust             |         21 |         11 |          5 |         37 |
-| /home/benni/development/os_dev/NextLevelRTOS/process/src/blueprint.rs                | Rust             |         34 |          8 |          6 |         48 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/data/list.rs                 | Rust             |         72 |          3 |          5 |         80 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/data/mod.rs                  | Rust             |          1 |          0 |          1 |          2 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/main.rs                      | Rust             |         75 |          8 |         14 |         97 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/mem/malloc.rs                | Rust             |         63 |          2 |          8 |         73 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/mem/mod.rs                   | Rust             |          1 |          0 |          1 |          2 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/mod.rs                  | Rust             |          3 |          0 |          1 |          4 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/sched.rs                | Rust             |         47 |          7 |         10 |         64 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/task.rs                 | Rust             |          7 |          0 |          2 |          9 |
+| /home/benni/development/os_dev/NextLevelRTOS/kernel/src/proc/tcb.rs                  | Rust             |         26 |         19 |          6 |         51 |
+| /home/benni/development/os_dev/NextLevelRTOS/process/src/blueprint.rs                | Rust             |         37 |          8 |          8 |         53 |
 | /home/benni/development/os_dev/NextLevelRTOS/process/src/lib.rs                      | Rust             |         15 |          0 |          2 |         17 |
 | /home/benni/development/os_dev/NextLevelRTOS/runtime/build.rs                        | Rust             |         10 |          4 |          4 |         18 |
-| /home/benni/development/os_dev/NextLevelRTOS/runtime/src/lib.rs                      | Rust             |         62 |         18 |         15 |         95 |
-| Total                                                                                |                  |      1,121 |        237 |        290 |      1,648 |
+| /home/benni/development/os_dev/NextLevelRTOS/runtime/src/lib.rs                      | Rust             |         66 |         18 |         19 |        103 |
+| Total                                                                                |                  |      1,390 |        253 |        330 |      1,973 |
 +--------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
