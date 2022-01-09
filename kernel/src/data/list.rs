@@ -50,7 +50,6 @@ impl List {
                 tail_node.next = mem_for_new_node as *const u32;
                 self.tail = mem_for_new_node as *const u32;
             }
-            asm!("bkpt");
             self.size += 1;
         }
     }

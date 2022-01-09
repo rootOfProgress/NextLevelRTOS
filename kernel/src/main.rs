@@ -56,9 +56,6 @@ fn user_init() {
     sched::spawn(1, foo);
     sched::spawn(2, quix);
     sched::spawn(3, quax);
-    unsafe {
-        asm!("bkpt");
-    }
     loop {}
 }
 ///
