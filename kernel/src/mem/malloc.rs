@@ -6,7 +6,7 @@ const MEM_BLOCK_START: u32 = 0x2000_0048;
 const ADDR_OF_HIGHEST_FREE_BLOCK: u32 = MEM_BLOCK_START + 0x04;
 const WORD: u32 = 0x4;
 use core::ptr::{read_volatile, write_volatile, swap};
-
+use core::intrinsics::volatile_store;
 pub unsafe fn init() {
     write_volatile(MEM_BLOCK_START as *mut u32, ADDR_OF_HIGHEST_FREE_BLOCK);
     write_volatile(JOURNAL_NUM_OF_ELEMENTS as *mut u32, 0x0000_0000);

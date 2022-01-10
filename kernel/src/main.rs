@@ -5,6 +5,7 @@
 #![no_std]
 #![no_main]
 #![feature(asm)]
+#![feature(core_intrinsics)]
 extern crate devices;
 extern crate process;
 extern crate runtime;
