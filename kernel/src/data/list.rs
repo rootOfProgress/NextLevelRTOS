@@ -86,6 +86,9 @@ impl List {
     //     core::ptr::addr_of!(*t) as *const u32 as u32
     // }
     pub fn update_tcb(&mut self, value: u32) {
+        // unsafe {
+        //     core::intrinsics::volatile_store((self.head as u32 + 0x1C) as *mut u32, value);
+        // }
         let node = unsafe { &mut *(self.head as *mut Node) };
         node.data.sp = value;
     }

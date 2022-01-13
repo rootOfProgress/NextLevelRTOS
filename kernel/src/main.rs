@@ -25,13 +25,13 @@ fn fibonacci(n: u32) -> u32 {
 }
 
 fn quix() {
-    // loop {
+    loop {
         unsafe {
             let mut reg_content = core::ptr::read_volatile(0x4800_1014 as *mut u32);
             reg_content &= !((0b1_u32) << 12);
             core::ptr::write_volatile(0x4800_1014 as *mut u32, reg_content);
         }
-    // }
+    }
 }
 
 fn quax() {
