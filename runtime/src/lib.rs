@@ -3,11 +3,14 @@
 //! Only for runtime purposes, acts as a platform for the kernel
 //! code build on top of it.
 //!
-
 #![no_std]
-
+#![feature(asm)]
 use core::panic::PanicInfo;
 use core::ptr;
+
+extern "C" {
+    fn __br_to_init();
+}
 
 ///
 /// Mandatory resetfunction at adress 0x08000004.
@@ -16,7 +19,6 @@ use core::ptr;
 ///
 #[no_mangle]
 pub unsafe extern "C" fn Reset() -> ! {
-
     extern "C" {
         static mut _sbss: u8;
         static mut _ebss: u8;
@@ -36,17 +38,62 @@ pub unsafe extern "C" fn Reset() -> ! {
     extern "Rust" {
         fn kernel_init() -> !;
     }
-    
+
     kernel_init();
 }
 
+pub union Vector {
+    reserved: u32,
+    handler: unsafe extern "C" fn(),
+}
+
+pub union VectorDivergentFn {
+    _reserved: u32,
+    handler: unsafe extern "C" fn() -> !,
+}
+
+
+extern "C" {
+    fn SysTick();
+}
+
+
 ///
-/// Manually create a section with points to the adress of 
+/// Manually create a section with points to the adress of
 /// the reset function.
 ///
-#[link_section = ".vector_table.reset_vector"]
+#[link_section = ".vector_table.reset"]
 #[no_mangle]
-pub static RESET_VECTOR: unsafe extern "C" fn() -> ! = Reset;
+pub static RESET: [VectorDivergentFn; 1] = [VectorDivergentFn { handler: Reset }];
+
+#[link_section = ".vector_table.exceptions"]
+#[no_mangle]
+pub static EXCEPTIONS: [Vector; 15] = [
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { handler: SVCall },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { handler: SysTick },
+    Vector { reserved: 0 },
+];
+
+//-----------------------------------------------------------------//
+//------------------------EXCEPTION-HANDLER------------------------//
+//-----------------------------------------------------------------//
+
+#[no_mangle]
+pub extern "C" fn SVCall() {
+    unsafe { __br_to_init() };
+}
 
 
 #[panic_handler]
