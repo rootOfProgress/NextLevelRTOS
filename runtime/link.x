@@ -7,7 +7,12 @@ MEMORY
   FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
 
   /* also sram area starts @20000000 */
-  SRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 40K
+  /* Block first 255 bytes for tcb table */
+  TCBMETA (rwx) : ORIGIN = 0x20000000, LENGTH = 4
+  TCBPTR (rwx) : ORIGIN = 0x20000004, LENGTH = 32
+  TCBBLK (rwx) : ORIGIN = 0x20000024, LENGTH = 32
+  MEM (rwx) : ORIGIN = 0x20000044, LENGTH = 187
+  SRAM (rwx) : ORIGIN = 0x200000FF, LENGTH = 39745
 }
 
 /* The Entry section expects the symbol name of the first executable 
@@ -22,7 +27,8 @@ that unresolved symbols may take place in the final binary so they
 can survice the compile process. These functions are splitted 
 into two symbol names because of their return type. See lib.rs 
 for more info. */
-EXTERN(RESET_VECTOR);
+EXTERN(RESET);
+EXTERN(EXCEPTIONS);
 
 /* Description of what the memory contains and how it will be located . */
 SECTIONS
@@ -35,7 +41,10 @@ SECTIONS
     LONG(ORIGIN(SRAM) + LENGTH(SRAM));
     
     /* Entry 1: Reset Function. Gets called after power up device. */
-    KEEP(*(.vector_table.reset_vector));
+    KEEP(*(.vector_table.reset));
+
+    /* Entry 2: Any other exception handlers. */
+    KEEP(*(.vector_table.exceptions));
   } > FLASH
   .text :
   {
@@ -49,6 +58,21 @@ SECTIONS
   {
     *(.rodata .rodata.*);
   } > FLASH
+
+  .tcbmeta :
+  {
+    KEEP(*(.tcbmeta)) 
+  } > TCBMETA
+
+  .tcbptr :
+  {
+    KEEP(*(.tcbptr)) 
+  } > TCBPTR
+
+  .tcbblk :
+  {
+    KEEP(*(.tcbblk)) 
+  } > TCBBLK
 
   /* .bss is where uninitialized global variables are placed. */
   .bss :
