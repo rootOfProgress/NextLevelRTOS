@@ -16,6 +16,8 @@ One benefit is that the system is mostly written in rust, so feel free to contri
 ## Implemented Features
 * Multiprocess Round Robin Scheduling up to N Tasks
 * Basic User-/Kernelspace separating using Cortex M4 Handler-/Threadmode feature
+* Basic access to GPIO Device
+* Basic UART setup to print information on a host terminal
 
 ## Upcoming Features
 * Execute parts of usercode in real time mode for deterministic results
