@@ -1,15 +1,14 @@
 use super::super::proc::tcb::TCB;
-use crate::mem::malloc::get_mem;
+use crate::mem::malloc::{get_mem, free};
 #[repr(C)]
-struct Node {
+struct Node<'a> {
     next: *const u32,
-    data: TCB,
+    data: TCB<'a>,
 }
 
 #[repr(C)]
 pub struct List {
     size: u32,
-    cursor: *const u32,
     head: *const u32,
     tail: *const u32,
 }
@@ -21,11 +20,21 @@ impl List {
             let list = &mut *(mem_start as *mut List);
             *list = List {
                 size: 0,
-                cursor: core::ptr::null(),
                 head: core::ptr::null(),
                 tail: core::ptr::null(),
             };
             mem_start
+        }
+    }
+    pub fn delete_head_node(&mut self) {
+        let addr_of_old_head = self.head;
+        unsafe {
+            let head = &mut *(self.head as *mut Node);
+            let tail = &mut *(self.tail as *mut Node);
+            tail.next = head.next;
+            self.head = head.next;
+            self.size -= 1;
+            free(addr_of_old_head as u32);
         }
     }
     pub fn insert(&mut self, tcb: TCB) {
@@ -38,11 +47,10 @@ impl List {
                 next: core::ptr::null(),
             };
 
-            if self.head == core::ptr::null() {
+            if self.head.is_null() {
                 node.next = mem_for_new_node as *const u32;
                 self.tail = mem_for_new_node as *const u32;
                 self.head = mem_for_new_node as *const u32;
-                self.cursor = mem_for_new_node as *const u32;
             } else {
                 // append to tail / fifo
                 node.next = self.head;
@@ -63,15 +71,24 @@ impl List {
         let t = &mut *(&mut node_new.data as &mut TCB);
         t.sp
     }
-    // returns whole tcb
-    pub fn _sr_cursor(&mut self) -> u32 {
-        let node = unsafe { &mut *(self.cursor as *mut Node) };
-        self.cursor = node.next;
-        let node_new = unsafe { &mut *(node.next as *mut Node) };
+    // returns current sp
+    pub fn cursor_sp(&mut self) -> u32 {
+        let node_new = unsafe { &mut *(self.head as *mut Node) };
         let t = &mut *(&mut node_new.data as &mut TCB);
-        core::ptr::addr_of!(*t) as *const u32 as u32
+        t.sp
     }
+    // // returns whole tcb
+    // pub fn _sr_cursor(&mut self) -> u32 {
+    //     let node = unsafe { &mut *(self.cursor as *mut Node) };
+    //     self.cursor = node.next;
+    //     let node_new = unsafe { &mut *(node.next as *mut Node) };
+    //     let t = &mut *(&mut node_new.data as &mut TCB);
+    //     core::ptr::addr_of!(*t) as *const u32 as u32
+    // }
     pub fn update_tcb(&mut self, value: u32) {
+        // unsafe {
+        //     core::intrinsics::volatile_store((self.head as u32 + 0x1C) as *mut u32, value);
+        // }
         let node = unsafe { &mut *(self.head as *mut Node) };
         node.data.sp = value;
     }

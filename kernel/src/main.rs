@@ -5,6 +5,7 @@
 #![no_std]
 #![no_main]
 #![feature(asm)]
+#![feature(core_intrinsics)]
 extern crate devices;
 extern crate process;
 extern crate runtime;
@@ -44,18 +45,18 @@ fn quax() {
 }
 
 fn bar() {
-    loop {
+    // loop {
         fibonacci(22);
-    }
+    // }
 }
 
 fn user_init() {
-    let foo = process::new_process(bar as *const () as u32).unwrap();
-    let quix = process::new_process(quix as *const () as u32).unwrap();
-    let quax = process::new_process(quax as *const () as u32).unwrap();
-    sched::spawn(1, foo);
-    sched::spawn(2, quix);
-    sched::spawn(3, quax);
+    let bar = process::new_process(bar as *const () as u32, sched::destroy as *const () as u32 ).unwrap();
+    let quix = process::new_process(quix as *const () as u32, sched::destroy as *const () as u32 ).unwrap();
+    let quax = process::new_process(quax as *const () as u32, sched::destroy as *const () as u32 ).unwrap();
+    sched::spawn(1, bar, "bar");
+    sched::spawn(2, quix, "quix");
+    sched::spawn(3, quax, "quax");
     loop {}
 }
 ///
@@ -81,9 +82,9 @@ pub unsafe fn kernel_init() -> ! {
     usart.enable();
     usart.print_str("hello world!\n\r");
 
-    let early_user_land = process::new_process(user_init as *const () as u32).unwrap();
+    let early_user_land = process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
 
-    sched::spawn(0, early_user_land);
+    sched::spawn(0, early_user_land, "early_user_land");
     sched::start_init_process();
 
     loop {
