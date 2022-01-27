@@ -4,7 +4,7 @@
 //! a provided builder.
 //!
 use super::super::bus::rcc;
-use super::super::generic::platform::stm32f3x;
+use super::super::generic::platform::stm32f407ve;
 use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::gpio::GPIO;
 
@@ -13,8 +13,8 @@ pub mod gpio {
     //----------------------------IMPORTS----------------------------//
     //---------------------------------------------------------------//
     use super::rcc;
-    use super::stm32f3x::adresses;
-    use super::stm32f3x::bitfields;
+    use super::stm32f407ve::adresses;
+    use super::stm32f407ve::bitfields;
     use super::primitive_extensions::BitOps;
     use super::GPIO;
     use core::ptr;
@@ -67,18 +67,6 @@ pub mod gpio {
                 "A" => {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOA_BASE
-                }
-                "B" => {
-                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
-                    adresses::gpio::GPIOB_BASE
-                }
-                "C" => {
-                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
-                    adresses::gpio::GPIOC_BASE
-                }
-                "E" => {
-                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
-                    adresses::gpio::GPIOE_BASE
                 }
                 _ => adresses::gpio::GPIOA_BASE,
             };

@@ -14,15 +14,15 @@ extern crate runtime;
 ///
 #[no_mangle]
 pub unsafe fn kernel_init() -> ! {
-    let gpio_port_a1 = devices::io::gpio::gpio::GpioDevice::new("A", 1)
+    let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
         .as_output()
         .as_push_pull();
-    gpio_port_a1.turn_on();
+    gpio_port_a2.turn_on();
 
-    let gpio_port_e14 = devices::io::gpio::gpio::GpioDevice::new("E", 14)
+    let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("E", 3)
         .as_output()
         .as_push_pull();
-    gpio_port_e14.turn_on();
+    gpio_port_a3.turn_on();
 
     loop {}
 }
