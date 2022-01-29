@@ -3,7 +3,7 @@
 //! system. It provides different functions to
 //! seperate the activation for the devices actually needed.
 //!
-use super::super::generic::platform::stm32f3x;
+use super::super::generic::platform::stm32f407ve;
 use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::rcc::RCC;
 
@@ -12,8 +12,10 @@ pub mod rcc {
     //---------------------------------------------------------------//
     //----------------------------IMPORTS----------------------------//
     //---------------------------------------------------------------//
-    use super::stm32f3x::adresses;
-    use super::stm32f3x::bitfields;
+    // use super::
+    use super::stm32f407ve::bitfields;
+    use super::stm32f407ve::adresses;
+
     use super::primitive_extensions::BitOps;
 
     use super::RCC;
@@ -31,8 +33,7 @@ pub mod rcc {
     pub unsafe fn activate_gpio_bus_clock(port_mnemonic: &str) {
         let rcc_bus = RCC::new(adresses::RCC);
         match port_mnemonic {
-            "A" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPAEN),
-            "E" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::IOPEEN),
+            "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
             _ => {}
         };
     }
