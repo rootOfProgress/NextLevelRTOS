@@ -25,7 +25,7 @@ fn fibonacci(n: u32) -> u32 {
     }
 }
 
-fn quix() {
+fn led_off() {
     loop {
         unsafe {
             let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
@@ -35,7 +35,7 @@ fn quix() {
     }
 }
 
-fn quax() {
+fn led_on() {
     loop {
         unsafe {
             let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
@@ -45,25 +45,34 @@ fn quax() {
     }
 }
 
-fn bar() {
+fn calculate_fibonacci() {
     // loop {
     fibonacci(22);
     // }
 }
 
 fn user_init() {
-    let bar =
-        process::new_process(bar as *const () as u32, sched::destroy as *const () as u32).unwrap();
-    let quix =
-        process::new_process(quix as *const () as u32, sched::destroy as *const () as u32).unwrap();
-    let quax =
-        process::new_process(quax as *const () as u32, sched::destroy as *const () as u32).unwrap();
-    //"spawn process 1".println();
-    //sched::spawn(1, bar, "bar");
+    let calculate_fibonacci = process::new_process(
+        calculate_fibonacci as *const () as u32,
+        sched::destroy as *const () as u32,
+    )
+    .unwrap();
+    let led_off = process::new_process(
+        led_off as *const () as u32,
+        sched::destroy as *const () as u32,
+    )
+    .unwrap();
+    let led_on = process::new_process(
+        led_on as *const () as u32,
+        sched::destroy as *const () as u32,
+    )
+    .unwrap();
+    "spawn process 1".println();
+    sched::spawn(1, calculate_fibonacci, "calculate_fibonacci");
     "spawn process 2".println();
-    sched::spawn(2, quix, "quix");
+    sched::spawn(2, led_off, "led_off");
     "spawn process 3".println();
-    sched::spawn(3, quax, "quax");
+    sched::spawn(3, led_on, "led_on");
     loop {}
 }
 
