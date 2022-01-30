@@ -33,7 +33,8 @@ pub unsafe fn kernel_init() -> ! {
 
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     usart.enable();
-    usart.print_str("hello world!\n\r");
+
     "hello from trait".println();
+    "usart works without errors...".println();
     loop {}
 }

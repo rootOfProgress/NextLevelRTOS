@@ -94,7 +94,8 @@ pub mod usart {
 ///
 fn transmit(c: u32) {
     unsafe {
-       core::ptr::write_volatile(USART1_DR as *mut u32, core::ptr::read_volatile(USART1_DR as *const u32) & !(0x1FF)); 
+       // currently not clear if buffer needs to be flushed first
+        //core::ptr::write_volatile(USART1_DR as *mut u32, core::ptr::read_volatile(USART1_DR as *const u32) & !(0x1FF)); 
        core::ptr::write_volatile(USART1_DR as *mut u32, core::ptr::read_volatile(USART1_DR as *const u32) | c); 
        while !((core::ptr::read_volatile(USART1_SR as *const u32) & 0x80) != 0) {}
     }
