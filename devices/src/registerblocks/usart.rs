@@ -4,17 +4,13 @@
 //!
 #[repr(C)]
 pub struct USART {
+    pub sr: u32,
+    pub dr: u32,
+    pub brr: u32,
     pub cr1: u32,
     pub cr2: u32,
     pub cr3: u32,
-    pub brr: u32,
     pub gtpr: u32,
-    pub rtor: u32,
-    pub rqr: u32,
-    pub isr: u32,
-    pub icr: u32,
-    pub rdr: u32,
-    pub tdr: u32,
 }
 
 impl USART {
