@@ -1,4 +1,5 @@
 pub mod stm32f3x {
+
     pub mod adresses {
 
         pub mod gpio {
@@ -76,6 +77,32 @@ pub mod stm32f3x {
             pub const UG: u32 = 0b1;
             pub const UDIS: u32 = 0b10;
             pub const CC1IE: u32 = 0b10;
+        }
+    }
+}
+
+pub mod stm32f407ve {
+    pub mod adresses {
+        pub mod gpio {
+            // page 65 ref. man
+            pub const GPIOA_BASE: u32 = 0x4002_0000;
+        }
+
+        // manual page 55
+        pub const RCC: u32 = 0x4002_3800;
+        pub const USART1_BASEADRESS: u32 = 0x4001_1000;
+    }
+
+    pub mod bitfields {
+        pub mod gpio {
+            pub const INPUT: u32 = 0b00;
+            pub const GENERALPURPOSEOUTPUT: u32 = 0b01;
+            pub const ALTERNATE: u32 = 0b10;
+            pub const ANALOG: u32 = 0b11;
+
+        }
+        pub mod rcc {
+            pub const GPIOPAEN: u32 = 0;
         }
     }
 }

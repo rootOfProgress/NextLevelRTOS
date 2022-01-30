@@ -55,6 +55,7 @@ pub union VectorDivergentFn {
 
 extern "C" {
     fn SysTick();
+    fn SVCall();
 }
 
 
@@ -90,10 +91,6 @@ pub static EXCEPTIONS: [Vector; 15] = [
 //------------------------EXCEPTION-HANDLER------------------------//
 //-----------------------------------------------------------------//
 
-#[no_mangle]
-pub extern "C" fn SVCall() {
-    unsafe { __br_to_init() };
-}
 
 
 #[panic_handler]

@@ -34,10 +34,9 @@ impl Frame {
     pub fn set_target_addr(&mut self, target: u32) {
         self.initialized_core_registers.pc = target;
         // just for testing
-        self.initialized_core_registers.lr = target;
+        // self.initialized_core_registers.lr = target;
         self.initialized_core_registers.psr = 0x21000000;
     }
-
     pub fn get_target_addr(&mut self) -> u32 {
         self.initialized_core_registers.pc
     }
