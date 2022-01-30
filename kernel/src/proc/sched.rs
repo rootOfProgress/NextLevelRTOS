@@ -25,10 +25,13 @@ pub fn init() {
 
 pub fn destroy() {
     unsafe {
-        core::intrinsics::volatile_store(0xE000_E010 as *mut u32, core::ptr::read_volatile(0xE000_E010 as *const u32) & !0b1);
+        core::intrinsics::volatile_store(
+            0xE000_E010 as *mut u32,
+            core::ptr::read_volatile(0xE000_E010 as *const u32) & !0b1,
+        );
         // core::ptr::write_volatile(
-            // 0xE000_E010 as *mut u32,
-            // core::ptr::read_volatile(0xE000_E010 as *const u32) & !0b1,
+        // 0xE000_E010 as *mut u32,
+        // core::ptr::read_volatile(0xE000_E010 as *const u32) & !0b1,
         // );
         let list = &mut *(TASK_LIST_ADDR as *mut List);
         list.delete_head_node();
@@ -81,7 +84,6 @@ pub fn context_switch() {
 pub extern "C" fn SysTick() {
     context_switch();
 }
-
 
 #[no_mangle]
 pub extern "C" fn SVCall() {
