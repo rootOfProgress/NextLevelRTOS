@@ -12,10 +12,13 @@ One benefit is that the system is written in rust, so feel free to contribute fo
 
 *NEW:* This repository acts also as a tutorial how to build such a system. Each branch is build on top of the other to help to understand the whole process. There is also a documentation sheet for each chapter to give more insights in this work. **BACKLOG**
 
+![Board](assets/device.png)
+
 ## Implemented Features
 * Multiprocess Round Robin Scheduling up to N Tasks
 * Basic User-/Kernelspace separating using Cortex M4 Handler-/Threadmode feature
 * UART TX for println function to host
+* Basic access to GPIO Device
 * Basic malloc for dynamic TCB Linked List
  
 
