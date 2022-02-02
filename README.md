@@ -5,7 +5,7 @@
 [![Status](https://img.shields.io/badge/Status-W.I.P-red)]()
 
 ## Description
-This will be a minimal multithreaded realtime operating system for the ARM CortexM4 processor without unnecessary libraries. The final goal is to compile your own OS with only the features you need - no boilerplate code, no libraries which inflate your binary without knowing exactly what they actually do. 
+This will be a minimal multithreaded realtime operating system for the ARM CortexM4 processor without unnecessary libraries. The final goal is to compile your own OS with only the features you need - no boilerplate code, no libraries which inflate your binary without knowing exactly what they actually do, as there already exists many juggernaut monsters in this field. 
 For this system the STM32F407VET6 board is used as developing platform.
 One benefit is that the system is written in rust, so feel free to contribute for steps towards the future!
 
