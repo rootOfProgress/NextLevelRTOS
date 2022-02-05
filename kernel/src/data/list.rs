@@ -37,6 +37,9 @@ impl List {
             free(addr_of_old_head as u32);
         }
     }
+    pub fn get_size(&mut self) -> u32 {
+        self.size
+    }
     pub fn insert(&mut self, tcb: TCB) {
         unsafe {
             let mem_for_new_node = get_mem(core::mem::size_of::<Node>() as u32);
@@ -77,14 +80,6 @@ impl List {
         let t = &mut *(&mut node_new.data as &mut TCB);
         t.sp
     }
-    // // returns whole tcb
-    // pub fn _sr_cursor(&mut self) -> u32 {
-    //     let node = unsafe { &mut *(self.cursor as *mut Node) };
-    //     self.cursor = node.next;
-    //     let node_new = unsafe { &mut *(node.next as *mut Node) };
-    //     let t = &mut *(&mut node_new.data as &mut TCB);
-    //     core::ptr::addr_of!(*t) as *const u32 as u32
-    // }
     pub fn update_tcb(&mut self, value: u32) {
         // unsafe {
         //     core::intrinsics::volatile_store((self.head as u32 + 0x1C) as *mut u32, value);
