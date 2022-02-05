@@ -46,9 +46,8 @@ fn led_on() {
 }
 
 fn calculate_fibonacci() {
-    // loop {
+    // run 1 time, then destroy
     fibonacci(22);
-    // }
 }
 
 fn user_init() {
@@ -68,12 +67,14 @@ fn user_init() {
     )
     .unwrap();
     "spawn process 1".println();
-    sched::spawn(1, calculate_fibonacci, "calculate_fibonacci");
+    sched::spawn(calculate_fibonacci, "calculate_fibonacci");
     "spawn process 2".println();
-    sched::spawn(2, led_off, "led_off");
+    sched::spawn(led_off, "led_off");
     "spawn process 3".println();
-    sched::spawn(3, led_on, "led_on");
-    loop {}
+    sched::spawn(led_on, "led_on");
+    loop {
+        sched::sleep();
+    }
 }
 
 ///
@@ -109,7 +110,7 @@ pub unsafe fn kernel_init() -> ! {
 
     "hello from trait".println();
     "usart works without errors...".println();
-    sched::spawn(0, early_user_land, "early_user_land");
+    sched::spawn(early_user_land, "early_user_land");
     sched::start_init_process();
 
     loop {
