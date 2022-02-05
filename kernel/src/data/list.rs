@@ -65,7 +65,7 @@ impl List {
         }
     }
     // returns sp only and shifts pointer 1 node
-    pub fn sr_cursor_sp(&mut self) -> u32 {
+    pub fn get_next_sp(&mut self) -> u32 {
         let current_node = unsafe { &mut *(self.head as *mut Node) };
         self.head = current_node.next;
         let tail_node = unsafe { &mut *(self.tail as *mut Node) };

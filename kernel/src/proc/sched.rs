@@ -25,25 +25,36 @@ pub fn init() {
 
 pub fn destroy() {
     unsafe {
-        //core::intrinsics::volatile_store(
-        //    0xE000_E010 as *mut u32,
-        //    core::ptr::read_volatile(0xE000_E010 as *const u32) & !0b1,
-        //);
+        core::intrinsics::volatile_store(
+            0xE000_E010 as *mut u32,
+            core::ptr::read_volatile(0xE000_E010 as *const u32) & !0b1,
+        );
         let list = &mut *(RUNNABLE_TASKS as *mut List);
+
+        // lost forever right now
         list.delete_head_node();
+
+        if list.get_size() == 0 {
+            // wake up idle task
+            // or: set cpu to sleep
+        }
+
         let p = list.cursor_sp();
 
-        //core::ptr::write_volatile(
-        //    0xE000_E010 as *mut u32,
-        //    core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
-        //);
+        core::intrinsics::volatile_store(
+            0xE000_E010 as *mut u32,
+            core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
+        );
         __trap(p);
     }
 }
 
+// experimental
+pub fn sleep() {}
+
 pub fn shift_task() -> u32 {
     let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
-    list.sr_cursor_sp()
+    list.get_next_sp()
 }
 
 pub fn start_init_process() {
@@ -73,7 +84,7 @@ pub fn context_switch() {
         let old_sp = __save_process_context();
         let list = &mut *(RUNNABLE_TASKS as *mut List);
         list.update_tcb(old_sp);
-        let sp = list.sr_cursor_sp();
+        let sp = list.get_next_sp();
 
         __load_process_context(sp);
     }

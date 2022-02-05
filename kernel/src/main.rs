@@ -46,9 +46,8 @@ fn led_on() {
 }
 
 fn calculate_fibonacci() {
-    // loop {
+    // run 1 time, then destroy
     fibonacci(22);
-    // }
 }
 
 fn user_init() {
@@ -73,7 +72,9 @@ fn user_init() {
     sched::spawn(led_off, "led_off");
     "spawn process 3".println();
     sched::spawn(led_on, "led_on");
-    loop {}
+    loop {
+        sched::sleep();
+    }
 }
 
 ///
