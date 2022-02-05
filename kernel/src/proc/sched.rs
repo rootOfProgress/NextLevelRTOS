@@ -50,7 +50,13 @@ pub fn destroy() {
 }
 
 // experimental
-pub fn sleep() {}
+pub fn sleep() {
+    let list_active = &mut *(RUNNABLE_TASKS as *mut List);
+    let list_sleeping = &mut *(SLEEPING_TASKS as *mut List);
+    if list.size > 1 {
+      // todo ...  
+    }
+}
 
 pub fn shift_task() -> u32 {
     let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
