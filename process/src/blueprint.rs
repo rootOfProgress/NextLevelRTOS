@@ -13,18 +13,22 @@ pub struct Frame {
 //---------------------STRUCT-IMPLEMENTATIONS--------------------//
 //---------------------------------------------------------------//
 impl Frame {
-    pub fn new(core: cpu::core::CoreRegister, buffer_size: u32) -> Option<Self> {
-        let dynamic_buffer = core::alloc::Layout::from_size_align(buffer_size as usize, 4);
-        match dynamic_buffer {
-            Ok(buffer) => Some(Frame {
-                buffer: unsafe { core::mem::zeroed() },
-                initialized_core_registers: core,
-            }),
-            Err(_) => {
+    pub fn new(core: cpu::core::CoreRegister) -> Option<Self> {
+        Some(Frame {
+            buffer: unsafe { core::mem::zeroed() },
+            initialized_core_registers: core,
+        })
+        // let dynamic_buffer = core::alloc::Layout::from_size_align(buffer_size as usize, 4);
+        // match dynamic_buffer {
+            // Ok(buffer) => Some(Frame {
+                // buffer: unsafe { core::mem::zeroed() },
+                // initialized_core_registers: core,
+            // }),
+            // Err(_) => {
                 // todo: print kernel panic over serial later on
-                None
-            }
-        }
+                // None
+            // }
+        // }
     }
 
     pub fn get_frame_size(&mut self) -> u32 {

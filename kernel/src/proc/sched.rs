@@ -4,7 +4,7 @@
 use super::super::data::list::List;
 use super::task;
 use process::blueprint::Frame;
-
+use devices::controller::uart::iostream;
 static mut RUNNABLE_TASKS: u32 = 0;
 static mut SLEEPING_TASKS: u32 = 0;
 
@@ -75,10 +75,23 @@ pub fn start_init_process() {
     }
 }
 
+pub fn spawn1(p: u32, name: &str) {
+    // unwrap task list which contains tcb's of runnable tasks
+    let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
+    // let r4 = p.get_r4_location();
+    // let r4 = p.get_r4_location();
+
+    let pid = list.get_size();
+    let tcb = task::create(p, pid, name);
+    list.insert(tcb);
+}
+
 pub fn spawn(p: Frame, name: &str) {
     // unwrap task list which contains tcb's of runnable tasks
     let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
+    // let r4 = p.get_r4_location();
     let r4 = p.get_r4_location();
+
     let pid = list.get_size();
     let tcb = task::create(r4, pid, name);
     list.insert(tcb);

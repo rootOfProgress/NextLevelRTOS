@@ -9,3 +9,4 @@ edition = "2018"
 runtime = { path = "../runtime"}
 devices = { path = "../devices"}
 process = { path = "../process"}
+cpu = { path = "../cpu"}

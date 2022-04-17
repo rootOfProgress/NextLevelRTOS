@@ -9,6 +9,7 @@
 extern crate devices;
 extern crate process;
 extern crate runtime;
+extern crate cpu;
 mod data;
 mod mem;
 mod proc;
@@ -27,51 +28,86 @@ fn fibonacci(n: u32) -> u32 {
 
 fn led_off() {
     loop {
-        unsafe {
-            let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
-            reg_content &= !((0b1_u32) << 2);
-            core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
-        }
+        // "task0".println();
     }
+    // loop {
+        // unsafe {
+            // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
+            // reg_content &= !((0b1_u32) << 2);
+            // core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
+        // }
+    // }
 }
 
 fn led_on() {
     loop {
-        unsafe {
-            let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
-            reg_content |= (0b1_u32) << 2;
-            core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
-        }
+        // "task1".println();
     }
+    // loop {
+        // unsafe {
+            // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
+            // reg_content |= (0b1_u32) << 2;
+            // core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
+        // }
+    // }
 }
 
 fn calculate_fibonacci() {
+    loop {
+        // "task2".println();
+    }
     // run 1 time, then destroy
-    fibonacci(22);
+    //fibonacci(22);
 }
 
 fn user_init() {
-    let calculate_fibonacci = process::new_process(
+    let calculate_fibo = process::new_process(
         calculate_fibonacci as *const () as u32,
         sched::destroy as *const () as u32,
     )
     .unwrap();
-    let led_off = process::new_process(
-        led_off as *const () as u32,
-        sched::destroy as *const () as u32,
-    )
-    .unwrap();
-    let led_on = process::new_process(
-        led_on as *const () as u32,
-        sched::destroy as *const () as u32,
-    )
-    .unwrap();
-    "spawn process 1".println();
-    sched::spawn(calculate_fibonacci, "calculate_fibonacci");
-    "spawn process 2".println();
-    sched::spawn(led_off, "led_off");
-    "spawn process 3".println();
-    sched::spawn(led_on, "led_on");
+
+    // let cpu_register = cpu::core::CoreRegister::default();
+    unsafe {
+        let cpu_register_mem = mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + 256);
+        let s = core::mem::size_of::<cpu::core::CoreRegister>() as u32;
+        // let x = cpu_register_mem + 256;
+        let cr =  &mut *(((cpu_register_mem + 256) -  core::mem::size_of::<cpu::core::CoreRegister>() as u32)as *mut cpu::core::CoreRegister);
+        cr.r4 = 0x123;
+        cr.pc = calculate_fibonacci as *const () as u32;
+        cr.lr = sched::destroy as *const () as u32;
+        cr.psr = 0x21000000;
+        let addy = core::ptr::addr_of!(cr.r4);
+        let b = 0;
+        "spawn process 1".println();
+        sched::spawn1(addy as u32, "calculate_fibonacci");
+
+    }
+    // let mut process = blueprint::Frame::new(cpu_register);
+    // process = match process {
+    //     Some(mut p) => {
+    //         p.set_target_addr(target);
+    //         p.set_end_destination_addr(end_destination);
+    //         Some(p)
+    //     }
+    //     None => None,
+    // };
+
+    // let led_off = process::new_process(
+    //     led_off as *const () as u32,
+    //     sched::destroy as *const () as u32,
+    // )
+    // .unwrap();
+    // let led_on = process::new_process(
+    //     led_on as *const () as u32,
+    //     sched::destroy as *const () as u32,
+    // )
+    // .unwrap();
+    // sched::spawn(calculate_fibo, "calculate_fibonacci");
+    // "spawn process 2".println();
+    // sched::spawn(led_off, "led_off");
+    // "spawn process 3".println();
+    // sched::spawn(led_on, "led_on");
     loop {
         sched::sleep();
     }
