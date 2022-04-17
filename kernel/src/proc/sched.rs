@@ -103,7 +103,7 @@ pub fn context_switch() {
         let list = &mut *(RUNNABLE_TASKS as *mut List);
         list.update_tcb(old_sp);
         let sp = list.get_next_sp();
-
+        let size = list.get_size();
         __load_process_context(sp);
     }
 }

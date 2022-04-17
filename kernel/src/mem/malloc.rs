@@ -47,7 +47,6 @@ pub unsafe fn get_mem(requested_size: u32) -> u32 {
         // CRASH
         // let ahf = volatile_load(MEM_BLOCK_START as *const u32);
         let ahf = core::ptr::read_volatile(MEM_BLOCK_START as *const u32);
-        let r = 0;
         let chunk_start = ahf + WORD;
         volatile_store(ahf as *mut u32, requested_size);
         volatile_store(MEM_BLOCK_START as *mut u32, chunk_start + requested_size);
@@ -58,10 +57,10 @@ pub unsafe fn get_mem(requested_size: u32) -> u32 {
 
 pub fn free(addr: u32) {
     unsafe {
-        volatile_store(
-            (addr - WORD) as *mut u32,
-            volatile_load((addr - 0x4) as *const u32),
-        );
+        // volatile_store(
+        //     (addr - WORD) as *mut u32,
+        //     volatile_load((addr - 0x4) as *const u32),
+        // );
         let num_of_journal_entries = volatile_load(JOURNAL_NUM_OF_ELEMENTS as *mut u32);
 
         volatile_store(

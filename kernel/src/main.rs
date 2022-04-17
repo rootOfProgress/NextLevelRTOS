@@ -26,9 +26,9 @@ fn fibonacci(n: u32) -> u32 {
 }
 
 fn led_off() {
-    loop {
-        // "task0".println();
-    }
+    // loop {
+    //     // "task0".println();
+    // }
     // loop {
     // unsafe {
     // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
@@ -39,9 +39,10 @@ fn led_off() {
 }
 
 fn led_on() {
-    loop {
-        // "task1".println();
-    }
+    let a = 1;
+    // loop {
+    //     // "task1".println();
+    // }
     // loop {
     // unsafe {
     // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
@@ -62,18 +63,6 @@ fn calculate_fibonacci() {
 
 fn user_init() {
     sched::spawn_task(calculate_fibonacci as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
     sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
     sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
     sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
@@ -133,8 +122,8 @@ fn user_init() {
     // sched::spawn(led_off, "led_off");
     // "spawn process 3".println();
     // sched::spawn(led_on, "led_on");
-    // "usooor".println();
     loop {
+        // "usooor".println();
        // sched::sleep();
     }
 }
