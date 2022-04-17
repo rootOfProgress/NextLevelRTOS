@@ -22,15 +22,7 @@ version = "0.1.0"
 dependencies = [
  "cpu",
  "devices",
- "process",
  "runtime",
-]
-
-[[package]]
-name = "process"
-version = "0.1.0"
-dependencies = [
- "cpu",
 ]
 
 [[package]]

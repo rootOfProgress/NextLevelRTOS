@@ -2,8 +2,8 @@
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
 use super::super::data::list::List;
+use super::super::mem;
 use super::task;
-use process::blueprint::Frame;
 use devices::controller::uart::iostream;
 static mut RUNNABLE_TASKS: u32 = 0;
 static mut SLEEPING_TASKS: u32 = 0;
@@ -75,26 +75,26 @@ pub fn start_init_process() {
     }
 }
 
-pub fn spawn1(p: u32, name: &str) {
-    // unwrap task list which contains tcb's of runnable tasks
-    let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
-    // let r4 = p.get_r4_location();
-    // let r4 = p.get_r4_location();
 
-    let pid = list.get_size();
-    let tcb = task::create(p, pid, name);
-    list.insert(tcb);
-}
+pub fn spawn_task(function: u32, name: &str, buffer: u32) {
+    unsafe {
+        let task_address_space =
+            mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + buffer);
+        let cr = &mut *(((task_address_space + buffer)
+            - core::mem::size_of::<cpu::core::CoreRegister>() as u32)
+            as *mut cpu::core::CoreRegister);
+        cr.r4 = 0x123;
+        cr.pc = function;
+        cr.lr = destroy as *const () as u32;
+        cr.psr = 0x21000000;
+        let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
 
-pub fn spawn(p: Frame, name: &str) {
-    // unwrap task list which contains tcb's of runnable tasks
-    let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
-    // let r4 = p.get_r4_location();
-    let r4 = p.get_r4_location();
+        let pid = list.get_size();
 
-    let pid = list.get_size();
-    let tcb = task::create(r4, pid, name);
-    list.insert(tcb);
+        let tcb = task::create(core::ptr::addr_of!(cr.r4) as u32, pid, name);
+        list.insert(tcb);
+    }
+    let bar = 666;
 }
 
 pub fn context_switch() {

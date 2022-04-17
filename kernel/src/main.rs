@@ -6,10 +6,9 @@
 #![no_main]
 #![feature(asm)]
 #![feature(core_intrinsics)]
-extern crate devices;
-extern crate process;
-extern crate runtime;
 extern crate cpu;
+extern crate devices;
+extern crate runtime;
 mod data;
 mod mem;
 mod proc;
@@ -31,11 +30,11 @@ fn led_off() {
         // "task0".println();
     }
     // loop {
-        // unsafe {
-            // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
-            // reg_content &= !((0b1_u32) << 2);
-            // core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
-        // }
+    // unsafe {
+    // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
+    // reg_content &= !((0b1_u32) << 2);
+    // core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
+    // }
     // }
 }
 
@@ -44,15 +43,16 @@ fn led_on() {
         // "task1".println();
     }
     // loop {
-        // unsafe {
-            // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
-            // reg_content |= (0b1_u32) << 2;
-            // core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
-        // }
+    // unsafe {
+    // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
+    // reg_content |= (0b1_u32) << 2;
+    // core::ptr::write_volatile(0x4002_0014 as *mut u32, reg_content);
+    // }
     // }
 }
 
 fn calculate_fibonacci() {
+    // "hello fibu".println();
     loop {
         // "task2".println();
     }
@@ -61,28 +61,53 @@ fn calculate_fibonacci() {
 }
 
 fn user_init() {
-    let calculate_fibo = process::new_process(
-        calculate_fibonacci as *const () as u32,
-        sched::destroy as *const () as u32,
-    )
-    .unwrap();
+    sched::spawn_task(calculate_fibonacci as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
 
-    // let cpu_register = cpu::core::CoreRegister::default();
-    unsafe {
-        let cpu_register_mem = mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + 256);
-        let s = core::mem::size_of::<cpu::core::CoreRegister>() as u32;
-        // let x = cpu_register_mem + 256;
-        let cr =  &mut *(((cpu_register_mem + 256) -  core::mem::size_of::<cpu::core::CoreRegister>() as u32)as *mut cpu::core::CoreRegister);
-        cr.r4 = 0x123;
-        cr.pc = calculate_fibonacci as *const () as u32;
-        cr.lr = sched::destroy as *const () as u32;
-        cr.psr = 0x21000000;
-        let addy = core::ptr::addr_of!(cr.r4);
-        let b = 0;
-        "spawn process 1".println();
-        sched::spawn1(addy as u32, "calculate_fibonacci");
-
-    }
+    
+    // let mut r = 0;
+    // for i in 0..460 {
+        // unsafe {
+// 
+            // r = mem::malloc::get_mem(4);
+        // }
+    // }
+    // unsafe {
+    //     let cpu_register_mem =
+    //         mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + 256);
+    //     let s = core::mem::size_of::<cpu::core::CoreRegister>() as u32;
+    //     // let x = cpu_register_mem + 256;
+    //     let cr = &mut *(((cpu_register_mem + 256)
+    //         - core::mem::size_of::<cpu::core::CoreRegister>() as u32)
+    //         as *mut cpu::core::CoreRegister);
+    //     cr.r4 = 0x123;
+    //     cr.pc = calculate_fibonacci as *const () as u32;
+    //     cr.lr = sched::destroy as *const () as u32;
+    //     cr.psr = 0x21000000;
+    //     let addy = core::ptr::addr_of!(cr.r4);
+    //     let b = 0;
+    //     "spawn process 1".println();
+    //     sched::spawn1(addy as u32, "calculate_fibonacci");
+    // }
     // let mut process = blueprint::Frame::new(cpu_register);
     // process = match process {
     //     Some(mut p) => {
@@ -108,8 +133,9 @@ fn user_init() {
     // sched::spawn(led_off, "led_off");
     // "spawn process 3".println();
     // sched::spawn(led_on, "led_on");
+    // "usooor".println();
     loop {
-        sched::sleep();
+       // sched::sleep();
     }
 }
 
@@ -121,7 +147,7 @@ fn user_init() {
 pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
-    devices::sys::tick::init_systick(280);
+    devices::sys::tick::init_systick(1280);
 
     let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
         .as_output()
@@ -141,12 +167,13 @@ pub unsafe fn kernel_init() -> ! {
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     usart.enable();
 
-    let early_user_land =
-        process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
+    // let early_user_land =
+        // process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
 
-    "hello from trait".println();
-    "usart works without errors...".println();
-    sched::spawn(early_user_land, "early_user_land");
+    // "hello from trait".println();
+    // "usart works without errors...".println();
+    // sched::spawn(early_user_land, "early_user_land");
+    sched::spawn_task(user_init as *const u32 as u32, "init", 512);
     sched::start_init_process();
 
     loop {
