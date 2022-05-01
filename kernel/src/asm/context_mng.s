@@ -3,13 +3,18 @@
 .global __br_to_init
 .global __trap
 .global __br_to
+.global __get_r0_r1
 .global __branch
 .cpu cortex-m4
 .syntax unified
 .thumb
 
+__get_r0_r1:
+	bx lr
+
 __trap:
 	svc 0
+	bx lr
 
 __br_to_init:
 	ldmfd r0!, {r4-r11}

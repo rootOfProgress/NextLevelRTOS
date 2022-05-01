@@ -8,12 +8,20 @@ use devices::controller::uart::iostream;
 static mut RUNNABLE_TASKS: u32 = 0;
 static mut SLEEPING_TASKS: u32 = 0;
 
+#[repr(C)]
+struct bar {
+    r0: u32,
+    r1: u32,
+}
+
 extern "C" {
     ///
     /// Points to extern asm instructions.
     ///
+    fn __get_r0_r1() -> bar;
     fn __br_to_init();
-    fn __trap(f: u32);
+    // fn __trap(x: u32);
+    fn __trap(arg: u32, id: u32);
     fn __load_process_context(stack_addr: u32);
     fn __save_process_context() -> u32;
 }
@@ -45,7 +53,8 @@ pub fn destroy() {
             0xE000_E010 as *mut u32,
             core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
         );
-        __trap(p);
+        // __trap(p, 0);
+        __trap(p, 0);
     }
 }
 
@@ -71,7 +80,7 @@ pub fn start_init_process() {
             0xE000_E010 as *mut u32,
             core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
         );
-        __trap(stackpointer_value);
+        __trap( stackpointer_value, 0);
     }
 }
 
@@ -118,12 +127,35 @@ pub fn context_switch() {
     }
 }
 
+pub fn enable_systick() {
+    unsafe {
+
+        __trap(0,1);
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn SysTick() {
    context_switch();
 }
 
 #[no_mangle]
-pub extern "C" fn SVCall() {
-    unsafe { __br_to_init() };
+pub extern "C" fn SVCall(arg: u32, id: u32) {
+    unsafe {
+        
+    match id {
+        0 => {
+            __br_to_init();
+        },
+        1 => {
+            let foo = 123;
+            devices::sys::tick::init_systick(1280);
+            devices::sys::tick::enable_systick();
+        }
+        _ => {
+            let foo = 123;
+        }
+    }
+    //  __br_to_init()
+     };
 }

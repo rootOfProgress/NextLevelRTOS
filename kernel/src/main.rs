@@ -26,9 +26,9 @@ fn fibonacci(n: u32) -> u32 {
 }
 
 fn led_off() {
-    // loop {
-    //     // "task0".println();
-    // }
+    loop {
+        // "task0".println();
+    }
     // loop {
     // unsafe {
     // let mut reg_content = core::ptr::read_volatile(0x4002_0014 as *mut u32);
@@ -55,25 +55,25 @@ fn led_on() {
 fn calculate_fibonacci() {
     // "hello fibu".println();
     loop {
+        let adf= 123;
         // "task2".println();
+        fibonacci(22);
     }
     // run 1 time, then destroy
-    //fibonacci(22);
 }
 
 fn user_init() {
-    sched::spawn_task(calculate_fibonacci as *const u32 as u32, "fibu", 128);
-    // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    sched::spawn_task(calculate_fibonacci as *const u32 as u32, "fibu", 1024);
     // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
     let mut b = 0;
     unsafe {
 
-        b = mem::malloc::get_mem(3);
+        // b = mem::malloc::get_mem(3);
     
-    sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
     // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
     // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
     // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    // sched::spawn_task(led_off as *const u32 as u32, "fibu",128);
 
     // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
     // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
@@ -108,11 +108,7 @@ fn user_init() {
     // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
     // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
     // sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    mem::malloc::free(b);
-    mem::malloc::get_mem(3);
-    let b = 123;
-    let ba = 123;
-    let b4 = 123;
+    sched::enable_systick();
     }
     // sched::spawn_task(led_on as *const u32 as u32, "fibu", 32);
     loop {
@@ -130,7 +126,7 @@ fn user_init() {
 pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
-    devices::sys::tick::init_systick(1280);
+    // devices::sys::tick::init_systick(1280);
     
 
     let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
