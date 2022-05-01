@@ -63,68 +63,62 @@ fn calculate_fibonacci() {
 
 fn user_init() {
     sched::spawn_task(calculate_fibonacci as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
-    sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    let mut b = 0;
+    unsafe {
 
+        b = mem::malloc::get_mem(3);
     
-    // let mut r = 0;
-    // for i in 0..460 {
-        // unsafe {
-// 
-            // r = mem::malloc::get_mem(4);
-        // }
-    // }
-    // unsafe {
-    //     let cpu_register_mem =
-    //         mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + 256);
-    //     let s = core::mem::size_of::<cpu::core::CoreRegister>() as u32;
-    //     // let x = cpu_register_mem + 256;
-    //     let cr = &mut *(((cpu_register_mem + 256)
-    //         - core::mem::size_of::<cpu::core::CoreRegister>() as u32)
-    //         as *mut cpu::core::CoreRegister);
-    //     cr.r4 = 0x123;
-    //     cr.pc = calculate_fibonacci as *const () as u32;
-    //     cr.lr = sched::destroy as *const () as u32;
-    //     cr.psr = 0x21000000;
-    //     let addy = core::ptr::addr_of!(cr.r4);
-    //     let b = 0;
-    //     "spawn process 1".println();
-    //     sched::spawn1(addy as u32, "calculate_fibonacci");
-    // }
-    // let mut process = blueprint::Frame::new(cpu_register);
-    // process = match process {
-    //     Some(mut p) => {
-    //         p.set_target_addr(target);
-    //         p.set_end_destination_addr(end_destination);
-    //         Some(p)
-    //     }
-    //     None => None,
-    // };
+    sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",128);
 
-    // let led_off = process::new_process(
-    //     led_off as *const () as u32,
-    //     sched::destroy as *const () as u32,
-    // )
-    // .unwrap();
-    // let led_on = process::new_process(
-    //     led_on as *const () as u32,
-    //     sched::destroy as *const () as u32,
-    // )
-    // .unwrap();
-    // sched::spawn(calculate_fibo, "calculate_fibonacci");
-    // "spawn process 2".println();
-    // sched::spawn(led_off, "led_off");
-    // "spawn process 3".println();
-    // sched::spawn(led_on, "led_on");
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu",32);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 128);
+    // sched::spawn_task(led_off as *const u32 as u32, "fibu", 128);
+    mem::malloc::free(b);
+    mem::malloc::get_mem(3);
+    let b = 123;
+    let ba = 123;
+    let b4 = 123;
+    }
+    // sched::spawn_task(led_on as *const u32 as u32, "fibu", 32);
     loop {
-        // "usooor".println();
-       // sched::sleep();
+        // does not work due to insufficient privileges , fix: set pending bit
+        // sched::yield_task();
+        // sched::sleep();
     }
 }
 
@@ -137,6 +131,7 @@ pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
     devices::sys::tick::init_systick(1280);
+    
 
     let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
         .as_output()

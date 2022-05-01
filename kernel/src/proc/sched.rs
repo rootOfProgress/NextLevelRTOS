@@ -78,8 +78,16 @@ pub fn start_init_process() {
 
 pub fn spawn_task(function: u32, name: &str, buffer: u32) {
     unsafe {
+        let list = &mut *(RUNNABLE_TASKS as *mut List);
+
         let task_address_space =
             mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + buffer);
+        
+        // alloc failed
+        if task_address_space == 0 {
+            let m = 3;
+            return;
+        }
         let cr = &mut *(((task_address_space + buffer)
             - core::mem::size_of::<cpu::core::CoreRegister>() as u32)
             as *mut cpu::core::CoreRegister);
@@ -87,14 +95,16 @@ pub fn spawn_task(function: u32, name: &str, buffer: u32) {
         cr.pc = function;
         cr.lr = destroy as *const () as u32;
         cr.psr = 0x21000000;
-        let list = unsafe { &mut *(RUNNABLE_TASKS as *mut List) };
 
         let pid = list.get_size();
 
         let tcb = task::create(core::ptr::addr_of!(cr.r4) as u32, pid, name);
         list.insert(tcb);
     }
-    let bar = 666;
+}
+
+pub fn yield_task() {
+    context_switch();
 }
 
 pub fn context_switch() {
@@ -110,7 +120,7 @@ pub fn context_switch() {
 
 #[no_mangle]
 pub extern "C" fn SysTick() {
-    context_switch();
+   context_switch();
 }
 
 #[no_mangle]
