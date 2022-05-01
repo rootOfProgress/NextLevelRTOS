@@ -4,6 +4,9 @@
 use super::super::data::list::List;
 use super::super::mem;
 use super::task;
+use super::super::cpu::core::CoreRegister;
+use super::super::cpu::sysctl::systick::{init_systick, systick_en};
+
 use devices::controller::uart::iostream;
 static mut RUNNABLE_TASKS: u32 = 0;
 static mut SLEEPING_TASKS: u32 = 0;
@@ -90,7 +93,7 @@ pub fn spawn_task(function: u32, name: &str, buffer: u32) {
         let list = &mut *(RUNNABLE_TASKS as *mut List);
 
         let task_address_space =
-            mem::malloc::get_mem(core::mem::size_of::<cpu::core::CoreRegister>() as u32 + buffer);
+            mem::malloc::get_mem(core::mem::size_of::<CoreRegister>() as u32 + buffer);
         
         // alloc failed
         if task_address_space == 0 {
@@ -98,8 +101,8 @@ pub fn spawn_task(function: u32, name: &str, buffer: u32) {
             return;
         }
         let cr = &mut *(((task_address_space + buffer)
-            - core::mem::size_of::<cpu::core::CoreRegister>() as u32)
-            as *mut cpu::core::CoreRegister);
+            - core::mem::size_of::<CoreRegister>() as u32)
+            as *mut CoreRegister);
         cr.r4 = 0x123;
         cr.pc = function;
         cr.lr = destroy as *const () as u32;
@@ -149,8 +152,8 @@ pub extern "C" fn SVCall(arg: u32, id: u32) {
         },
         1 => {
             let foo = 123;
-            devices::sys::tick::init_systick(1280);
-            devices::sys::tick::enable_systick();
+            init_systick(1280);
+            systick_en();
         }
         _ => {
             let foo = 123;

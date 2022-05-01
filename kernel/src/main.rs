@@ -6,11 +6,12 @@
 #![no_main]
 #![feature(asm)]
 #![feature(core_intrinsics)]
-extern crate cpu;
+// extern crate cpu;
 extern crate devices;
 extern crate runtime;
 mod data;
 mod mem;
+mod cpu;
 mod proc;
 use devices::controller::uart::iostream;
 use devices::generic::platform::stm32f407ve::adresses;

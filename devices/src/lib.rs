@@ -6,4 +6,3 @@ pub mod controller;
 pub mod generic;
 pub mod io;
 pub mod registerblocks;
-pub mod sys;
