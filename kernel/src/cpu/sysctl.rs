@@ -1,12 +1,11 @@
-
 use super::super::devices::generic::traits::primitive_extensions;
 // use super::super::generic::traits::primitive_extensions;
-use super::systick::{SYSTICK};
 use super::addr::c_adresses::STK;
+use super::systick::SYSTICK;
 pub mod systick {
     use super::primitive_extensions::BitOps;
-    use super::SYSTICK;
     use super::STK;
+    use super::SYSTICK;
     pub fn init_systick(period_ms: u32) {
         let cycles_until_zero = period_ms * 8000;
         let systick_block = SYSTICK::new(STK);
@@ -21,13 +20,19 @@ pub mod systick {
 
     pub fn systick_en() {
         unsafe {
-            core::ptr::write_volatile(STK as *mut u32, core::ptr::read_volatile(STK as *const u32) | 0b1);
+            core::ptr::write_volatile(
+                STK as *mut u32,
+                core::ptr::read_volatile(STK as *const u32) | 0b1,
+            );
         }
     }
 
     pub fn disable_systick() {
         unsafe {
-            core::ptr::write_volatile(STK as *mut u32, core::ptr::read_volatile(STK as *const u32) & !0b1);
-        }  
+            core::ptr::write_volatile(
+                STK as *mut u32,
+                core::ptr::read_volatile(STK as *const u32) & !0b1,
+            );
+        }
     }
 }

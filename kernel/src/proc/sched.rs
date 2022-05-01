@@ -1,11 +1,11 @@
 //---------------------------------------------------------------//
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
+use super::super::cpu::core::CoreRegister;
+use super::super::cpu::sysctl::systick::{init_systick, systick_en};
 use super::super::data::list::List;
 use super::super::mem;
 use super::task;
-use super::super::cpu::core::CoreRegister;
-use super::super::cpu::sysctl::systick::{init_systick, systick_en};
 
 use devices::controller::uart::iostream;
 static mut RUNNABLE_TASKS: u32 = 0;
@@ -83,10 +83,9 @@ pub fn start_init_process() {
             0xE000_E010 as *mut u32,
             core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
         );
-        __trap( stackpointer_value, 0);
+        __trap(stackpointer_value, 0);
     }
 }
-
 
 pub fn spawn_task(function: u32, name: &str, buffer: u32) {
     unsafe {
@@ -94,7 +93,7 @@ pub fn spawn_task(function: u32, name: &str, buffer: u32) {
 
         let task_address_space =
             mem::malloc::get_mem(core::mem::size_of::<CoreRegister>() as u32 + buffer);
-        
+
         // alloc failed
         if task_address_space == 0 {
             let m = 3;
@@ -132,33 +131,31 @@ pub fn context_switch() {
 
 pub fn enable_systick() {
     unsafe {
-
-        __trap(0,1);
+        __trap(0, 1);
     }
 }
 
 #[no_mangle]
 pub extern "C" fn SysTick() {
-   context_switch();
+    context_switch();
 }
 
 #[no_mangle]
 pub extern "C" fn SVCall(arg: u32, id: u32) {
     unsafe {
-        
-    match id {
-        0 => {
-            __br_to_init();
-        },
-        1 => {
-            let foo = 123;
-            init_systick(1280);
-            systick_en();
+        match id {
+            0 => {
+                __br_to_init();
+            }
+            1 => {
+                let foo = 123;
+                init_systick(1280);
+                systick_en();
+            }
+            _ => {
+                let foo = 123;
+            }
         }
-        _ => {
-            let foo = 123;
-        }
-    }
-    //  __br_to_init()
-     };
+        //  __br_to_init()
+    };
 }

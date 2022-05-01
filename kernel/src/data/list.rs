@@ -34,7 +34,7 @@ impl List {
             tail.next = head.next;
             self.head = head.next;
             self.size -= 1;
-            free(addr_of_old_head as u32);
+            // free(addr_of_old_head as u32);
         }
     }
     pub fn get_size(&mut self) -> u32 {
