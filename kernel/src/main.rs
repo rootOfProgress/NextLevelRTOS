@@ -15,7 +15,7 @@ mod proc;
 use devices::controller::uart::iostream;
 use devices::generic::platform::stm32f3x::adresses;
 use devices::io::gpio::gpio::GpioDevice;
-use devices::controller::timer::tim;
+use devices::controller::timer::tim::TimerDevice;
 use proc::sched;
 
 fn fibonacci(n: u32) -> u32 {
@@ -86,6 +86,9 @@ pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
     devices::sys::tick::init_systick(280);
+
+    let tim2 = TimerDevice::new(2);
+    tim2.set_arr_register(1000);
 
     let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
         .as_output()
