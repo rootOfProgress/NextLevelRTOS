@@ -13,8 +13,9 @@ mod data;
 mod mem;
 mod proc;
 use devices::controller::uart::iostream;
-use devices::generic::platform::stm32f407ve::adresses;
+use devices::generic::platform::stm32f3x::adresses;
 use devices::io::gpio::gpio::GpioDevice;
+use devices::controller::timer::tim;
 use proc::sched;
 
 fn fibonacci(n: u32) -> u32 {
@@ -90,30 +91,30 @@ pub unsafe fn kernel_init() -> ! {
         .as_output()
         .as_push_pull();
     gpio_port_a2.turn_on();
+// 
+    // let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("A", 3)
+        // .as_output()
+        // .as_push_pull();
+    // gpio_port_a3.turn_on();
+// 
+    // GpioDevice::new("A", 9)
+        // .as_alternate_function()
+        // .as_push_pull()
+        // .as_af(7);
 
-    let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("A", 3)
-        .as_output()
-        .as_push_pull();
-    gpio_port_a3.turn_on();
+    // let usart = devices::controller::uart::usart::UsartDevice::new(9600);
+    // usart.enable();
 
-    GpioDevice::new("A", 9)
-        .as_alternate_function()
-        .as_push_pull()
-        .as_af(7);
-
-    let usart = devices::controller::uart::usart::UsartDevice::new(9600);
-    usart.enable();
-
-    let early_user_land =
-        process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
-
-    "hello from trait".println();
-    "usart works without errors...".println();
-    sched::spawn(0, early_user_land, "early_user_land");
-    sched::start_init_process();
+    // let early_user_land =
+        // process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
+// 
+    // "hello from trait".println();
+    // "usart works without errors...".println();
+    // sched::spawn(0, early_user_land, "early_user_land");
+    // sched::start_init_process();
 
     loop {
-        "!! KERNEL PANIC - NO INIT FOUND !!".println();
-        asm!("bkpt");
+        // "!! KERNEL PANIC - NO INIT FOUND !!".println();
+        // asm!("bkpt");
     }
 }

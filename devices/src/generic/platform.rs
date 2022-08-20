@@ -67,11 +67,13 @@ pub mod stm32f3x {
         }
         pub mod rcc {
             pub const SYSCFGEN: u32 = 1;
-            pub const IOPAEN: u32 = 17;
+            pub const GPIOPAEN: u32 = 17;
             pub const IOPEEN: u32 = 21;
             pub const USART1EN: u32 = 14;
+            pub const TIM2EN: u32 = 0;
         }
         pub mod usart1 {}
+
         pub mod tim {
             pub const CEN: u32 = 0b1;
             pub const UG: u32 = 0b1;
