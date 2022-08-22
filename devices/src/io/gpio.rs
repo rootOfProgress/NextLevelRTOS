@@ -64,7 +64,6 @@ pub mod gpio {
         pub unsafe fn new(port_mnemonic: &str, pin_number: u32) -> GpioDevice {
             let gpio_base = match port_mnemonic {
                 "A" => {
-                    asm!("bkpt");
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOA_BASE
                 }
@@ -102,6 +101,15 @@ pub mod gpio {
             self
         }
 
+        pub fn is_pressed(&self) -> bool {
+            let mut reg_content = self.port.idr.read_register();
+            // let pin_masked = 0xFFFF & !(self.pin);
+            if ((reg_content & (1 << self.pin)) > 0) {
+                return true;
+            }
+            false
+        }
+
         pub fn turn_on(&self) {
             self.set_odr(OutputState::High);
         }
@@ -110,12 +118,13 @@ pub mod gpio {
             self.set_odr(OutputState::High);
         }
 
-        pub fn as_af(self, af_port: u32) -> GpioDevice {
-            self.into_af(af_port);
+        pub fn as_af(self, af_number: u32) -> GpioDevice {
+            self.into_af(af_number);
             self
         }
 
         fn set_moder(&self, moder_type: ModerTypes) {
+            // @todo: those are EXCLUSIVE!! clear field first!
             match moder_type {
                 ModerTypes::InputMode => {
                     self.port

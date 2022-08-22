@@ -10,6 +10,8 @@ pub mod stm32f3x {
         }
         pub const TIM2_BASEADRESS: u32 = 0x4000_0000;
         pub const TIM3_BASEADRESS: u32 = 0x4000_0400;
+        pub const TIM4_BASEADRESS: u32 = 0x4000_0800;
+        pub const TIM6_BASEADRESS: u32 = 0x4000_1000;
         pub const USART1_BASEADRESS: u32 = 0x4001_3800;
 
         pub mod dma {
@@ -71,6 +73,9 @@ pub mod stm32f3x {
             pub const IOPEEN: u32 = 21;
             pub const USART1EN: u32 = 14;
             pub const TIM2EN: u32 = 0;
+            pub const TIM3EN: u32 = 1;
+            pub const TIM4EN: u32 = 2;
+            pub const TIM6EN: u32 = 4;
         }
         pub mod usart1 {}
 

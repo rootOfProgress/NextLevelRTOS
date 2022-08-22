@@ -5,8 +5,10 @@ const JOURNAL_START: u32 = JOURNAL_BASE + 0x04;
 const MEM_BLOCK_START: u32 = 0x2000_0048;
 const ADDR_OF_HIGHEST_FREE_BLOCK: u32 = MEM_BLOCK_START + 0x04;
 const WORD: u32 = 0x4;
+
 use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::swap;
+
 pub unsafe fn init() {
     volatile_store(MEM_BLOCK_START as *mut u32, ADDR_OF_HIGHEST_FREE_BLOCK);
     volatile_store(JOURNAL_NUM_OF_ELEMENTS as *mut u32, 0x0000_0000);

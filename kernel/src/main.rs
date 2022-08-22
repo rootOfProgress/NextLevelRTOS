@@ -12,11 +12,15 @@ extern crate runtime;
 mod data;
 mod mem;
 mod proc;
+use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
 use devices::generic::platform::stm32f3x::adresses;
 use devices::io::gpio::gpio::GpioDevice;
-use devices::controller::timer::tim::TimerDevice;
 use proc::sched;
+
+static mut ENGINE_OUT_0: Option<TimerDevice> = None;
+static mut ENGINE_OUT_1: Option<TimerDevice> = None;
+static mut ENGINE_OUT_2: Option<TimerDevice> = None;
 
 fn fibonacci(n: u32) -> u32 {
     match n {
@@ -77,6 +81,90 @@ fn user_init() {
     loop {}
 }
 
+// pub unsafe fn get_out_0() -> &'a TimerDevice {
+//     let mut tim_2 = &TimerDevice::new(2);
+//     tim_2.set_arr_register(1000)
+//         .set_psc_register(7)
+//         .set_ccmr1_register((6 << 12 )| (1 << 11)) // enable preload
+//         .set_cr1_register(1 << 7) // enable autoreload preload
+//         .set_ccer_register(1 << 4) // enable channel 2 output
+//         .set_egr_register(1)
+//         .set_cr1_register(1); // enable
+
+//     tim_2
+// }
+
+unsafe fn get_tim_device(tim_number: u32) -> &'static mut TimerDevice {
+    match tim_number {
+        2 => match ENGINE_OUT_0 {
+            Some(ref mut x) => &mut *x,
+            None => panic!(),
+        },
+        3 => match ENGINE_OUT_1 {
+            Some(ref mut x) => &mut *x,
+            None => panic!(),
+        },
+        4 => match ENGINE_OUT_2 {
+            Some(ref mut x) => &mut *x,
+            None => panic!(),
+        },
+        _ => panic!()
+    }
+}
+
+
+unsafe fn alter_speed(engine_number: u32, value: u32) {
+    let mut timer_device: &'static mut TimerDevice = match engine_number {
+        0 => get_tim_device(2),
+        1 => get_tim_device(3),
+        2 => get_tim_device(4),
+        _ => {
+            asm!("bkpt");
+            panic!()
+        }
+    };
+    *timer_device = timer_device.set_ccr2_register(value);
+}
+
+unsafe fn init_t4() {
+    ENGINE_OUT_2 = Some(TimerDevice::new(4));
+    let mut baz: &'static mut TimerDevice = get_tim_device(4);
+    *baz = baz
+        .set_arr_register(12)
+        .set_psc_register(7)
+        .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+        .set_cr1_register(1 << 7) // enable autoreload preload
+        .set_ccer_register(1 << 4) // enable channel 2 output
+        .set_egr_register(1)
+        .set_cr1_register(1); // enable
+}
+
+unsafe fn init_t3() {
+    ENGINE_OUT_1 = Some(TimerDevice::new(3));
+    let mut baz: &'static mut TimerDevice = get_tim_device(3);
+    *baz = baz
+        .set_arr_register(12)
+        .set_psc_register(7)
+        .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+        .set_cr1_register(1 << 7) // enable autoreload preload
+        .set_ccer_register(1 << 4) // enable channel 2 output
+        .set_egr_register(1)
+        .set_cr1_register(1); // enable
+}
+
+unsafe fn init_t2() {
+    ENGINE_OUT_0 = Some(TimerDevice::new(2));
+    let mut baz: &'static mut TimerDevice = get_tim_device(2);
+    *baz = baz
+        .set_arr_register(12)
+        .set_psc_register(7)
+        .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+        .set_cr1_register(1 << 7) // enable autoreload preload
+        .set_ccer_register(1 << 4) // enable channel 2 output
+        .set_egr_register(1)
+        .set_cr1_register(1); // enable
+}
+
 ///
 /// Target function after hardware initialization,
 /// acts as the first kernel function.
@@ -86,37 +174,92 @@ pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
     devices::sys::tick::init_systick(280);
+    let mut foo = 200;
+    let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0)/* .as_input() */;
 
-    let tim2 = TimerDevice::new(2);
-    tim2.set_arr_register(1000);
+    // tim2
+    let gpio_port_a1 = devices::io::gpio::gpio::GpioDevice::new("A", 1)
+        .as_alternate_function()
+        .as_af(1);
 
-    let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
-        .as_output()
-        .as_push_pull();
-    gpio_port_a2.turn_on();
-// 
+    // tim3
+    let gpio_port_a4 = devices::io::gpio::gpio::GpioDevice::new("A", 4)
+        .as_alternate_function()
+        .as_af(2);
+
+    // tim4
+    let gpio_port_a12 = devices::io::gpio::gpio::GpioDevice::new("A", 12)
+        .as_alternate_function()
+        .as_af(10);
+    // gpio_port_a2.turn_on();
+
+    // ENGINE_OUT_0 = Some(TimerDevice::new(2)).set_arr_register(1000)
+    //                  .set_psc_register(7)
+    //                  .set_ccmr1_register((6 << 12 )| (1 << 11)) // enable preload
+    //                  .set_cr1_register(1 << 7) // enable autoreload preload
+    //                  .set_ccer_register(1 << 4) // enable channel 2 output
+    //                  .set_egr_register(1)
+    //                  .set_cr1_register(1); // enable
+
+    // ENGINE_OUT_0 = Some(TimerDevice::new(2));
+    init_t4();
+    init_t3();
+    init_t2();
+    // let mut baz: &'static mut TimerDevice = ctx_0();
+    // *baz = baz
+    //     .set_arr_register(12)
+    //     .set_psc_register(7)
+    //     .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+    //     .set_cr1_register(1 << 7) // enable autoreload preload
+    //     .set_ccer_register(1 << 4) // enable channel 2 output
+    //     .set_egr_register(1)
+    //     .set_cr1_register(1); // enable
+
+    //
     // let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("A", 3)
-        // .as_output()
-        // .as_push_pull();
+    // .as_output()
+    // .as_push_pull();
     // gpio_port_a3.turn_on();
-// 
+    //
     // GpioDevice::new("A", 9)
-        // .as_alternate_function()
-        // .as_push_pull()
-        // .as_af(7);
+    // .as_alternate_function()
+    // .as_push_pull()
+    // .as_af(7);
 
     // let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     // usart.enable();
 
     // let early_user_land =
-        // process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
-// 
+    // process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
+    //
     // "hello from trait".println();
     // "usart works without errors...".println();
     // sched::spawn(0, early_user_land, "early_user_land");
     // sched::start_init_process();
-
+    let mut x: u32 = 0;
     loop {
+        if (gpio_port_a0.is_pressed()) {
+            // asm!("bkpt");
+            if (x < 300) {
+                x += 1;
+            }
+        } else {
+            if (x > 1) {
+                x -= 1;
+            }
+        }
+        alter_speed(0, x);
+        alter_speed(1, x);
+        alter_speed(2, x);
+        // alter_speed(x);
+        for i in 0..10000 {}
+        // if (x > 300) {
+        //     x -= 1;
+        // } else if (x < 50) {
+        //     x += 1;
+        // }
+        // ENGINE_OUT_0 = Some(ENGINE_OUT_0.unwrap().set_ccr2_register(80));
+
         // "!! KERNEL PANIC - NO INIT FOUND !!".println();
         // asm!("bkpt");
     }

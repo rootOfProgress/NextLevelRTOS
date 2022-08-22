@@ -48,7 +48,22 @@ pub mod rcc {
         match tim_port {
             // stm32f4x...
             // "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
-            2 => (*rcc_bus).apb1enr.set_bit(0b1 << bitfields::rcc::TIM2EN),
+            2 => 
+            {
+                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM2EN)
+            }
+            3 => 
+            {
+                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM3EN)
+            }
+            4 => 
+            {
+                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM4EN)
+            }
+            6 => 
+            {
+                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM6EN)
+            }
             _ => {}
         };
     }
