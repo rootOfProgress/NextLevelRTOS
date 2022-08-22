@@ -104,7 +104,7 @@ unsafe fn get_tim_device(tim_number: u32) -> &'static mut TimerDevice {
             Some(ref mut x) => &mut *x,
             None => panic!(),
         },
-        4 => match ENGINE_OUT_2 {
+        15 => match ENGINE_OUT_2 {
             Some(ref mut x) => &mut *x,
             None => panic!(),
         },
@@ -117,24 +117,28 @@ unsafe fn alter_speed(engine_number: u32, value: u32) {
     let mut timer_device: &'static mut TimerDevice = match engine_number {
         0 => get_tim_device(2),
         1 => get_tim_device(3),
-        2 => get_tim_device(4),
+        2 => get_tim_device(15),
         _ => {
             asm!("bkpt");
             panic!()
         }
     };
+    *timer_device = timer_device.set_ccr1_register(value);
     *timer_device = timer_device.set_ccr2_register(value);
+    *timer_device = timer_device.set_ccr3_register(value);
+    *timer_device = timer_device.set_ccr4_register(value);
 }
 
-unsafe fn init_t4() {
-    ENGINE_OUT_2 = Some(TimerDevice::new(4));
-    let mut baz: &'static mut TimerDevice = get_tim_device(4);
+unsafe fn init_t15() {
+    ENGINE_OUT_2 = Some(TimerDevice::new(15));
+    let mut baz: &'static mut TimerDevice = get_tim_device(15);
     *baz = baz
-        .set_arr_register(12)
+        .set_arr_register(20)
         .set_psc_register(7)
         .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+        .set_ccmr1_register((6 << 4) | (1 << 3)) // enable preload
         .set_cr1_register(1 << 7) // enable autoreload preload
-        .set_ccer_register(1 << 4) // enable channel 2 output
+        .set_ccer_register(1 << 4 | 1 << 0) // enable channel 2 output
         .set_egr_register(1)
         .set_cr1_register(1); // enable
 }
@@ -146,6 +150,8 @@ unsafe fn init_t3() {
         .set_arr_register(12)
         .set_psc_register(7)
         .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+        .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
+        .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_cr1_register(1 << 7) // enable autoreload preload
         .set_ccer_register(1 << 4) // enable channel 2 output
         .set_egr_register(1)
@@ -156,11 +162,16 @@ unsafe fn init_t2() {
     ENGINE_OUT_0 = Some(TimerDevice::new(2));
     let mut baz: &'static mut TimerDevice = get_tim_device(2);
     *baz = baz
-        .set_arr_register(12)
+        .set_arr_register(500)
         .set_psc_register(7)
-        .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
+        .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
+        .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_cr1_register(1 << 7) // enable autoreload preload
-        .set_ccer_register(1 << 4) // enable channel 2 output
+        // .set_ccr1_register(11)
+        // .set_ccr2_register(11)
+        // .set_ccr3_register(11)
+        // .set_ccr4_register(11)
+        .set_ccer_register(1 << 4 | 1 << 0 | 1 << 8 | 1 << 12) // enable channel 2 output
         .set_egr_register(1)
         .set_cr1_register(1); // enable
 }
@@ -187,10 +198,13 @@ pub unsafe fn kernel_init() -> ! {
         .as_alternate_function()
         .as_af(2);
 
-    // tim4
-    let gpio_port_a12 = devices::io::gpio::gpio::GpioDevice::new("A", 12)
+    // tim15
+    let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
         .as_alternate_function()
-        .as_af(10);
+        .as_af(1);
+    let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("A", 3)
+        .as_alternate_function()
+        .as_af(1);
     // gpio_port_a2.turn_on();
 
     // ENGINE_OUT_0 = Some(TimerDevice::new(2)).set_arr_register(1000)
@@ -202,7 +216,7 @@ pub unsafe fn kernel_init() -> ! {
     //                  .set_cr1_register(1); // enable
 
     // ENGINE_OUT_0 = Some(TimerDevice::new(2));
-    init_t4();
+    init_t15();
     init_t3();
     init_t2();
     // let mut baz: &'static mut TimerDevice = ctx_0();
@@ -249,8 +263,8 @@ pub unsafe fn kernel_init() -> ! {
             }
         }
         alter_speed(0, x);
-        alter_speed(1, x);
-        alter_speed(2, x);
+        // alter_speed(1, x);
+        // alter_speed(2, x);
         // alter_speed(x);
         for i in 0..10000 {}
         // if (x > 300) {

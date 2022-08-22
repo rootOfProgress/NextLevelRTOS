@@ -38,14 +38,14 @@ pub mod rcc {
         match port_mnemonic {
             // stm32f4x...
             // "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
-            "A" => (*rcc_bus).ahbenr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
-            _ => {}
+            "A" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPAEN),
+            _ => panic!()
         };
     }
 
-    pub unsafe fn activate_timer_bus_clock(tim_port: u32) {
+    pub unsafe fn activate_timer_bus_clock(tim_number: u32) {
         let rcc_bus = RCC::new(adresses::RCC);
-        match tim_port {
+        match tim_number {
             // stm32f4x...
             // "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
             2 => 
@@ -64,7 +64,11 @@ pub mod rcc {
             {
                 (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM6EN)
             }
-            _ => {}
+            15 => 
+            {
+                (*rcc_bus).apb2enr.set_bit(1 << bitfields::rcc::TIM15EN)
+            }
+            _ => panic!()
         };
     }
 

@@ -37,7 +37,11 @@ pub mod tim {
                     rcc::rcc::activate_timer_bus_clock(timer_number);
                     adresses::TIM6_BASEADRESS
                 }
-                _ => adresses::gpio::GPIOA_BASE,
+                15 => {
+                    rcc::rcc::activate_timer_bus_clock(timer_number);
+                    adresses::TIM15_BASEADRESS
+                }
+                _ => panic!(),
             };
 
             TimerDevice {
@@ -58,8 +62,29 @@ pub mod tim {
             self.device.CCMR1.write_whole_register(value);
             self
         }
+        pub unsafe fn set_ccmr2_register(self, value: u32) -> TimerDevice {
+            self.device.CCMR2.write_whole_register(value);
+            self
+        }
         pub unsafe fn set_cr1_register(self, value: u32) -> TimerDevice {
             self.device.CR1.write_whole_register(value);
+            self
+        }
+
+        pub unsafe fn set_ccr4_register(self, value: u32) -> TimerDevice {
+            self.device.CCR4.replace_whole_register(value);
+            self
+        }
+        pub unsafe fn set_ccr3_register(self, value: u32) -> TimerDevice {
+            self.device.CCR3.replace_whole_register(value);
+            self
+        }
+        pub unsafe fn set_ccr1_register(self, value: u32) -> TimerDevice {
+            self.device.CCR1.replace_whole_register(value);
+            self
+        }
+        pub unsafe fn set_ccr2_register(self, value: u32) -> TimerDevice {
+            self.device.CCR2.replace_whole_register(value);
             self
         }
         pub unsafe fn set_ccer_register(self, value: u32) -> TimerDevice {
@@ -68,10 +93,6 @@ pub mod tim {
         }
         pub unsafe fn set_egr_register(self, value: u32) -> TimerDevice {
             self.device.EGR.write_whole_register(value);
-            self
-        }
-        pub unsafe fn set_ccr2_register(self, value: u32) -> TimerDevice {
-            self.device.CCR2.replace_whole_register(value);
             self
         }
     }
