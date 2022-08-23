@@ -149,7 +149,6 @@ unsafe fn init_t3() {
     *baz = baz
         .set_arr_register(12)
         .set_psc_register(7)
-        .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
         .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_cr1_register(1 << 7) // enable autoreload preload
@@ -189,22 +188,31 @@ pub unsafe fn kernel_init() -> ! {
     let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0)/* .as_input() */;
 
     // tim2
-    let gpio_port_a1 = devices::io::gpio::gpio::GpioDevice::new("A", 1)
-        .as_alternate_function()
-        .as_af(1);
+    // let gpio_port_a1 = devices::io::gpio::gpio::GpioDevice::new("A", 1)
+    //     .as_alternate_function()
+    //     .as_af(1);
 
-    // tim3
-    let gpio_port_a4 = devices::io::gpio::gpio::GpioDevice::new("A", 4)
-        .as_alternate_function()
-        .as_af(2);
+    // // tim3
+    // let gpio_port_a4 = devices::io::gpio::gpio::GpioDevice::new("A", 4)
+    //     .as_alternate_function()
+    //     .as_af(2);
 
     // tim15
-    let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
+    // let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
+    //     .as_alternate_function()
+    //     .as_af(1);
+    let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
         .as_alternate_function()
-        .as_af(1);
-    let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("A", 3)
+        .as_af(2);
+    let gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
         .as_alternate_function()
-        .as_af(1);
+        .as_af(2);
+    let gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
+        .as_alternate_function()
+        .as_af(2);
+    let gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
+        .as_alternate_function()
+        .as_af(2);
     // gpio_port_a2.turn_on();
 
     // ENGINE_OUT_0 = Some(TimerDevice::new(2)).set_arr_register(1000)
@@ -216,9 +224,9 @@ pub unsafe fn kernel_init() -> ! {
     //                  .set_cr1_register(1); // enable
 
     // ENGINE_OUT_0 = Some(TimerDevice::new(2));
-    init_t15();
+    // init_t15();
     init_t3();
-    init_t2();
+    // init_t2();
     // let mut baz: &'static mut TimerDevice = ctx_0();
     // *baz = baz
     //     .set_arr_register(12)
@@ -262,7 +270,7 @@ pub unsafe fn kernel_init() -> ! {
                 x -= 1;
             }
         }
-        alter_speed(0, x);
+        alter_speed(1, x);
         // alter_speed(1, x);
         // alter_speed(2, x);
         // alter_speed(x);
