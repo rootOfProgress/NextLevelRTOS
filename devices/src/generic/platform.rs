@@ -82,6 +82,21 @@ pub mod stm32f3x {
         }
         pub mod usart1 {}
 
+        pub mod tim3 {
+            pub mod cr1 {
+                pub const ARPE: u32 = 7; 
+                pub const CEN: u32 = 0; 
+            }
+            pub mod ccer {
+                pub const CC2E: u32 = 4; 
+                pub const CEN: u32 = 0; 
+            }
+            pub const CEN: u32 = 0b1;
+            pub const UG: u32 = 0b1;
+            pub const UDIS: u32 = 0b10;
+            pub const CC1IE: u32 = 0b10;
+        }
+
         pub mod tim {
             pub const CEN: u32 = 0b1;
             pub const UG: u32 = 0b1;

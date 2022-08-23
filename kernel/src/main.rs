@@ -15,12 +15,11 @@ mod proc;
 use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
 use devices::generic::platform::stm32f3x::adresses;
+use devices::generic::platform::stm32f3x::bitfields;
 use devices::io::gpio::gpio::GpioDevice;
 use proc::sched;
 
-static mut ENGINE_OUT_0: Option<TimerDevice> = None;
-static mut ENGINE_OUT_1: Option<TimerDevice> = None;
-static mut ENGINE_OUT_2: Option<TimerDevice> = None;
+static mut ENGINE_OUT: Option<TimerDevice> = None;
 
 fn fibonacci(n: u32) -> u32 {
     match n {
@@ -94,85 +93,37 @@ fn user_init() {
 //     tim_2
 // }
 
-unsafe fn get_tim_device(tim_number: u32) -> &'static mut TimerDevice {
-    match tim_number {
-        2 => match ENGINE_OUT_0 {
-            Some(ref mut x) => &mut *x,
-            None => panic!(),
-        },
-        3 => match ENGINE_OUT_1 {
-            Some(ref mut x) => &mut *x,
-            None => panic!(),
-        },
-        15 => match ENGINE_OUT_2 {
-            Some(ref mut x) => &mut *x,
-            None => panic!(),
-        },
-        _ => panic!()
+unsafe fn get_tim_device() -> &'static mut TimerDevice {
+    match ENGINE_OUT {
+        Some(ref mut x) => &mut *x,
+        None => panic!(),
     }
 }
 
 
 unsafe fn alter_speed(engine_number: u32, value: u32) {
-    let mut timer_device: &'static mut TimerDevice = match engine_number {
-        0 => get_tim_device(2),
-        1 => get_tim_device(3),
-        2 => get_tim_device(15),
-        _ => {
-            asm!("bkpt");
-            panic!()
-        }
-    };
-    *timer_device = timer_device.set_ccr1_register(value);
-    *timer_device = timer_device.set_ccr2_register(value);
-    *timer_device = timer_device.set_ccr3_register(value);
-    *timer_device = timer_device.set_ccr4_register(value);
+    let mut timer_device: &'static mut TimerDevice = get_tim_device();
+    match engine_number {
+        1 => *timer_device = timer_device.set_ccr1_register(value),
+        2 => *timer_device = timer_device.set_ccr2_register(value),
+        3 => *timer_device = timer_device.set_ccr3_register(value),
+        4 => *timer_device = timer_device.set_ccr4_register(value),
+        _ => panic!()
+    }
 }
 
-unsafe fn init_t15() {
-    ENGINE_OUT_2 = Some(TimerDevice::new(15));
-    let mut baz: &'static mut TimerDevice = get_tim_device(15);
-    *baz = baz
-        .set_arr_register(20)
-        .set_psc_register(7)
-        .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
-        .set_ccmr1_register((6 << 4) | (1 << 3)) // enable preload
-        .set_cr1_register(1 << 7) // enable autoreload preload
-        .set_ccer_register(1 << 4 | 1 << 0) // enable channel 2 output
-        .set_egr_register(1)
-        .set_cr1_register(1); // enable
-}
-
-unsafe fn init_t3() {
-    ENGINE_OUT_1 = Some(TimerDevice::new(3));
-    let mut baz: &'static mut TimerDevice = get_tim_device(3);
+unsafe fn init_tim_3() {
+    ENGINE_OUT = Some(TimerDevice::new(3));
+    let mut baz: &'static mut TimerDevice = get_tim_device();
     *baz = baz
         .set_arr_register(12)
         .set_psc_register(7)
         .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
-        .set_cr1_register(1 << 7) // enable autoreload preload
+        .set_cr1_register(1 << bitfields::tim3::cr1::ARPE) // enable autoreload preload
         .set_ccer_register(1 << 4 | 1 << 0 | 1 << 8 | 1 << 12) // enable channel 2 output
         .set_egr_register(1)
-        .set_cr1_register(1); // enable
-}
-
-unsafe fn init_t2() {
-    ENGINE_OUT_0 = Some(TimerDevice::new(2));
-    let mut baz: &'static mut TimerDevice = get_tim_device(2);
-    *baz = baz
-        .set_arr_register(500)
-        .set_psc_register(7)
-        .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
-        .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
-        .set_cr1_register(1 << 7) // enable autoreload preload
-        // .set_ccr1_register(11)
-        // .set_ccr2_register(11)
-        // .set_ccr3_register(11)
-        // .set_ccr4_register(11)
-        .set_ccer_register(1 << 4 | 1 << 0 | 1 << 8 | 1 << 12) // enable channel 2 output
-        .set_egr_register(1)
-        .set_cr1_register(1); // enable
+        .set_cr1_register(1 << bitfields::tim3::cr1::CEN); // enable
 }
 
 ///
@@ -196,11 +147,12 @@ pub unsafe fn kernel_init() -> ! {
     // let gpio_port_a4 = devices::io::gpio::gpio::GpioDevice::new("A", 4)
     //     .as_alternate_function()
     //     .as_af(2);
-
+    
     // tim15
     // let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
     //     .as_alternate_function()
     //     .as_af(1);
+    init_tim_3();
     let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
         .as_alternate_function()
         .as_af(2);
@@ -225,7 +177,6 @@ pub unsafe fn kernel_init() -> ! {
 
     // ENGINE_OUT_0 = Some(TimerDevice::new(2));
     // init_t15();
-    init_t3();
     // init_t2();
     // let mut baz: &'static mut TimerDevice = ctx_0();
     // *baz = baz
