@@ -153,7 +153,7 @@ unsafe fn init_t3() {
         .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
         .set_cr1_register(1 << 7) // enable autoreload preload
-        .set_ccer_register(1 << 4) // enable channel 2 output
+        .set_ccer_register(1 << 4 | 1 << 0 | 1 << 8 | 1 << 12) // enable channel 2 output
         .set_egr_register(1)
         .set_cr1_register(1); // enable
 }

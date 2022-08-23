@@ -39,6 +39,8 @@ pub mod rcc {
             // stm32f4x...
             // "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
             "A" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPAEN),
+            "E" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPEEN),
+            "C" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPCEN),
             _ => panic!()
         };
     }

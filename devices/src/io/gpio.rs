@@ -66,8 +66,16 @@ pub mod gpio {
                 "A" => {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOA_BASE
+                },
+                "C" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOC_BASE
                 }
-                _ => adresses::gpio::GPIOA_BASE,
+                "E" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOE_BASE
+                },
+                _ => panic!(),
             };
 
             GpioDevice {
