@@ -18,6 +18,7 @@ use devices::generic::platform::stm32f3x::adresses;
 use devices::generic::platform::stm32f3x::bitfields;
 use devices::io::gpio::gpio::GpioDevice;
 use proc::sched;
+use user::engine;
 
 static mut ENGINE_OUT: Option<TimerDevice> = None;
 
@@ -235,7 +236,11 @@ pub unsafe fn kernel_init() -> ! {
                 x -= 1;
             }
         }
-        alter_speed(1, x);
+        engine::alter_engine_speed(ENGINE_OUT, 1, x);
+        engine::alter_engine_speed(ENGINE_OUT, 2, x);
+        engine::alter_engine_speed(ENGINE_OUT, 3, x);
+        engine::alter_engine_speed(ENGINE_OUT, 4, x);
+        // alter_speed(1, x);
         // alter_speed(1, x);
         // alter_speed(2, x);
         // alter_speed(x);
