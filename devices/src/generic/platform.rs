@@ -88,8 +88,23 @@ pub mod stm32f3x {
                 pub const CEN: u32 = 0; 
             }
             pub mod ccer {
+                pub const CC1E: u32 = 0; 
                 pub const CC2E: u32 = 4; 
+                pub const CC3E: u32 = 8; 
+                pub const CC4E: u32 = 12; 
                 pub const CEN: u32 = 0; 
+            }
+            pub mod ccmr1 {
+                pub const OC2M: u32 = 12; 
+                pub const OC2PE: u32 = 11; 
+                pub const OC1M: u32 = 4; 
+                pub const OC1PE: u32 = 3; 
+            }
+            pub mod ccmr2 {
+                pub const OC4M: u32 = 12; 
+                pub const OC4PE: u32 = 11; 
+                pub const OC3M: u32 = 4; 
+                pub const OC3PE: u32 = 3; 
             }
             pub const CEN: u32 = 0b1;
             pub const UG: u32 = 0b1;

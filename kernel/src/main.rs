@@ -100,7 +100,6 @@ unsafe fn get_tim_device() -> &'static mut TimerDevice {
     }
 }
 
-
 unsafe fn alter_speed(engine_number: u32, value: u32) {
     let mut timer_device: &'static mut TimerDevice = get_tim_device();
     match engine_number {
@@ -108,7 +107,7 @@ unsafe fn alter_speed(engine_number: u32, value: u32) {
         2 => *timer_device = timer_device.set_ccr2_register(value),
         3 => *timer_device = timer_device.set_ccr3_register(value),
         4 => *timer_device = timer_device.set_ccr4_register(value),
-        _ => panic!()
+        _ => panic!(),
     }
 }
 
@@ -118,10 +117,25 @@ unsafe fn init_tim_3() {
     *baz = baz
         .set_arr_register(12)
         .set_psc_register(7)
-        .set_ccmr1_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
-        .set_ccmr2_register((6 << 12) | (1 << 11) | (6 << 4) | (1 << 3) ) // enable preload
+        .set_ccmr1_register(
+            (6 << bitfields::tim3::ccmr1::OC2M)
+                | (1 << bitfields::tim3::ccmr1::OC2PE)
+                | (6 << bitfields::tim3::ccmr1::OC1M)
+                | (1 << bitfields::tim3::ccmr1::OC1PE),
+        ) // enable preload
+        .set_ccmr2_register(
+            (6 << bitfields::tim3::ccmr2::OC4M)
+                | (1 << bitfields::tim3::ccmr2::OC4PE)
+                | (6 << bitfields::tim3::ccmr2::OC3M)
+                | (1 << bitfields::tim3::ccmr2::OC3PE),
+        ) // enable preload
         .set_cr1_register(1 << bitfields::tim3::cr1::ARPE) // enable autoreload preload
-        .set_ccer_register(1 << 4 | 1 << 0 | 1 << 8 | 1 << 12) // enable channel 2 output
+        .set_ccer_register(
+            1 << bitfields::tim3::ccer::CC1E
+                | 1 << bitfields::tim3::ccer::CC2E
+                | 1 << bitfields::tim3::ccer::CC3E
+                | 1 << bitfields::tim3::ccer::CC4E,
+        ) // enable channel 2 output
         .set_egr_register(1)
         .set_cr1_register(1 << bitfields::tim3::cr1::CEN); // enable
 }
@@ -147,7 +161,7 @@ pub unsafe fn kernel_init() -> ! {
     // let gpio_port_a4 = devices::io::gpio::gpio::GpioDevice::new("A", 4)
     //     .as_alternate_function()
     //     .as_af(2);
-    
+
     // tim15
     // let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
     //     .as_alternate_function()
