@@ -16,8 +16,8 @@ pub mod rcc {
     //-------------------------LOCAL-IMPORTS-------------------------//
     //---------------------------------------------------------------//
     // use super::
-    use super::stm32f3x::bitfields;
     use super::stm32f3x::adresses;
+    use super::stm32f3x::bitfields;
 
     use super::primitive_extensions::BitOps;
 
@@ -39,9 +39,10 @@ pub mod rcc {
             // stm32f4x...
             // "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
             "A" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPAEN),
+            "B" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPBEN),
             "E" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPEEN),
             "C" => (*rcc_bus).ahbenr.set_bit(1 << bitfields::rcc::GPIOPCEN),
-            _ => panic!()
+            _ => panic!(),
         };
     }
 
@@ -50,33 +51,18 @@ pub mod rcc {
         match tim_number {
             // stm32f4x...
             // "A" => (*rcc_bus).ahb1enr.set_bit(0b1 << bitfields::rcc::GPIOPAEN),
-            2 => 
-            {
-                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM2EN)
-            }
-            3 => 
-            {
-                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM3EN)
-            }
-            4 => 
-            {
-                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM4EN)
-            }
-            6 => 
-            {
-                (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM6EN)
-            }
-            15 => 
-            {
-                (*rcc_bus).apb2enr.set_bit(1 << bitfields::rcc::TIM15EN)
-            }
-            _ => panic!()
+            2 => (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM2EN),
+            3 => (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM3EN),
+            4 => (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM4EN),
+            6 => (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::TIM6EN),
+            15 => (*rcc_bus).apb2enr.set_bit(1 << bitfields::rcc::TIM15EN),
+            _ => panic!(),
         };
     }
 
     pub unsafe fn activate_usart1_bus_clock() {
-        // let rcc_bus = RCC::new(adresses::RCC);
-        // (*rcc_bus).apb2enr.set_bit(0b1 << 4); 
+        let rcc_bus = RCC::new(adresses::RCC);
+        (*rcc_bus).apb2enr.set_bit(1 << bitfields::rcc::USART1EN);
     }
 
     pub unsafe fn activate_dma1_bus_clock() {

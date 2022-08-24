@@ -71,6 +71,7 @@ pub mod stm32f3x {
         pub mod rcc {
             pub const SYSCFGEN: u32 = 1;
             pub const GPIOPAEN: u32 = 17;
+            pub const GPIOPBEN: u32 = 18;
             pub const GPIOPCEN: u32 = 19;
             pub const GPIOPEEN: u32 = 21;
             pub const USART1EN: u32 = 14;
@@ -80,31 +81,36 @@ pub mod stm32f3x {
             pub const TIM6EN: u32 = 4;
             pub const TIM15EN: u32 = 16;
         }
-        pub mod usart1 {}
+        pub mod usart1 {
+            pub const UE: u32 = 0;
+            pub const RE: u32 = 2;
+            pub const TE: u32 = 3;
+            pub const RXNEIE: u32 = 5;
+        }
 
         pub mod tim3 {
             pub mod cr1 {
-                pub const ARPE: u32 = 7; 
-                pub const CEN: u32 = 0; 
+                pub const ARPE: u32 = 7;
+                pub const CEN: u32 = 0;
             }
             pub mod ccer {
-                pub const CC1E: u32 = 0; 
-                pub const CC2E: u32 = 4; 
-                pub const CC3E: u32 = 8; 
-                pub const CC4E: u32 = 12; 
-                pub const CEN: u32 = 0; 
+                pub const CC1E: u32 = 0;
+                pub const CC2E: u32 = 4;
+                pub const CC3E: u32 = 8;
+                pub const CC4E: u32 = 12;
+                pub const CEN: u32 = 0;
             }
             pub mod ccmr1 {
-                pub const OC2M: u32 = 12; 
-                pub const OC2PE: u32 = 11; 
-                pub const OC1M: u32 = 4; 
-                pub const OC1PE: u32 = 3; 
+                pub const OC2M: u32 = 12;
+                pub const OC2PE: u32 = 11;
+                pub const OC1M: u32 = 4;
+                pub const OC1PE: u32 = 3;
             }
             pub mod ccmr2 {
-                pub const OC4M: u32 = 12; 
-                pub const OC4PE: u32 = 11; 
-                pub const OC3M: u32 = 4; 
-                pub const OC3PE: u32 = 3; 
+                pub const OC4M: u32 = 12;
+                pub const OC4PE: u32 = 11;
+                pub const OC3M: u32 = 4;
+                pub const OC3PE: u32 = 3;
             }
             pub const CEN: u32 = 0b1;
             pub const UG: u32 = 0b1;
@@ -139,7 +145,6 @@ pub mod stm32f407ve {
             pub const GENERALPURPOSEOUTPUT: u32 = 0b01;
             pub const ALTERNATE: u32 = 0b10;
             pub const ANALOG: u32 = 0b11;
-
         }
         pub mod rcc {
             pub const GPIOPAEN: u32 = 0;

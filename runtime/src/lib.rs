@@ -56,6 +56,7 @@ pub union VectorDivergentFn {
 extern "C" {
     fn SysTick();
     fn SVCall();
+    fn Usart1_MainISR();
 }
 
 
@@ -69,22 +70,60 @@ pub static RESET: [VectorDivergentFn; 1] = [VectorDivergentFn { handler: Reset }
 
 #[link_section = ".vector_table.exceptions"]
 #[no_mangle]
-pub static EXCEPTIONS: [Vector; 15] = [
+pub static EXCEPTIONS: [Vector; 53] = [
+    Vector { reserved: 0 }, // 2
+    Vector { handler: HardFaultHandler },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 }, // 5 
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { reserved: 0 }, // 8
+    Vector { reserved: 0 },
+    Vector { reserved: 0 },
+    Vector { handler: SVCall }, // 11
     Vector { reserved: 0 },
     Vector { reserved: 0 },
     Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { handler: SVCall },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { reserved: 0 },
-    Vector { handler: SysTick },
-    Vector { reserved: 0 },
+    Vector { handler: SysTick }, // pos. 15 abs., 
+    Vector { reserved: 0 }, // wwdg,  pos. 0 relative, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { reserved: 0 }, 
+    Vector { handler: Usart1_MainISR }, 
+    Vector { reserved: 0 }, 
 ];
 
 //-----------------------------------------------------------------//
@@ -92,6 +131,10 @@ pub static EXCEPTIONS: [Vector; 15] = [
 //-----------------------------------------------------------------//
 
 
+#[no_mangle]
+pub extern "C" fn HardFaultHandler() {
+    loop{}
+}
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {

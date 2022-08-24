@@ -12,10 +12,10 @@ pub mod gpio {
     //---------------------------------------------------------------//
     //----------------------------IMPORTS----------------------------//
     //---------------------------------------------------------------//
+    use super::primitive_extensions::BitOps;
     use super::rcc;
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;
-    use super::primitive_extensions::BitOps;
     use super::GPIO;
 
     //---------------------------------------------------------------//
@@ -66,7 +66,11 @@ pub mod gpio {
                 "A" => {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOA_BASE
-                },
+                }
+                "B" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOB_BASE
+                }
                 "C" => {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOC_BASE
@@ -74,7 +78,7 @@ pub mod gpio {
                 "E" => {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOE_BASE
-                },
+                }
                 _ => panic!(),
             };
 

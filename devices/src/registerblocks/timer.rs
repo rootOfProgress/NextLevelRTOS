@@ -5,7 +5,7 @@ pub struct TIMx {
     pub SMCR: u32,
     pub DIER: u32,
     pub SR: u32,
-    pub EGR: u32, // 0x14
+    pub EGR: u32,   // 0x14
     pub CCMR1: u32, // 0x18
     pub CCMR2: u32,
     pub CCER: u32, // 0x20
@@ -33,10 +33,9 @@ impl TIMx {
     ///
     pub fn new(tim_base_adress: u32, tim_number: u32) -> &'static TIMx {
         // match tim_number {
-            // 2 | 3 | 4 => unsafe { &mut *(tim_base_adress as *mut TIMx) },
-            // _ => panic!()
-            unsafe { &mut *(tim_base_adress as *mut TIMx) }
+        // 2 | 3 | 4 => unsafe { &mut *(tim_base_adress as *mut TIMx) },
+        // _ => panic!()
+        unsafe { &mut *(tim_base_adress as *mut TIMx) }
         //}
-        
     }
 }

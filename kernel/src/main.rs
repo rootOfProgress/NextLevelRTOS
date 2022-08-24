@@ -20,7 +20,7 @@ use devices::io::gpio::gpio::GpioDevice;
 use proc::sched;
 use user::engine;
 
-static mut ENGINE_OUT: Option<TimerDevice> = None;
+static mut TIM_3: Option<TimerDevice> = None;
 
 fn fibonacci(n: u32) -> u32 {
     match n {
@@ -80,42 +80,13 @@ fn user_init() {
     sched::spawn(3, led_on, "led_on");
     loop {}
 }
-
-// pub unsafe fn get_out_0() -> &'a TimerDevice {
-//     let mut tim_2 = &TimerDevice::new(2);
-//     tim_2.set_arr_register(1000)
-//         .set_psc_register(7)
-//         .set_ccmr1_register((6 << 12 )| (1 << 11)) // enable preload
-//         .set_cr1_register(1 << 7) // enable autoreload preload
-//         .set_ccer_register(1 << 4) // enable channel 2 output
-//         .set_egr_register(1)
-//         .set_cr1_register(1); // enable
-
-//     tim_2
-// }
-
-unsafe fn get_tim_device() -> &'static mut TimerDevice {
-    match ENGINE_OUT {
+unsafe fn init_tim_3() {
+    TIM_3 = Some(TimerDevice::new(3));
+    let mut tim3: &'static mut TimerDevice = match TIM_3 {
         Some(ref mut x) => &mut *x,
         None => panic!(),
-    }
-}
-
-unsafe fn alter_speed(engine_number: u32, value: u32) {
-    let mut timer_device: &'static mut TimerDevice = get_tim_device();
-    match engine_number {
-        1 => *timer_device = timer_device.set_ccr1_register(value),
-        2 => *timer_device = timer_device.set_ccr2_register(value),
-        3 => *timer_device = timer_device.set_ccr3_register(value),
-        4 => *timer_device = timer_device.set_ccr4_register(value),
-        _ => panic!(),
-    }
-}
-
-unsafe fn init_tim_3() {
-    ENGINE_OUT = Some(TimerDevice::new(3));
-    let mut baz: &'static mut TimerDevice = get_tim_device();
-    *baz = baz
+    };
+    *tim3 = tim3
         .set_arr_register(12)
         .set_psc_register(7)
         .set_ccmr1_register(
@@ -149,110 +120,53 @@ unsafe fn init_tim_3() {
 pub unsafe fn kernel_init() -> ! {
     mem::malloc::init();
     sched::init();
-    devices::sys::tick::init_systick(280);
-    let mut foo = 200;
-    let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0)/* .as_input() */;
+    // devices::sys::tick::init_systick(280);
 
-    // tim2
-    // let gpio_port_a1 = devices::io::gpio::gpio::GpioDevice::new("A", 1)
+    // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0)/;
+
+    // // uart1 tx
+    devices::io::gpio::gpio::GpioDevice::new("B", 6)
+        .as_alternate_function()
+        .as_af(7)
+        .as_push_pull();
+    // // uart1 rx
+    devices::io::gpio::gpio::GpioDevice::new("B", 7).as_input().as_alternate_function().as_af(7);
+
+    // // speed regulation
+    // init_tim_3();
+    // let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
     //     .as_alternate_function()
-    //     .as_af(1);
-
-    // // tim3
-    // let gpio_port_a4 = devices::io::gpio::gpio::GpioDevice::new("A", 4)
+    //     .as_af(2);
+    // let gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
+    //     .as_alternate_function()
+    //     .as_af(2);
+    // let gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
+    //     .as_alternate_function()
+    //     .as_af(2);
+    // let gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
     //     .as_alternate_function()
     //     .as_af(2);
 
-    // tim15
-    // let gpio_port_a2 = devices::io::gpio::gpio::GpioDevice::new("A", 2)
-    //     .as_alternate_function()
-    //     .as_af(1);
-    init_tim_3();
-    let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
-        .as_alternate_function()
-        .as_af(2);
-    let gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
-        .as_alternate_function()
-        .as_af(2);
-    let gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
-        .as_alternate_function()
-        .as_af(2);
-    let gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
-        .as_alternate_function()
-        .as_af(2);
-    // gpio_port_a2.turn_on();
+    let usart = devices::controller::uart::usart::UsartDevice::new(9600);
+    usart.enable();
+    "hello from trait".println();
 
-    // ENGINE_OUT_0 = Some(TimerDevice::new(2)).set_arr_register(1000)
-    //                  .set_psc_register(7)
-    //                  .set_ccmr1_register((6 << 12 )| (1 << 11)) // enable preload
-    //                  .set_cr1_register(1 << 7) // enable autoreload preload
-    //                  .set_ccer_register(1 << 4) // enable channel 2 output
-    //                  .set_egr_register(1)
-    //                  .set_cr1_register(1); // enable
-
-    // ENGINE_OUT_0 = Some(TimerDevice::new(2));
-    // init_t15();
-    // init_t2();
-    // let mut baz: &'static mut TimerDevice = ctx_0();
-    // *baz = baz
-    //     .set_arr_register(12)
-    //     .set_psc_register(7)
-    //     .set_ccmr1_register((6 << 12) | (1 << 11)) // enable preload
-    //     .set_cr1_register(1 << 7) // enable autoreload preload
-    //     .set_ccer_register(1 << 4) // enable channel 2 output
-    //     .set_egr_register(1)
-    //     .set_cr1_register(1); // enable
-
-    //
-    // let gpio_port_a3 = devices::io::gpio::gpio::GpioDevice::new("A", 3)
-    // .as_output()
-    // .as_push_pull();
-    // gpio_port_a3.turn_on();
-    //
-    // GpioDevice::new("A", 9)
-    // .as_alternate_function()
-    // .as_push_pull()
-    // .as_af(7);
-
-    // let usart = devices::controller::uart::usart::UsartDevice::new(9600);
-    // usart.enable();
-
-    // let early_user_land =
-    // process::new_process(user_init as *const () as u32, user_init as *const () as u32).unwrap();
-    //
-    // "hello from trait".println();
-    // "usart works without errors...".println();
-    // sched::spawn(0, early_user_land, "early_user_land");
-    // sched::start_init_process();
-    let mut x: u32 = 0;
+    // let mut x: u32 = 0;
     loop {
-        if (gpio_port_a0.is_pressed()) {
-            // asm!("bkpt");
-            if (x < 300) {
-                x += 1;
-            }
-        } else {
-            if (x > 1) {
-                x -= 1;
-            }
-        }
-        engine::alter_engine_speed(ENGINE_OUT, 1, x);
-        engine::alter_engine_speed(ENGINE_OUT, 2, x);
-        engine::alter_engine_speed(ENGINE_OUT, 3, x);
-        engine::alter_engine_speed(ENGINE_OUT, 4, x);
-        // alter_speed(1, x);
-        // alter_speed(1, x);
-        // alter_speed(2, x);
-        // alter_speed(x);
-        for i in 0..10000 {}
-        // if (x > 300) {
-        //     x -= 1;
-        // } else if (x < 50) {
-        //     x += 1;
+        // if (gpio_port_a0.is_pressed()) {
+        //     if (x < 300) {
+        //         x += 1;
+        //     }
+        // } else {
+        //     if (x > 1) {
+        //         x -= 1;
+        //     }
         // }
-        // ENGINE_OUT_0 = Some(ENGINE_OUT_0.unwrap().set_ccr2_register(80));
+        // engine::alter_engine_speed(TIM_3, 1, x);
+        // engine::alter_engine_speed(TIM_3, 2, x);
+        // engine::alter_engine_speed(TIM_3, 3, x);
+        // engine::alter_engine_speed(TIM_3, 4, x);
 
-        // "!! KERNEL PANIC - NO INIT FOUND !!".println();
-        // asm!("bkpt");
+        // for i in 0..10000 {}
     }
 }

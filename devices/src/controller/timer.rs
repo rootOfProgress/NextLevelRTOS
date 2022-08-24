@@ -1,16 +1,14 @@
-use super::super::registerblocks::timer::TIMx;
-use super::super::generic::platform::stm32f3x;
 use super::super::bus::rcc;
+use super::super::generic::platform::stm32f3x;
 use super::super::generic::traits::primitive_extensions;
+use super::super::registerblocks::timer::TIMx;
 
 pub mod tim {
-    use super::TIMx;
+    use super::primitive_extensions::BitOps;
+    use super::rcc;
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;
-    use super::rcc;
-    use super::primitive_extensions::BitOps;
-
-
+    use super::TIMx;
 
     #[derive(Copy, Clone)]
     pub struct TimerDevice {
@@ -48,7 +46,7 @@ pub mod tim {
                 device: TIMx::new(tim_base, timer_number),
                 number: timer_number,
             }
-        } 
+        }
 
         pub unsafe fn set_arr_register(self, auto_reload_value: u32) -> TimerDevice {
             self.device.ARR.replace_whole_register(auto_reload_value);
