@@ -8,6 +8,7 @@ pub mod stm32f3x {
             pub const GPIOC_BASE: u32 = 0x4800_0800;
             pub const GPIOE_BASE: u32 = 0x4800_1000;
         }
+        pub const I2C1_BASEADRESS: u32 = 0x4000_5400;
         pub const TIM2_BASEADRESS: u32 = 0x4000_0000;
         pub const TIM3_BASEADRESS: u32 = 0x4000_0400;
         pub const TIM4_BASEADRESS: u32 = 0x4000_0800;
@@ -68,6 +69,12 @@ pub mod stm32f3x {
             pub const ALTERNATE: u32 = 0b10;
             pub const ANALOG: u32 = 0b11;
         }
+
+        pub mod i2c {
+            pub const PE: u32 = 0;
+            // pub const PE: u32 = 0;
+        }
+
         pub mod rcc {
             pub const SYSCFGEN: u32 = 1;
             pub const GPIOPAEN: u32 = 17;
@@ -80,6 +87,7 @@ pub mod stm32f3x {
             pub const TIM4EN: u32 = 2;
             pub const TIM6EN: u32 = 4;
             pub const TIM15EN: u32 = 16;
+            pub const I2C1EN: u32 = 21;
         }
         pub mod usart1 {
             pub const UE: u32 = 0;

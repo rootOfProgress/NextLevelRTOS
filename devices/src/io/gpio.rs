@@ -26,6 +26,19 @@ pub mod gpio {
         OpenDrain,
     }
 
+    pub enum SpeedModes {
+        Low,
+        Medium,
+        Fast,
+        High
+    }
+
+    pub enum PullTypes {
+        Nothing,
+        PullUp,
+        PullDown
+    }
+
     pub enum ModerTypes {
         InputMode,
         GeneralPurposeOutputMode,
@@ -108,6 +121,16 @@ pub mod gpio {
             self
         }
 
+        pub fn as_pull_up(self) -> GpioDevice {
+            self.set_pupdr(PullTypes::PullUp);
+            self
+        }
+
+        pub fn as_high_speed(self) -> GpioDevice {
+            self.set_ospeedr(SpeedModes::High);
+            self
+        }
+
         pub fn as_open_drain(self) -> GpioDevice {
             self.set_otyper(OutputTypes::OpenDrain);
             self
@@ -120,6 +143,32 @@ pub mod gpio {
                 return true;
             }
             false
+        }
+
+        fn set_ospeedr(&self, speed: SpeedModes) {
+            // @todo: those are EXCLUSIVE!! clear field first!
+            match speed {
+                SpeedModes::Low => {
+                    self.port
+                        .moder
+                        .set_bit(00 << self.pin * 2);
+                }
+                SpeedModes::Medium => {
+                    self.port
+                        .moder
+                        .set_bit(01 << self.pin * 2);
+                }
+                SpeedModes::High => {
+                    self.port
+                        .moder
+                        .set_bit(10 << self.pin * 2);
+                }
+                SpeedModes::Fast => {
+                    self.port
+                        .moder
+                        .set_bit(0b11 << self.pin * 2);
+                }
+            };
         }
 
         pub fn turn_on(&self) {
@@ -161,6 +210,18 @@ pub mod gpio {
             };
         }
 
+        fn set_pupdr(&self, pu_type: PullTypes) {
+            match pu_type {
+                Nothing => {},
+                PullTypes::PullUp => {
+                    self.port.otyper.clear_bit(0b01 << 2 * self.pin);
+                }
+                PullTypes::PullDown => {
+                    self.port.otyper.set_bit(0b10 << 2 * self.pin);
+                }
+            };
+        }
+
         // 11.4.6 GPIO port output data register (GPIOx_ODR) (x = A..H)
         fn set_odr(&self, odr_type: OutputState) {
             match odr_type {
@@ -192,18 +253,6 @@ pub mod gpio {
                 self.port.afrh.clear_bit((0xF as u32) << pin * 4);
                 self.port.afrh.set_bit(af_number << pin * 4);
             };
-            // unsafe {
-            //     ptr::write_volatile(
-            //         alternate_function_register as *mut u32,
-            //         ptr::read_volatile(alternate_function_register as *const u32)
-            //             & !(0xF as u32) << pin * 4,
-            //     );
-            //     ptr::write_volatile(
-            //         alternate_function_register as *mut u32,
-            //         ptr::read_volatile(alternate_function_register as *const u32)
-            //             | af_number << pin * 4,
-            //     );
-            // }
         }
     }
 }

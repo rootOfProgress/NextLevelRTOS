@@ -17,6 +17,7 @@ use devices::controller::uart::iostream;
 use devices::generic::platform::stm32f3x::adresses;
 use devices::generic::platform::stm32f3x::bitfields;
 use devices::io::gpio::gpio::GpioDevice;
+use devices::io::i2c::i2c::I2cDevice;
 use proc::sched;
 use user::engine;
 
@@ -123,6 +124,25 @@ pub unsafe fn kernel_init() -> ! {
     // devices::sys::tick::init_systick(280);
 
     // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0)/;
+
+    // i2c1 sda
+    devices::io::gpio::gpio::GpioDevice::new("A", 14)
+        .as_alternate_function()
+        .as_af(4)
+        .as_open_drain()
+        .as_push_pull()
+        .as_high_speed()
+        .as_pull_up();
+
+    // i2c1 scl
+    devices::io::gpio::gpio::GpioDevice::new("A", 15)
+        .as_alternate_function()
+        .as_af(4)
+        .as_open_drain()
+        .as_push_pull()
+        .as_high_speed()
+        .as_pull_up();
+
 
     // // uart1 tx
     devices::io::gpio::gpio::GpioDevice::new("B", 6)

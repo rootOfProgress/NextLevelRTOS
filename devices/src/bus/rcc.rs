@@ -65,6 +65,11 @@ pub mod rcc {
         (*rcc_bus).apb2enr.set_bit(1 << bitfields::rcc::USART1EN);
     }
 
+    pub unsafe fn activate_i2c_bus_clock() {
+        let rcc_bus = RCC::new(adresses::RCC);
+        (*rcc_bus).apb1enr.set_bit(1 << bitfields::rcc::I2C1EN);
+    }
+
     pub unsafe fn activate_dma1_bus_clock() {
         // let rcc_bus = RCC::new(adresses::RCC);
         // (*rcc_bus).ahb1enr.set_bit(0b1);
