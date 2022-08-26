@@ -9,8 +9,8 @@ target extended-remote :3333
 #p buffer
 #cont
 
-break uart.rs:152
-commands
-silent
-p res
-cont
+#break uart.rs:152
+#commands
+#silent
+#p res
+#cont

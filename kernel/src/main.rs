@@ -20,7 +20,7 @@ use devices::io::gpio::gpio::GpioDevice;
 use devices::io::i2c::i2c::I2cDevice;
 use proc::sched;
 use user::engine;
-
+use devices::controller::uart::res;
 static mut TIM_3: Option<TimerDevice> = None;
 
 fn fibonacci(n: u32) -> u32 {
@@ -123,25 +123,27 @@ pub unsafe fn kernel_init() -> ! {
     sched::init();
     // devices::sys::tick::init_systick(280);
 
-    // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0)/;
+    let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);
 
     // i2c1 sda
-    devices::io::gpio::gpio::GpioDevice::new("A", 14)
-        .as_alternate_function()
-        .as_af(4)
-        .as_open_drain()
-        .as_push_pull()
-        .as_high_speed()
-        .as_pull_up();
+    // devices::io::gpio::gpio::GpioDevice::new("A", 14)
+    //     .as_alternate_function()
+    //     .as_af(4)
+    //     .as_open_drain()
+    //     .as_push_pull()
+    //     // .as_high_speed()
+    //     .as_pull_up();
 
-    // i2c1 scl
-    devices::io::gpio::gpio::GpioDevice::new("A", 15)
-        .as_alternate_function()
-        .as_af(4)
-        .as_open_drain()
-        .as_push_pull()
-        .as_high_speed()
-        .as_pull_up();
+    // // i2c1 scl
+    // devices::io::gpio::gpio::GpioDevice::new("A", 15)
+    //     .as_alternate_function()
+    //     .as_af(4)
+    //     .as_open_drain()
+    //     .as_push_pull()
+    //     // .as_high_speed()
+    //     .as_pull_up();
+
+    // devices::io::i2c::i2c::I2cDevice::new().init();
 
 
     // // uart1 tx
@@ -153,19 +155,20 @@ pub unsafe fn kernel_init() -> ! {
     devices::io::gpio::gpio::GpioDevice::new("B", 7).as_input().as_alternate_function().as_af(7);
 
     // // speed regulation
-    // init_tim_3();
-    // let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
-    //     .as_alternate_function()
-    //     .as_af(2);
-    // let gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
-    //     .as_alternate_function()
-    //     .as_af(2);
-    // let gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
-    //     .as_alternate_function()
-    //     .as_af(2);
-    // let gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
-    //     .as_alternate_function()
-    //     .as_af(2);
+    init_tim_3();
+
+    let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
+        .as_alternate_function()
+        .as_af(2);
+    let gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
+        .as_alternate_function()
+        .as_af(2);
+    let gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
+        .as_alternate_function()
+        .as_af(2);
+    let gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
+        .as_alternate_function()
+        .as_af(2);
 
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     usart.enable();
@@ -182,7 +185,7 @@ pub unsafe fn kernel_init() -> ! {
         //         x -= 1;
         //     }
         // }
-        // engine::alter_engine_speed(TIM_3, 1, x);
+        // engine::alter_engine_speed(TIM_3, 2);
         // engine::alter_engine_speed(TIM_3, 2, x);
         // engine::alter_engine_speed(TIM_3, 3, x);
         // engine::alter_engine_speed(TIM_3, 4, x);

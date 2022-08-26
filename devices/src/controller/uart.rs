@@ -11,8 +11,9 @@ static mut buffer: [[char; 3]; 4] = [
     ['0', '0', '0'],
     ['0', '0', '0'],
 ];
+pub static mut res: [u32; 4] = [0,0,0,0];
 
-static mut res: [u32; 4] = [0,0,0,0];
+// extern res: [u32; 4] = [0,0,0,0];
 // stm32f4
 // const USART1_DR: u32 = 0x4001_1004;
 // const USART1_SR: u32 = 0x4001_1000;
