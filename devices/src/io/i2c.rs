@@ -7,7 +7,7 @@ use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
 use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::i2c::I2C;
-
+// use crate::io::i2c::i2c::I2cDevice;
 pub mod i2c {
     //---------------------------------------------------------------//
     //----------------------------IMPORTS----------------------------//
@@ -17,15 +17,25 @@ pub mod i2c {
     use super::stm32f3x::adresses;
     use super::stm32f3x::bitfields;
     use super::I2C;
-
+    pub static mut I2C1_DEV: Option<I2cDevice> = None;
 
     //---------------------------------------------------------------//
     //-----------------------STRUCT-DEFINITONS-----------------------//
     //---------------------------------------------------------------//
+    #[derive(Copy, Clone)]
     pub struct I2cDevice {
         device: &'static I2C,
     }
 
+    pub fn get_i2c_dev() -> I2cDevice {
+        unsafe {
+            let mut t: I2cDevice = match I2C1_DEV {
+                Some(ref mut x) => *x,
+                None => panic!(),
+            };
+            t
+        }
+    }
     //---------------------------------------------------------------//
     //---------------------STRUCT-IMPLEMENTATIONS--------------------//
     //---------------------------------------------------------------//
@@ -41,9 +51,20 @@ pub mod i2c {
         pub unsafe fn init(self) -> I2cDevice {
             self.set_timing2_register(0x2000090E);
             self.set_cr1_register(1 << bitfields::i2c::PE);
+            self.set_oar1_register(0xF << 1 | 1 << 15);
             self
             // self.set
-        } 
+        }
+
+        pub unsafe fn write(self, value: u32) -> I2cDevice {
+            self.set_txdr_register(value);
+            self
+        }
+
+        pub unsafe fn start(self) -> I2cDevice {
+            self.device.CR2.set_bit(1 << bitfields::i2c::START);
+            self
+        }
 
         unsafe fn set_cr1_register(&self, value: u32) {
             self.device.CR1.set_bit(value);
@@ -59,6 +80,11 @@ pub mod i2c {
 
         unsafe fn set_oar2_register(&self, value: u32) {
             self.device.OAR2.set_bit(value);
+        }
+
+        unsafe fn set_txdr_register(&self, value: u32) {
+            // self.device.TIMINGR.set_bit(value);
+            self.device.TXDR.set_bit(value);
         }
 
         unsafe fn set_timing2_register(&self, value: u32) {

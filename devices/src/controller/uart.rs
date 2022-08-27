@@ -1,6 +1,7 @@
 use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
 use super::super::generic::traits::primitive_extensions;
+use super::super::io::i2c::i2c::{get_i2c_dev, I2cDevice};
 use super::super::registerblocks::usart::USART;
 
 static mut column: usize = 0;
@@ -11,7 +12,7 @@ static mut buffer: [[char; 3]; 4] = [
     ['0', '0', '0'],
     ['0', '0', '0'],
 ];
-pub static mut res: [u32; 4] = [0,0,0,0];
+pub static mut res: [u32; 4] = [0, 0, 0, 0];
 
 // extern res: [u32; 4] = [0,0,0,0];
 // stm32f4
@@ -154,28 +155,38 @@ fn process() {
     }
 }
 
-
 #[no_mangle]
 pub extern "C" fn Usart1_MainISR() {
     unsafe {
-        let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
-        transmit(rx_data as u32);
-        // asm!("bkpt");
-        
-        if (rx_data != 10) {
-            if ((rx_data as char) == '|') {
-                row += 1;
-                column = 0;
-            } else if ((rx_data as char) == ';') {
-                row = 0;
-                column = 0;
-                process();
-            } else {
-                buffer[row][column] = rx_data as char;
-                column += 1;
+        // dummy leave it
+        if (1 == 2) {
+            let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
+            transmit(rx_data as u32);
+            // asm!("bkpt");
+
+            if (rx_data != 10) {
+                if ((rx_data as char) == '|') {
+                    row += 1;
+                    column = 0;
+                } else if ((rx_data as char) == ';') {
+                    row = 0;
+                    column = 0;
+                    process();
+                } else {
+                    buffer[row][column] = rx_data as char;
+                    column += 1;
+                }
             }
         }
-        
+        let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
+        transmit(rx_data as u32);
+
+        let d = get_i2c_dev();
+        d.start();
+        d.write(rx_data.into());
+        // i2c.start();
+        // i2c.write(0xFF);
+
         // loop {
         // }
     }

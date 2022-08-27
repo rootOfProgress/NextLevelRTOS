@@ -30,13 +30,13 @@ pub mod gpio {
         Low,
         Medium,
         Fast,
-        High
+        High,
     }
 
     pub enum PullTypes {
         Nothing,
         PullUp,
-        PullDown
+        PullDown,
     }
 
     pub enum ModerTypes {
@@ -116,11 +116,6 @@ pub mod gpio {
             self
         }
 
-        pub fn as_push_pull(self) -> GpioDevice {
-            self.set_otyper(OutputTypes::PushPull);
-            self
-        }
-
         pub fn as_pull_up(self) -> GpioDevice {
             self.set_pupdr(PullTypes::PullUp);
             self
@@ -133,6 +128,11 @@ pub mod gpio {
 
         pub fn as_open_drain(self) -> GpioDevice {
             self.set_otyper(OutputTypes::OpenDrain);
+            self
+        }
+
+        pub fn as_push_pull(self) -> GpioDevice {
+            self.set_otyper(OutputTypes::PushPull);
             self
         }
 
@@ -149,24 +149,16 @@ pub mod gpio {
             // @todo: those are EXCLUSIVE!! clear field first!
             match speed {
                 SpeedModes::Low => {
-                    self.port
-                        .moder
-                        .set_bit(00 << self.pin * 2);
+                    self.port.moder.set_bit(00 << self.pin * 2);
                 }
                 SpeedModes::Medium => {
-                    self.port
-                        .moder
-                        .set_bit(01 << self.pin * 2);
+                    self.port.moder.set_bit(01 << self.pin * 2);
                 }
                 SpeedModes::High => {
-                    self.port
-                        .moder
-                        .set_bit(10 << self.pin * 2);
+                    self.port.moder.set_bit(10 << self.pin * 2);
                 }
                 SpeedModes::Fast => {
-                    self.port
-                        .moder
-                        .set_bit(0b11 << self.pin * 2);
+                    self.port.moder.set_bit(0b11 << self.pin * 2);
                 }
             };
         }
@@ -212,9 +204,10 @@ pub mod gpio {
 
         fn set_pupdr(&self, pu_type: PullTypes) {
             match pu_type {
-                Nothing => {},
+                Nothing => {}
                 PullTypes::PullUp => {
-                    self.port.otyper.clear_bit(0b01 << 2 * self.pin);
+                    self.port.otyper.clear_bit(0b11 << 2 * self.pin);
+                    self.port.otyper.set_bit(0b01 << 2 * self.pin);
                 }
                 PullTypes::PullDown => {
                     self.port.otyper.set_bit(0b10 << 2 * self.pin);
@@ -237,22 +230,31 @@ pub mod gpio {
         fn set_otyper(&self, output_type: OutputTypes) {
             match output_type {
                 OutputTypes::PushPull => {
-                    self.port.otyper.clear_bit(0b1 << self.pin);
+                    self.port.otyper.clear_bit(1 << self.pin);
                 }
                 OutputTypes::OpenDrain => {
-                    self.port.otyper.set_bit(0b1 << self.pin);
+                    self.port.otyper.set_bit(1 << self.pin);
                 }
             };
         }
         fn into_af(&self, af_number: u32) {
-            let alternate_function_register = if self.pin < 8 {
-                self.port.afrl.clear_bit((0xF as u32) << self.pin * 4);
-                self.port.afrl.set_bit(af_number << self.pin * 4);
-            } else {
-                let pin = self.pin - 8;
-                self.port.afrh.clear_bit((0xF as u32) << pin * 4);
-                self.port.afrh.set_bit(af_number << pin * 4);
-            };
+            unsafe {
+                if self.pin < 8 {
+                    self.port.afrl.clear_bit((0xF as u32) << self.pin * 4);
+                    self.port.afrl.set_bit(af_number << self.pin * 4);
+                } else {
+                    // asm!("bkpt");
+                    let pin = self.pin - 8;
+                    // asm!("bkpt");
+                    let toclear = (0xF as u32) << (pin * 4);
+                    let toset = af_number << (pin * 4);
+                    // self.port.afrh.clear_bit((0xF as u32) << (pin * 4));
+                    // asm!("bkpt");
+                    self.port.afrh.set_bit(af_number << (pin * 4));
+                    // asm!("bkpt");
+                    // core::ptr::write(0x4800_0024 as *mut u32, 0x0400_0000);
+                };
+            }
         }
     }
 }

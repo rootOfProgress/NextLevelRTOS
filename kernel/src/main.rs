@@ -14,13 +14,14 @@ mod mem;
 mod proc;
 use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
+use devices::controller::uart::res;
 use devices::generic::platform::stm32f3x::adresses;
 use devices::generic::platform::stm32f3x::bitfields;
 use devices::io::gpio::gpio::GpioDevice;
 use devices::io::i2c::i2c::I2cDevice;
+use devices::io::i2c::i2c::I2C1_DEV;
 use proc::sched;
 use user::engine;
-use devices::controller::uart::res;
 static mut TIM_3: Option<TimerDevice> = None;
 
 fn fibonacci(n: u32) -> u32 {
@@ -123,36 +124,39 @@ pub unsafe fn kernel_init() -> ! {
     sched::init();
     // devices::sys::tick::init_systick(280);
 
-    let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);
+    // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);
 
-    // i2c1 sda
-    // devices::io::gpio::gpio::GpioDevice::new("A", 14)
-    //     .as_alternate_function()
-    //     .as_af(4)
-    //     .as_open_drain()
-    //     .as_push_pull()
-    //     // .as_high_speed()
-    //     .as_pull_up();
+    // // i2c1 sda
+    devices::io::gpio::gpio::GpioDevice::new("B", 7)
+        .as_af(4)
+        .as_alternate_function()
+        .as_open_drain();
+    // .as_push_pull()
+    // .as_high_speed()
+    // .as_pull_up();
 
     // // i2c1 scl
-    // devices::io::gpio::gpio::GpioDevice::new("A", 15)
-    //     .as_alternate_function()
-    //     .as_af(4)
-    //     .as_open_drain()
-    //     .as_push_pull()
-    //     // .as_high_speed()
-    //     .as_pull_up();
+    devices::io::gpio::gpio::GpioDevice::new("B", 8)
+        .as_af(4)
+        .as_alternate_function()
+        .as_open_drain();
+    // .as_push_pull()
+    // .as_high_speed()
+    // .as_pull_up();
 
-    // devices::io::i2c::i2c::I2cDevice::new().init();
-
+    I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());
+    // asm!("bkpt");
 
     // // uart1 tx
-    devices::io::gpio::gpio::GpioDevice::new("B", 6)
+    devices::io::gpio::gpio::GpioDevice::new("A", 9)
         .as_alternate_function()
         .as_af(7)
         .as_push_pull();
     // // uart1 rx
-    devices::io::gpio::gpio::GpioDevice::new("B", 7).as_input().as_alternate_function().as_af(7);
+    devices::io::gpio::gpio::GpioDevice::new("A", 10)
+        .as_input()
+        .as_alternate_function()
+        .as_af(7);
 
     // // speed regulation
     init_tim_3();
@@ -176,6 +180,7 @@ pub unsafe fn kernel_init() -> ! {
 
     // let mut x: u32 = 0;
     loop {
+        // i2c = i2c.write(0xFF);
         // if (gpio_port_a0.is_pressed()) {
         //     if (x < 300) {
         //         x += 1;

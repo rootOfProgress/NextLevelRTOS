@@ -77,6 +77,7 @@ pub mod stm32f3x {
             pub const SDADEL: u32 = 16;
             pub const SCLH: u32 = 8;
             pub const SCLL: u32 = 0;
+            pub const START: u32 = 13;
             // pub const PE: u32 = 0;
         }
 
