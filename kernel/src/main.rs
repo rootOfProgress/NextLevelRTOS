@@ -130,18 +130,18 @@ pub unsafe fn kernel_init() -> ! {
     devices::io::gpio::gpio::GpioDevice::new("B", 7)
         .as_af(4)
         .as_alternate_function()
-        .as_open_drain();
+        .as_open_drain()
+        .as_high_speed();
     // .as_push_pull()
-    // .as_high_speed()
     // .as_pull_up();
 
     // // i2c1 scl
     devices::io::gpio::gpio::GpioDevice::new("B", 8)
         .as_af(4)
         .as_alternate_function()
-        .as_open_drain();
+        .as_open_drain()
+        .as_high_speed();
     // .as_push_pull()
-    // .as_high_speed()
     // .as_pull_up();
 
     I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());

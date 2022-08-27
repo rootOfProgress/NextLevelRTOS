@@ -1,5 +1,6 @@
 use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
+use super::super::generic::platform::stm32f3x::bitfields;
 use super::super::generic::traits::primitive_extensions;
 use super::super::io::i2c::i2c::{get_i2c_dev, I2cDevice};
 use super::super::registerblocks::usart::USART;
@@ -182,8 +183,13 @@ pub extern "C" fn Usart1_MainISR() {
         transmit(rx_data as u32);
 
         let d = get_i2c_dev();
+        d.set_cr2_register(0x53 << 1 | 1 << 16 | 1 << 25);
         d.start();
-        d.write(rx_data.into());
+        // while !((d.get_isr() & bitfields::i2c::TXE) != 0) ){};
+        d.write(0x66);
+       // d.set_isr_register(1 << bitfields::i2c::TXE);
+        //while !(((d.get_isr() & bitfields::i2c::ADDR) != 0)) {};
+        asm!("bkpt");
         // i2c.start();
         // i2c.write(0xFF);
 

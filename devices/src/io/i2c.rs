@@ -51,7 +51,7 @@ pub mod i2c {
         pub unsafe fn init(self) -> I2cDevice {
             self.set_timing2_register(0x2000090E);
             self.set_cr1_register(1 << bitfields::i2c::PE);
-            self.set_oar1_register(0xF << 1 | 1 << 15);
+            self.set_oar1_register(0x1 << 1 | 1 << 15);
             self
             // self.set
         }
@@ -66,11 +66,16 @@ pub mod i2c {
             self
         }
 
+        pub unsafe fn get_isr(&self) -> u32 {
+            self.device.ISR.read_register()
+            // self
+        }
+
         unsafe fn set_cr1_register(&self, value: u32) {
             self.device.CR1.set_bit(value);
         }
 
-        unsafe fn set_cr2_register(&self, value: u32) {
+        pub unsafe fn set_cr2_register(&self, value: u32) {
             self.device.CR2.set_bit(value);
         }
 
@@ -96,7 +101,7 @@ pub mod i2c {
             self.device.TIMEOUTR.set_bit(value);
         }
 
-        unsafe fn set_isr_register(&self, value: u32) {
+        pub unsafe fn set_isr_register(&self, value: u32) {
             self.device.ISR.set_bit(value);
         }
 
