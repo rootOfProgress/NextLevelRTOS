@@ -13,6 +13,19 @@ static mut buffer: [[char; 3]; 4] = [
     ['0', '0', '0'],
     ['0', '0', '0'],
 ];
+
+static mut i2c_buffer: [char; 4] = ['0','0','0','0'];
+static mut i2c_idx: u32 = 0;
+static mut i2c_payload: u32 = 0;
+
+#[derive(PartialEq)]
+enum RCV_STATE {
+    PWM,
+    I2C,
+}
+
+static mut rcv_state: RCV_STATE = RCV_STATE::I2C;
+
 pub static mut res: [u32; 4] = [0, 0, 0, 0];
 
 // extern res: [u32; 4] = [0,0,0,0];
@@ -159,12 +172,17 @@ fn process() {
 #[no_mangle]
 pub extern "C" fn Usart1_MainISR() {
     unsafe {
-        // dummy leave it
-        if (1 == 2) {
-            let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
-            transmit(rx_data as u32);
-            // asm!("bkpt");
+        let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
+        transmit(rx_data as u32);
 
+        if (rx_data as char == 'I') {
+            rcv_state = RCV_STATE::I2C;
+        } else if (rx_data as char == 'P') {
+            rcv_state = RCV_STATE::PWM;
+        }
+
+        // dummy leave it
+        if (rcv_state == RCV_STATE::PWM) {
             if (rx_data != 10) {
                 if ((rx_data as char) == '|') {
                     row += 1;
@@ -178,18 +196,35 @@ pub extern "C" fn Usart1_MainISR() {
                     column += 1;
                 }
             }
+        } else if (rcv_state == RCV_STATE::I2C) {
+            if (rx_data as char == ';') {
+                // i2c_buffer[i2c_idx as usize] = ';';
+                if (i2c_buffer[0] as char == 'w') {
+                    let d = get_i2c_dev();
+                    d.set_cr2_register(0x53 << 1 | 1 << 16 | 1 << 25);
+                    d.start();
+                    // while !((d.get_isr() & bitfields::i2c::TXE) != 0) ){};
+                    d.write(i2c_payload);
+                } else if (i2c_buffer[0] as char == 'p') { // p = payload
+                    let mut n = 1;
+                    let mut sum = 0;
+                    let mut multi = 10;
+                    i2c_idx -= 1;
+                    while (i2c_idx >= n) {
+                        sum += ((i2c_buffer[i2c_idx as usize] as u8 - 0x30) as u32) * multi;
+                        i2c_idx -= 1;
+                        multi *= 10;
+                    }
+                    asm!("bkpt");
+                }
+                i2c_idx = 0;
+                return;
+            } 
+            i2c_buffer[i2c_idx as usize] = rx_data as char; 
+            i2c_idx += 1;
+            // d.set_isr_register(1 << bitfields::i2c::TXE);
+            //while !(((d.get_isr() & bitfields::i2c::ADDR) != 0)) {};
         }
-        let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
-        transmit(rx_data as u32);
-
-        let d = get_i2c_dev();
-        d.set_cr2_register(0x53 << 1 | 1 << 16 | 1 << 25);
-        d.start();
-        // while !((d.get_isr() & bitfields::i2c::TXE) != 0) ){};
-        d.write(0x66);
-       // d.set_isr_register(1 << bitfields::i2c::TXE);
-        //while !(((d.get_isr() & bitfields::i2c::ADDR) != 0)) {};
-        asm!("bkpt");
         // i2c.start();
         // i2c.write(0xFF);
 
