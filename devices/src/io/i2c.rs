@@ -62,8 +62,21 @@ pub mod i2c {
         }
 
         pub unsafe fn start(self) -> I2cDevice {
+            self.device.CR2.clear_bit(1 << bitfields::i2c::RD_WRN);
             self.device.CR2.set_bit(1 << bitfields::i2c::START);
             self
+        }
+
+        pub unsafe fn request_read(self) -> I2cDevice {
+            // 10 = RD_WRN
+            self.device.CR2.set_bit(1 << bitfields::i2c::RD_WRN);
+            self.device.CR2.set_bit(1 << bitfields::i2c::START);
+            self
+        }
+
+        pub unsafe fn get_rxdr(&self) -> u32 {
+            self.device.RXDR.read_register()
+            // self
         }
 
         pub unsafe fn get_isr(&self) -> u32 {

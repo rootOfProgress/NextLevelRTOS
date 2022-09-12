@@ -4,6 +4,10 @@ use super::super::generic::platform::stm32f3x::bitfields;
 use super::super::generic::traits::primitive_extensions;
 use super::super::io::i2c::i2c::{get_i2c_dev, I2cDevice};
 use super::super::registerblocks::usart::USART;
+// use super::super::ext::adx345;
+
+extern crate ext;
+use ext::adx345::sensor::*;
 
 static mut column: usize = 0;
 static mut row: usize = 0;
@@ -14,9 +18,10 @@ static mut buffer: [[char; 3]; 4] = [
     ['0', '0', '0'],
 ];
 
-static mut i2c_buffer: [char; 4] = ['0','0','0','0'];
+static mut i2c_buffer: [char; 16] = ['0', '0', '0', '0','0', '0', '0', '0','0', '0', '0', '0','0', '0', '0', '0'];
 static mut i2c_idx: u32 = 0;
 static mut i2c_payload: u32 = 0;
+static mut sum: u32 = 0;
 
 #[derive(PartialEq)]
 enum RCV_STATE {
@@ -156,14 +161,14 @@ fn process() {
     let mut result_idx = 0;
     unsafe {
         for r in 0..4 {
-            let mut sum: u32 = 0;
+            let mut sum_pwm: u32 = 0;
             let mut n: u32 = 100;
             for c in 0..3 {
                 let num = buffer[r][c] as u8;
-                sum += (((buffer[r][c] as u8 - 0x30) as u8) as u32 * n) as u32;
+                sum_pwm += (((buffer[r][c] as u8 - 0x30) as u8) as u32 * n) as u32;
                 n /= 10;
             }
-            res[result_idx] = sum;
+            res[result_idx] = sum_pwm;
             result_idx += 1;
         }
     }
@@ -177,8 +182,10 @@ pub extern "C" fn Usart1_MainISR() {
 
         if (rx_data as char == 'I') {
             rcv_state = RCV_STATE::I2C;
+            return;
         } else if (rx_data as char == 'P') {
             rcv_state = RCV_STATE::PWM;
+            return;
         }
 
         // dummy leave it
@@ -204,32 +211,31 @@ pub extern "C" fn Usart1_MainISR() {
                     d.set_cr2_register(0x53 << 1 | 1 << 16 | 1 << 25);
                     d.start();
                     // while !((d.get_isr() & bitfields::i2c::TXE) != 0) ){};
-                    d.write(i2c_payload);
-                } else if (i2c_buffer[0] as char == 'p') { // p = payload
+                    d.write(sum);
+                    sum = 0;
+                } else if (i2c_buffer[0] as char == 'p') {
+                    // p = payload
                     let mut n = 1;
-                    let mut sum = 0;
-                    let mut multi = 10;
+                    let mut multi = 1;
+
+                    // undoes #A
                     i2c_idx -= 1;
                     while (i2c_idx >= n) {
                         sum += ((i2c_buffer[i2c_idx as usize] as u8 - 0x30) as u32) * multi;
                         i2c_idx -= 1;
                         multi *= 10;
                     }
-                    asm!("bkpt");
+                } else if (i2c_buffer[0] as char == 'r') {
+                    let d = get_i2c_dev();
+                    d.request_read();
+                    d.get_rxdr();
                 }
                 i2c_idx = 0;
-                return;
-            } 
-            i2c_buffer[i2c_idx as usize] = rx_data as char; 
-            i2c_idx += 1;
-            // d.set_isr_register(1 << bitfields::i2c::TXE);
-            //while !(((d.get_isr() & bitfields::i2c::ADDR) != 0)) {};
+            } else if (rx_data as char != '\n') {
+                i2c_buffer[i2c_idx as usize] = rx_data as char;
+                // #A
+                i2c_idx += 1;
+            }
         }
-        // i2c.start();
-        // i2c.write(0xFF);
-
-        // loop {
-        // }
     }
-    // context_switch();
 }

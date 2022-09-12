@@ -15,6 +15,13 @@ version = "0.1.0"
 [[package]]
 name = "devices"
 version = "0.1.0"
+dependencies = [
+ "ext",
+]
+
+[[package]]
+name = "ext"
+version = "0.1.0"
 
 [[package]]
 name = "kernel"
