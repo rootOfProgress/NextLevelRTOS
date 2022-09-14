@@ -84,6 +84,7 @@ pub mod stm32f3x {
             pub const NBYTES: u32 = 16;
             pub const AUTOEND: u32 = 25;
             pub const SADD_7_1: u32 = 1;
+            pub const TXIS: u32 = 1;
             // pub const PE: u32 = 0;
         }
 

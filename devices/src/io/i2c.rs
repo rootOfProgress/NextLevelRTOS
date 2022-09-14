@@ -74,7 +74,7 @@ pub mod i2c {
             self.start();
             for value in tx_buffer {
                 self.set_txdr_register(value);
-                while self.get_isr() & (1 << 1) == 0 {}
+                while !((self.get_isr() & (1 << bitfields::i2c::TXIS)) == 0) {}
             }
 
             self
