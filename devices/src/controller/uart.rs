@@ -159,6 +159,24 @@ fn transmit(c: u32) {
     }
 }
 
+fn transmit_int(mut int_number: u32) {
+    unsafe {
+        let mut cnt: u8 = 0;
+        let mut buf: [u8; 32] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        while int_number > 0 {
+            buf[cnt as usize] = (int_number % 10 + 0x30) as u8;
+            int_number /= 10;
+            cnt += 1;
+        }
+        for c in 0..cnt {
+            unsafe {
+                core::ptr::write_volatile(USART1_TDR as *mut u32, (buf[c as usize]) as u32);
+                while !((core::ptr::read_volatile(USART1_ISR as *const u32) & 0x80) != 0) {}
+            }
+        }
+    }
+}
+
 fn process() {
     let mut result_idx = 0;
     unsafe {
@@ -180,7 +198,8 @@ fn process() {
 pub extern "C" fn Usart1_MainISR() {
     unsafe {
         let rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
-        transmit(rx_data as u32);
+        // echo
+        // transmit(rx_data as u32);
 
         if rx_data as char == 'I' {
             rcv_state = RCV_STATE::I2C;
@@ -235,7 +254,13 @@ pub extern "C" fn Usart1_MainISR() {
                 } else if i2c_buffer[0] as char == 'r' {
                     let d = get_i2c_dev();
                     d.read(sum);
-                    d.get_rxdr();
+                    let result = d.get_rxdr();
+                    if (result == 0) {
+                        "0".println();
+                    } else {
+                        transmit_int(result);
+                        "".println();
+                    }
                     sum = 0;
                 } else if i2c_buffer[0] as char == 't' {
                     let d = get_i2c_dev();
