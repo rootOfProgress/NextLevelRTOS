@@ -1,13 +1,13 @@
 use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
-use super::super::generic::platform::stm32f3x::bitfields;
+
 use super::super::generic::traits::primitive_extensions;
-use super::super::io::i2c::i2c::{get_i2c_dev, I2cDevice};
+use super::super::io::i2c::i2c::{get_i2c_dev};
 use super::super::registerblocks::usart::USART;
 // use super::super::ext::adx345;
 
 extern crate ext;
-use ext::adx345::sensor::*;
+
 
 static mut column: usize = 0;
 static mut row: usize = 0;
@@ -166,7 +166,7 @@ fn process() {
             let mut sum_pwm: u32 = 0;
             let mut n: u32 = 100;
             for c in 0..3 {
-                let num = buffer[r][c] as u8;
+                let _num = buffer[r][c] as u8;
                 sum_pwm += (((buffer[r][c] as u8 - 0x30) as u8) as u32 * n) as u32;
                 n /= 10;
             }
@@ -179,24 +179,24 @@ fn process() {
 #[no_mangle]
 pub extern "C" fn Usart1_MainISR() {
     unsafe {
-        let mut rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
+        let rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
         transmit(rx_data as u32);
 
-        if (rx_data as char == 'I') {
+        if rx_data as char == 'I' {
             rcv_state = RCV_STATE::I2C;
             return;
-        } else if (rx_data as char == 'P') {
+        } else if rx_data as char == 'P' {
             rcv_state = RCV_STATE::PWM;
             return;
         }
 
         // dummy leave it
-        if (rcv_state == RCV_STATE::PWM) {
-            if (rx_data != 10) {
-                if ((rx_data as char) == '|') {
+        if rcv_state == RCV_STATE::PWM {
+            if rx_data != 10 {
+                if (rx_data as char) == '|' {
                     row += 1;
                     column = 0;
-                } else if ((rx_data as char) == ';') {
+                } else if (rx_data as char) == ';' {
                     row = 0;
                     column = 0;
                     process();
@@ -205,14 +205,14 @@ pub extern "C" fn Usart1_MainISR() {
                     column += 1;
                 }
             }
-        } else if (rcv_state == RCV_STATE::I2C) {
-            if (rx_data as char == ';') {
+        } else if rcv_state == RCV_STATE::I2C {
+            if rx_data as char == ';' {
                 // i2c_buffer[i2c_idx as usize] = ';';
                 if i2c_buffer[0] as char == 'w' {
-                    let register = sum >> 8;
+                    let _register = sum >> 8;
                     let mut num_bytes = 1;
                     let content = sum & !(0xFF << 8);
-                    if (content != 0) {
+                    if content != 0 {
                         num_bytes = 2;
                     }
 
@@ -222,12 +222,12 @@ pub extern "C" fn Usart1_MainISR() {
                     sum = 0;
                 } else if i2c_buffer[0] as char == 'p' {
                     // p = payload
-                    let mut n = 1;
+                    let n = 1;
                     let mut multi = 1;
 
                     // undoes #A
                     i2c_idx -= 1;
-                    while (i2c_idx >= n) {
+                    while i2c_idx >= n {
                         sum += ((i2c_buffer[i2c_idx as usize] as u8 - 0x30) as u32) * multi;
                         i2c_idx -= 1;
                         multi *= 10;
@@ -238,7 +238,7 @@ pub extern "C" fn Usart1_MainISR() {
                     d.get_rxdr();
                 }
                 i2c_idx = 0;
-            } else if (rx_data as char != '\n') {
+            } else if rx_data as char != '\n' {
                 i2c_buffer[i2c_idx as usize] = rx_data as char;
                 // #A
                 i2c_idx += 1;

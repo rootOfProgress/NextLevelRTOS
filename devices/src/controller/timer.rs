@@ -7,7 +7,7 @@ pub mod tim {
     use super::primitive_extensions::BitOps;
     use super::rcc;
     use super::stm32f3x::adresses;
-    use super::stm32f3x::bitfields;
+    
     use super::TIMx;
 
     #[derive(Copy, Clone)]

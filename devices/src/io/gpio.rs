@@ -137,9 +137,9 @@ pub mod gpio {
         }
 
         pub fn is_pressed(&self) -> bool {
-            let mut reg_content = self.port.idr.read_register();
+            let reg_content = self.port.idr.read_register();
             // let pin_masked = 0xFFFF & !(self.pin);
-            if ((reg_content & (1 << self.pin)) > 0) {
+            if (reg_content & (1 << self.pin)) > 0 {
                 return true;
             }
             false
@@ -204,7 +204,7 @@ pub mod gpio {
 
         fn set_pupdr(&self, pu_type: PullTypes) {
             match pu_type {
-                Nothing => {}
+                _Nothing => {}
                 PullTypes::PullUp => {
                     self.port.otyper.clear_bit(0b11 << 2 * self.pin);
                     self.port.otyper.set_bit(0b01 << 2 * self.pin);
@@ -246,8 +246,8 @@ pub mod gpio {
                     // asm!("bkpt");
                     let pin = self.pin - 8;
                     // asm!("bkpt");
-                    let toclear = (0xF as u32) << (pin * 4);
-                    let toset = af_number << (pin * 4);
+                    let _toclear = (0xF as u32) << (pin * 4);
+                    let _toset = af_number << (pin * 4);
                     // self.port.afrh.clear_bit((0xF as u32) << (pin * 4));
                     // asm!("bkpt");
                     self.port.afrh.set_bit(af_number << (pin * 4));

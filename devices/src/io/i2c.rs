@@ -29,7 +29,7 @@ pub mod i2c {
 
     pub fn get_i2c_dev() -> I2cDevice {
         unsafe {
-            let mut t: I2cDevice = match I2C1_DEV {
+            let t: I2cDevice = match I2C1_DEV {
                 Some(ref mut x) => *x,
                 None => panic!(),
             };
@@ -74,7 +74,7 @@ pub mod i2c {
             self.start();
             for value in tx_buffer {
                 self.set_txdr_register(value);
-                while (self.get_isr() & (1 << 1) == 0) {}
+                while self.get_isr() & (1 << 1) == 0 {}
             }
 
             self

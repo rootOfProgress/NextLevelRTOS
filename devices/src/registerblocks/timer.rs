@@ -31,7 +31,7 @@ impl TIMx {
     /// adress. The following ones are stacked ontop each other with an offset of
     /// 4 byte / 32 bit.
     ///
-    pub fn new(tim_base_adress: u32, tim_number: u32) -> &'static TIMx {
+    pub fn new(tim_base_adress: u32, _tim_number: u32) -> &'static TIMx {
         // match tim_number {
         // 2 | 3 | 4 => unsafe { &mut *(tim_base_adress as *mut TIMx) },
         // _ => panic!()
