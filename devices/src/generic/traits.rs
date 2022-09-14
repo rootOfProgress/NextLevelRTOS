@@ -12,6 +12,7 @@ pub mod primitive_extensions {
         // fn clear_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32);
         fn write_whole_register(&self, register_content: u32);
         fn replace_whole_register(&self, register_content: u32);
+        fn replace_byte_lsb(&self, register_content: u32);
         fn read_register(&self) -> u32;
     }
 
@@ -35,6 +36,7 @@ pub mod primitive_extensions {
                 core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
             }
         }
+
         /// Clears out a single bit
         ///
         /// # Arguments
@@ -67,6 +69,14 @@ pub mod primitive_extensions {
                     address as *mut u32,
                     core::ptr::read(address) | register_content,
                 );
+            }
+        }
+
+        fn replace_byte_lsb(&self, new_register_content: u32) {
+            unsafe {
+                let address = self.get_addr();
+                let c = (core::ptr::read(address) & !(0xFF)) | new_register_content;
+                core::ptr::write(address as *mut u32, c);
             }
         }
 

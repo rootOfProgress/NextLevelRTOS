@@ -78,13 +78,16 @@ pub mod stm32f3x {
             pub const SCLH: u32 = 8;
             pub const SCLL: u32 = 0;
             pub const START: u32 = 13;
+            pub const STOP: u32 = 14;
             pub const ADDR: u32 = 3;
             pub const TXE: u32 = 0;
             pub const RD_WRN: u32 = 10;
             pub const NBYTES: u32 = 16;
             pub const AUTOEND: u32 = 25;
+            pub const RXNE: u32 = 2;
             pub const SADD_7_1: u32 = 1;
             pub const TXIS: u32 = 1;
+            pub const TC: u32 = 6;
             // pub const PE: u32 = 0;
         }
 

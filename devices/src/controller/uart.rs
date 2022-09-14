@@ -234,8 +234,12 @@ pub extern "C" fn Usart1_MainISR() {
                     }
                 } else if i2c_buffer[0] as char == 'r' {
                     let d = get_i2c_dev();
-                    d.request_read();
+                    d.read(sum);
                     d.get_rxdr();
+                    sum = 0;
+                } else if i2c_buffer[0] as char == 't' {
+                    let d = get_i2c_dev();
+                    // d.rw_test();
                 }
                 i2c_idx = 0;
             } else if rx_data as char != '\n' {

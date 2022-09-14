@@ -60,7 +60,7 @@ pub mod i2c {
             self.set_cr2_register(
                 slave_addr << bitfields::i2c::SADD_7_1
                     | num_bytes << bitfields::i2c::NBYTES
-                    | 1 << bitfields::i2c::AUTOEND,
+                    /*| 1 << bitfields::i2c::AUTOEND,*/
             );
             let mut tx_buffer: [u32; 4] = [0, 0, 0, 0];
             for byte in 0..num_bytes {
@@ -72,17 +72,42 @@ pub mod i2c {
                 tx_buffer[byte as usize] = payload;
             }
             self.start();
-            for value in tx_buffer {
-                self.set_txdr_register(value);
-                while !((self.get_isr() & (1 << bitfields::i2c::TXIS)) == 0) {}
+            for idx in 0..num_bytes {
+                while !((self.get_isr() & (1 << bitfields::i2c::TXE)) != 0) {}
+                self.set_txdr_register(tx_buffer[idx as usize]);
+                // while !((self.get_isr() & (1 << bitfields::i2c::TC)) != 0) {}
             }
-
+            while !((self.get_isr() & (1 << bitfields::i2c::TC)) != 0) {}
+            self.stop();
             self
         }
 
         pub unsafe fn start(self) -> I2cDevice {
             self.device.CR2.clear_bit(1 << bitfields::i2c::RD_WRN);
             self.device.CR2.set_bit(1 << bitfields::i2c::START);
+            self
+        }
+
+        pub unsafe fn stop(self) -> I2cDevice {
+            self.device.CR2.set_bit(1 << bitfields::i2c::STOP);
+            self
+        }
+
+        pub unsafe fn read(self, target_register: u32) -> I2cDevice {
+            self.set_cr2_register(
+                0x53 << bitfields::i2c::SADD_7_1
+                    | 1 << bitfields::i2c::NBYTES
+            );
+            self.start();
+            while !((self.get_isr() & (1 << bitfields::i2c::TXE)) != 0) {}
+            self.set_txdr_register(target_register);
+            while !((self.get_isr() & (1 << bitfields::i2c::TC)) != 0) {}
+            self.stop();
+
+
+            self.request_read();
+            while !((self.get_isr() & (1 << bitfields::i2c::RXNE)) != 0) {}
+            self.stop();
             self
         }
 
@@ -108,6 +133,7 @@ pub mod i2c {
         }
 
         pub unsafe fn set_cr2_register(&self, value: u32) {
+            self.device.CR2.clear_bit(0x7FF_FFFF);
             self.device.CR2.set_bit(value);
         }
 
@@ -121,7 +147,7 @@ pub mod i2c {
 
         unsafe fn set_txdr_register(&self, value: u32) {
             // self.device.TIMINGR.set_bit(value);
-            self.device.TXDR.set_bit(value);
+            self.device.TXDR.replace_whole_register(value);
         }
 
         unsafe fn set_timing2_register(&self, value: u32) {

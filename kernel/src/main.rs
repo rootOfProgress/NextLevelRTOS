@@ -14,14 +14,14 @@ mod mem;
 mod proc;
 use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
-use devices::controller::uart::res;
-use devices::generic::platform::stm32f3x::adresses;
+
+
 use devices::generic::platform::stm32f3x::bitfields;
-use devices::io::gpio::gpio::GpioDevice;
-use devices::io::i2c::i2c::I2cDevice;
+
+
 use devices::io::i2c::i2c::I2C1_DEV;
 use proc::sched;
-use user::engine;
+
 static mut TIM_3: Option<TimerDevice> = None;
 
 fn fibonacci(n: u32) -> u32 {
@@ -84,7 +84,7 @@ fn user_init() {
 }
 unsafe fn init_tim_3() {
     TIM_3 = Some(TimerDevice::new(3));
-    let mut tim3: &'static mut TimerDevice = match TIM_3 {
+    let tim3: &'static mut TimerDevice = match TIM_3 {
         Some(ref mut x) => &mut *x,
         None => panic!(),
     };
@@ -161,16 +161,16 @@ pub unsafe fn kernel_init() -> ! {
     // // speed regulation
     init_tim_3();
 
-    let gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
+    let _gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
         .as_alternate_function()
         .as_af(2);
-    let gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
+    let _gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
         .as_alternate_function()
         .as_af(2);
-    let gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
+    let _gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
         .as_alternate_function()
         .as_af(2);
-    let gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
+    let _gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
         .as_alternate_function()
         .as_af(2);
 
