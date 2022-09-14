@@ -81,6 +81,7 @@ pub mod stm32f3x {
             pub const ADDR: u32 = 3;
             pub const TXE: u32 = 0;
             pub const RD_WRN: u32 = 10;
+            pub const NBYTES: u32 = 16;
             // pub const PE: u32 = 0;
         }
 

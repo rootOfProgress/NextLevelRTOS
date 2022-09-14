@@ -56,8 +56,27 @@ pub mod i2c {
             // self.set
         }
 
-        pub unsafe fn write(self, value: u32) -> I2cDevice {
-            self.set_txdr_register(value);
+        pub unsafe fn write(self, value: u32, num_bytes: u32, slave_addr: u32) -> I2cDevice {
+            self.set_cr2_register(
+                slave_addr << bitfields::i2c::SADD_7_1
+                    | num_bytes << bitfields::i2c::NBYTES
+                    | 1 << bitfields::i2c::AUTOEND,
+            );
+            let mut tx_buffer: [u32; 4] = [0, 0, 0, 0];
+            for byte in 0..num_bytes {
+                // byte counts from 0 .. n
+                let mut payload = sum >> (8 * byte);
+
+                // clear out the remaining 24 bit
+                payload &= !(0xFF_FF_FF_00);
+                tx_buffer[byte as usize] = payload;
+            }
+            self.start();
+            for value in tx_buffer {
+                self.set_txdr_register(value);
+                while (d.get_isr() & (1 << 1) == 0) {}
+            }
+
             self
         }
 

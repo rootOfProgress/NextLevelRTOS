@@ -18,7 +18,9 @@ static mut buffer: [[char; 3]; 4] = [
     ['0', '0', '0'],
 ];
 
-static mut i2c_buffer: [char; 16] = ['0', '0', '0', '0','0', '0', '0', '0','0', '0', '0', '0','0', '0', '0', '0'];
+static mut i2c_buffer: [char; 16] = [
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+];
 static mut i2c_idx: u32 = 0;
 static mut i2c_payload: u32 = 0;
 static mut sum: u32 = 0;
@@ -206,14 +208,19 @@ pub extern "C" fn Usart1_MainISR() {
         } else if (rcv_state == RCV_STATE::I2C) {
             if (rx_data as char == ';') {
                 // i2c_buffer[i2c_idx as usize] = ';';
-                if (i2c_buffer[0] as char == 'w') {
+                if i2c_buffer[0] as char == 'w' {
+                    let register = sum >> 8;
+                    let mut num_bytes = 1;
+                    let content = sum & !(0xFF << 8);
+                    if (content != 0) {
+                        num_bytes = 2;
+                    }
+
                     let d = get_i2c_dev();
-                    d.set_cr2_register(0x53 << 1 | 1 << 16 | 1 << 25);
-                    d.start();
-                    // while !((d.get_isr() & bitfields::i2c::TXE) != 0) ){};
-                    d.write(sum);
+
+                    d.write(sum, num_bytes, 0x53);
                     sum = 0;
-                } else if (i2c_buffer[0] as char == 'p') {
+                } else if i2c_buffer[0] as char == 'p' {
                     // p = payload
                     let mut n = 1;
                     let mut multi = 1;
@@ -225,7 +232,7 @@ pub extern "C" fn Usart1_MainISR() {
                         i2c_idx -= 1;
                         multi *= 10;
                     }
-                } else if (i2c_buffer[0] as char == 'r') {
+                } else if i2c_buffer[0] as char == 'r' {
                     let d = get_i2c_dev();
                     d.request_read();
                     d.get_rxdr();
