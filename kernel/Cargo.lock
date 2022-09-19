@@ -27,17 +27,10 @@ version = "0.1.0"
 name = "kernel"
 version = "0.1.0"
 dependencies = [
+ "cpu",
  "devices",
- "process",
  "runtime",
  "user",
-]
-
-[[package]]
-name = "process"
-version = "0.1.0"
-dependencies = [
- "cpu",
 ]
 
 [[package]]

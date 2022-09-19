@@ -2,8 +2,8 @@
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
 use super::super::data::list::List;
-use super::task;
-use process::blueprint::Frame;
+use super::tcb::TCB;
+use super::task::task::Frame;
 
 static mut TASK_LIST_ADDR: u32 = 0;
 
@@ -65,7 +65,7 @@ pub fn start_init_process() {
 pub fn spawn(pid: u32, p: Frame, name: &str) {
     let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
     let r4 = p.get_r4_location();
-    let tcb = task::create(r4, pid, name);
+    let tcb = TCB::create(r4, pid, name);
     list.insert(tcb);
 }
 
@@ -73,7 +73,8 @@ pub fn context_switch() {
     unsafe {
         let old_sp = __save_process_context();
         let list = &mut *(TASK_LIST_ADDR as *mut List);
-        list.update_tcb(old_sp);
+        list.update_tcb_and_shift_task(old_sp);
+        // list.update_tcb(old_sp);
         let sp = list.sr_cursor_sp();
 
         __load_process_context(sp);
@@ -82,7 +83,23 @@ pub fn context_switch() {
 
 #[no_mangle]
 pub extern "C" fn SysTick() {
-    context_switch();
+    unsafe {
+
+        // turn on PA0
+        core::ptr::write_volatile(0x4800_0014 as *mut u32, core::ptr::read_volatile(0x4800_0014 as *mut u32) | 1);
+        //context_switch();
+        let old_sp = __save_process_context();
+        // let list = &mut *(TASK_LIST_ADDR as *mut List);
+        let sp = (&mut *(TASK_LIST_ADDR as *mut List)).update_tcb_and_shift_task(old_sp);
+        // let sp = list.update_tcb_and_shift_task(old_sp);
+        // list.update_tcb(old_sp);
+        // let sp = list.sr_cursor_sp();
+
+        __load_process_context(sp);  
+        // turn on PA0
+        core::ptr::write_volatile(0x4800_0014 as *mut u32, core::ptr::read_volatile(0x4800_0014 as *mut u32) & !1);
+    }
+
 }
 
 #[no_mangle]

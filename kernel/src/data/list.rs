@@ -93,4 +93,14 @@ impl List {
         let node = unsafe { &mut *(self.head as *mut Node) };
         node.data.sp = value;
     }
+    pub fn update_tcb_and_shift_task(&mut self, value: u32) -> u32 {
+        let current_node = unsafe { &mut *(self.head as *mut Node) };
+        current_node.data.sp = value;
+        self.head = current_node.next;
+        let tail_node = unsafe { &mut *(self.tail as *mut Node) };
+        self.tail = tail_node.next;
+        let node_new = unsafe { &mut *(self.head as *mut Node) };
+        let t = &mut *(&mut node_new.data as &mut TCB);
+        t.sp
+    }
 }
