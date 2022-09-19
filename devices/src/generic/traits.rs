@@ -3,7 +3,9 @@
 //! features. It may be operating system- or low level features
 //! like bit operations for u32.
 //!
+
 pub mod primitive_extensions {
+    use core::intrinsics::{volatile_load, volatile_store};
     pub trait BitOps {
         fn get_addr(&self) -> *const u32;
         fn set_bit(&self, bit_number: u32);
@@ -33,7 +35,8 @@ pub mod primitive_extensions {
         fn set_bit(&self, bit_number: u32) {
             unsafe {
                 let address = self.get_addr();
-                core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
+                volatile_store(address as *mut u32, volatile_load(address as *const u32) | bit_number);
+                // core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
             }
         }
 
@@ -50,10 +53,12 @@ pub mod primitive_extensions {
         fn clear_bit(&self, bit_number: u32) {
             unsafe {
                 let address = self.get_addr();
-                core::ptr::write(
-                    address as *mut u32,
-                    core::ptr::read(address) & !(bit_number),
-                );
+                volatile_store(address as *mut u32, volatile_load(address) & !(bit_number));
+
+                // core::ptr::write(
+                    // address as *mut u32,
+                    // core::ptr::read(address) & !(bit_number),
+                // );
             }
         }
 
@@ -65,10 +70,11 @@ pub mod primitive_extensions {
         fn write_whole_register(&self, register_content: u32) {
             unsafe {
                 let address = self.get_addr();
-                core::ptr::write(
-                    address as *mut u32,
-                    core::ptr::read(address) | register_content,
-                );
+                volatile_store(address as *mut u32, volatile_load(address) | register_content);
+                // core::ptr::write(
+                    // address as *mut u32,
+                    // core::ptr::read(address) | register_content,
+                // );
             }
         }
 
@@ -83,23 +89,9 @@ pub mod primitive_extensions {
         fn replace_whole_register(&self, new_register_content: u32) {
             unsafe {
                 let address = self.get_addr();
-                core::ptr::write(address as *mut u32, new_register_content);
+                volatile_store(address as *mut u32, new_register_content);
+                // core::ptr::write(address as *mut u32, new_register_content);
             }
         }
-
-        // fn set_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32) {
-        //     unsafe {
-        //         let address = (self.get_addr() as u32 + extra_offset) as *const u32;
-        //         core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
-        //         asm!("bkpt");
-        //     }
-        // }
-        // fn clear_bit_with_extra_offset(&self, extra_offset: u32, bit_number: u32) {
-        //     unsafe {
-        //         let address = (self.get_addr() as u32 + extra_offset) as *const u32;
-        //         // asm!("bkpt");
-        //         core::ptr::write(address as *mut u32, core::ptr::read(address) & !bit_number);
-        //     }
-        // }
     }
 }

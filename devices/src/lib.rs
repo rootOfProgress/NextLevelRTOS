@@ -1,6 +1,6 @@
 #![no_std]
 // #![feature(asm)]
-
+#![feature(core_intrinsics)]
 pub mod bus;
 pub mod controller;
 pub mod generic;

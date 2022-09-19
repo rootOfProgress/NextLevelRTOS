@@ -4,7 +4,7 @@
 use super::super::data::list::List;
 use super::tcb::TCB;
 use super::task::task::Frame;
-
+use core::intrinsics::{volatile_load, volatile_store};
 static mut TASK_LIST_ADDR: u32 = 0;
 
 extern "C" {
@@ -84,9 +84,17 @@ pub fn context_switch() {
 #[no_mangle]
 pub extern "C" fn SysTick() {
     unsafe {
+        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) | 1 << 1);
 
+        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !1);
+
+        // turn off PA1
+        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !(1 << 1));
+
+    
         // turn on PA0
-        core::ptr::write_volatile(0x4800_0014 as *mut u32, core::ptr::read_volatile(0x4800_0014 as *mut u32) | 1);
+        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) | 1);
+
         //context_switch();
         let old_sp = __save_process_context();
         // let list = &mut *(TASK_LIST_ADDR as *mut List);
@@ -97,7 +105,7 @@ pub extern "C" fn SysTick() {
 
         __load_process_context(sp);  
         // turn on PA0
-        core::ptr::write_volatile(0x4800_0014 as *mut u32, core::ptr::read_volatile(0x4800_0014 as *mut u32) & !1);
+        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !1);
     }
 
 }
