@@ -168,9 +168,9 @@ fn transmit_int(mut int_number: u32) {
             int_number /= 10;
             cnt += 1;
         }
-        for c in 0..cnt {
+        for c in (0..cnt).rev() {
             unsafe {
-                core::ptr::write_volatile(USART1_TDR as *mut u32, (buf[c as usize]) as u32);
+                core::ptr::write_volatile(USART1_TDR as *mut u32, buf[c as usize] as u32);
                 while !((core::ptr::read_volatile(USART1_ISR as *const u32) & 0x80) != 0) {}
             }
         }
