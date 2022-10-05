@@ -81,12 +81,15 @@ void main_loop(void)
 
     opcode = 1;
     __asm__("svc 0");
-    // opcode = 2;
-    // arg = (void*) task0;
-    // __asm__("svc 0");
 
+    opcode = 2;
+    arg = (void*) task0;
+    __asm__("svc 0");
     // trap(1);
-    while(1);
+    while(1)
+    {
+
+    }
 }
 
 int main_init(void)
