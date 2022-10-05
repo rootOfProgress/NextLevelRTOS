@@ -7,6 +7,7 @@
 volatile uint32_t sp_msp;
 volatile uint32_t sp_psp;
 volatile uint32_t opcode;
+volatile uint32_t bar;
 volatile void* arg;
 
 // R0, R1
@@ -20,11 +21,12 @@ void SVCall()
   // __asm__("add sp, #12");
   __asm__(
     "TST lr, #4\n"
-    "ITE EQ\n"
+    "ITTEE EQ\n"
     "MRSEQ r0, MSP\n"
-    // "moveq r1,1\n"
+    "moveq r2,4\n"
     "MRSNE r0, PSP\n"
-    // "movne r1,2\n"
+    "movne r2,5\n"
+    "mov r3,r0\n"
     "stmdb r0!, {r4, r5, r6, r7, r8, r9, sl, fp}\n"
     "msr msp, r0\n"
     // "cmp r1,#1\n"
@@ -33,10 +35,18 @@ void SVCall()
     // "msrne psp, r0\n"
   );
   // __asm__("push {r4 - r11}");
+    __asm__("mov %0, r2" : "=r"(bar));
+  if (bar == 4)
+  {
 
+    __asm__("mrs %0, msp" : "=r"(sp_msp));
+  }
+  else if (bar == 5)
+  {
+
+    __asm__("mrs %0, psp" : "=r"(sp_psp));
+  }
   // msp on entry
-  __asm__("mrs %0, sp" : "=r"(sp_msp));
-  __asm__("mrs %0, psp" : "=r"(sp_psp));
   if (opcode == 1)
   {
     for (uint32_t i = 0; i < 17; i++)
