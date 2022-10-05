@@ -1,0 +1,17 @@
+CC := arm-none-eabi-gcc
+CFLAGS = -fno-common -O0 \
+	 -mcpu=cortex-m4 -mthumb \
+	 -T link1.ld -g -nostartfiles -Wall -Wextra \
+
+SRCS=$(wildcard ./src/*.c) 
+TARGET = firmware
+all: $(TARGET)
+
+$(TARGET): $(SRCS) | build
+	$(CC) $(CFLAGS) $^ -o build/firmware.elf
+
+build:
+	mkdir -p $@
+
+clean:
+	rm -f *.o *.bin *.elf

@@ -1,0 +1,1 @@
+#define INTERRUPT __attribute__((interrupt))
