@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include "lang.h"
 
-extern volatile uint32_t sp1;
+extern volatile uint32_t sp_msp;
+extern volatile uint32_t sp_psp;
 extern volatile uint32_t opcode;
 extern volatile void* arg;
 

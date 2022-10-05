@@ -4,7 +4,8 @@
 #include "../include/device.h"
 #include "../include/uart.h"
 
-volatile uint32_t sp1;
+volatile uint32_t sp_msp;
+volatile uint32_t sp_psp;
 volatile uint32_t opcode;
 volatile void* arg;
 
@@ -21,19 +22,26 @@ void SVCall()
     "TST lr, #4\n"
     "ITE EQ\n"
     "MRSEQ r0, MSP\n"
+    // "moveq r1,1\n"
     "MRSNE r0, PSP\n"
+    // "movne r1,2\n"
     "stmdb r0!, {r4, r5, r6, r7, r8, r9, sl, fp}\n"
     "msr msp, r0\n"
+    // "cmp r1,#1\n"
+    // "ITE EQ\n"
+    // "msreq msp, r0\n"
+    // "msrne psp, r0\n"
   );
   // __asm__("push {r4 - r11}");
 
   // msp on entry
-  __asm__("mrs %0, msp" : "=r"(sp1));
+  __asm__("mrs %0, sp" : "=r"(sp_msp));
+  __asm__("mrs %0, psp" : "=r"(sp_psp));
   if (opcode == 1)
   {
     for (uint32_t i = 0; i < 17; i++)
     {
-      WRITE_REGISTER(0x20020000 + (i * 4), READ_REGISTER(sp1 + i * 4));
+      WRITE_REGISTER(0x20020000 + (i * 4), READ_REGISTER(sp_msp + i * 4));
     }
 
     // update relocated main sp
