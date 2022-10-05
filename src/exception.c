@@ -14,8 +14,9 @@ void trap()
     __asm("svc 0");
 }
 
-void INTERRUPT SVCall()
+void SVCall()
 {
+    // __asm__("add sp, #12");
     __asm__("push {r4 - r11}");
 
     // msp on entry

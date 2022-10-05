@@ -1,5 +1,5 @@
 CC := arm-none-eabi-gcc
-CFLAGS = -fno-common -O0 \
+CFLAGS = -fno-common -O2 \
 	 -mcpu=cortex-m4 -mthumb \
 	 -T link1.ld -g -nostartfiles -Wall -Wextra \
 
