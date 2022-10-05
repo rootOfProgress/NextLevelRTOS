@@ -1,6 +1,6 @@
 #include "../include/device.h"
 
-void set_on(gpio_ident *g) 
+void set_on(gpio_ident *g)
 {
-    // while(1);
+  // while(1);
 }
