@@ -8,13 +8,15 @@
 #![feature(core_intrinsics)]
 extern crate devices;
 extern crate runtime;
+extern crate user;
+
 mod data;
 mod mem;
 mod proc;
 use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
 use proc::task::task::create_task;
-
+use user::engine::alter_engine_speed;
 use devices::generic::platform::stm32f3x::bitfields;
 
 
@@ -85,8 +87,8 @@ unsafe fn init_tim_3() {
         None => panic!(),
     };
     *tim3 = tim3
-        .set_arr_register(12)
-        .set_psc_register(7)
+        .set_arr_register(100)
+        .set_psc_register(2)
         .set_ccmr1_register(
             (6 << bitfields::tim3::ccmr1::OC2M)
                 | (1 << bitfields::tim3::ccmr1::OC2PE)
@@ -170,29 +172,14 @@ pub unsafe fn kernel_init() -> ! {
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     usart.enable();
     "hello from trait".println();
-    devices::sys::tick::init_systick(280);
-    let init =
-        create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
-
-    sched::spawn(0, init, "early_user_land");
-    sched::start_init_process();
+   // devices::sys::tick::init_systick(280);
+    // let init =
+        // create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
+// 
+    // sched::spawn(0, init, "init");
+    // sched::start_init_process();
     // let mut x: u32 = 0;
     loop {
-        // i2c = i2c.write(0xFF);
-        // if (gpio_port_a0.is_pressed()) {
-        //     if (x < 300) {
-        //         x += 1;
-        //     }
-        // } else {
-        //     if (x > 1) {
-        //         x -= 1;
-        //     }
-        // }
-        // engine::alter_engine_speed(TIM_3, 2);
-        // engine::alter_engine_speed(TIM_3, 2, x);
-        // engine::alter_engine_speed(TIM_3, 3, x);
-        // engine::alter_engine_speed(TIM_3, 4, x);
-
-        // for i in 0..10000 {}
+        alter_engine_speed(TIM_3, 0);
     }
 }

@@ -94,16 +94,12 @@ pub mod i2c {
         }
 
         pub unsafe fn read(self, target_register: u32) -> I2cDevice {
-            self.set_cr2_register(
-                0x53 << bitfields::i2c::SADD_7_1
-                    | 1 << bitfields::i2c::NBYTES
-            );
+            self.set_cr2_register(0x53 << bitfields::i2c::SADD_7_1 | 1 << bitfields::i2c::NBYTES);
             self.start();
             while !((self.get_isr() & (1 << bitfields::i2c::TXE)) != 0) {}
             self.set_txdr_register(target_register);
             while !((self.get_isr() & (1 << bitfields::i2c::TC)) != 0) {}
             self.stop();
-
 
             self.request_read();
             while !((self.get_isr() & (1 << bitfields::i2c::RXNE)) != 0) {}

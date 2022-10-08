@@ -84,6 +84,8 @@ pub fn context_switch() {
 #[no_mangle]
 pub extern "C" fn SysTick() {
     unsafe {
+        // turn on PA1
+
         volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) | 1 << 1);
 
         volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !1);

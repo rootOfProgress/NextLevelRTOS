@@ -2,12 +2,11 @@ use super::super::bus::rcc;
 use super::super::generic::platform::stm32f3x;
 
 use super::super::generic::traits::primitive_extensions;
-use super::super::io::i2c::i2c::{get_i2c_dev};
+use super::super::io::i2c::i2c::get_i2c_dev;
 use super::super::registerblocks::usart::USART;
 // use super::super::ext::adx345;
-
+use core::intrinsics::{volatile_load, volatile_store};
 extern crate ext;
-
 
 static mut column: usize = 0;
 static mut row: usize = 0;
@@ -161,19 +160,58 @@ fn transmit(c: u32) {
 
 fn transmit_int(mut int_number: u32) {
     unsafe {
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) & !(1 << 1),
+        );
         let mut cnt: u8 = 0;
-        let mut buf: [u8; 32] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        let mut buf: [u8; 32] = [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0,
+        ];
         while int_number > 0 {
             buf[cnt as usize] = (int_number % 10 + 0x30) as u8;
             int_number /= 10;
             cnt += 1;
         }
         for c in (0..cnt).rev() {
-            unsafe {
-                core::ptr::write_volatile(USART1_TDR as *mut u32, buf[c as usize] as u32);
-                while !((core::ptr::read_volatile(USART1_ISR as *const u32) & 0x80) != 0) {}
-            }
+            core::ptr::write_volatile(USART1_TDR as *mut u32, buf[c as usize] as u32);
+            while !((core::ptr::read_volatile(USART1_ISR as *const u32) & 0x80) != 0) {}
         }
+
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) & !1,
+        );
+        // volatile_store(
+        //     0x4800_0014 as *mut u32,
+        //     volatile_load(0x4800_0014 as *const u32) | 1 << 1,
+        // );
+
+        // // volatile_store(address as *mut u32, volatile_load(address) & !(bit_number));
+        // volatile_store(USART1_TDR as *mut u32, (int_number & !(0xFFFF_FF00)) as u32);
+        // while !((volatile_load(USART1_ISR as *const u32) & 0x80) != 0) {}
+        // volatile_store(
+        //     USART1_TDR as *mut u32,
+        //     ((int_number & !(0xFFFF_00FF)) >> 8) as u32,
+        // );
+        // while !((volatile_load(USART1_ISR as *const u32) & 0x80) != 0) {}
+        // volatile_store(
+        //     USART1_TDR as *mut u32,
+        //     ((int_number & !(0xFF00_FFFF)) >> 16) as u32,
+        // );
+        // while !((volatile_load(USART1_ISR as *const u32) & 0x80) != 0) {}
+        // volatile_store(USART1_TDR as *mut u32, (int_number >> 24) as u32);
+        // while !((volatile_load(USART1_ISR as *const u32) & 0x80) != 0) {}
+        // volatile_store(
+        //     0x4800_0014 as *mut u32,
+        //     volatile_load(0x4800_0014 as *const u32) & !1,
+        // );
+
+        // volatile_store(
+        //     0x4800_0014 as *mut u32,
+        //     volatile_load(0x4800_0014 as *const u32) | 1,
+        // );
     }
 }
 
@@ -199,7 +237,7 @@ pub extern "C" fn Usart1_MainISR() {
     unsafe {
         let rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
         // echo
-        // transmit(rx_data as u32);
+       // transmit(rx_data as u32);
 
         if rx_data as char == 'I' {
             rcv_state = RCV_STATE::I2C;
@@ -263,8 +301,9 @@ pub extern "C" fn Usart1_MainISR() {
                     }
                     sum = 0;
                 } else if i2c_buffer[0] as char == 't' {
-                    let d = get_i2c_dev();
+                    // let d = get_i2c_dev();
                     // d.rw_test();
+                    transmit_int(123429);
                 }
                 i2c_idx = 0;
             } else if rx_data as char != '\n' {

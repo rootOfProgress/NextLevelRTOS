@@ -10,12 +10,20 @@ pub fn alter_engine_speed(mut timer_device: Option<TimerDevice>, engine_number: 
     };
 
     unsafe {
-        match engine_number {
-            1 => t = t.set_ccr1_register(res[0]),
-            2 => t = t.set_ccr2_register(res[1]),
-            3 => t = t.set_ccr3_register(res[2]),
-            4 => t = t.set_ccr4_register(res[3]),
-            _ => panic!(),
-        }
-    }
+    // t = t.clear_cr1_register(1); // enable
+    t = t.set_ccr1_register(res[0]);
+    t = t.set_ccr2_register(res[1]);
+    t = t.set_ccr3_register(res[2]);
+    t = t.set_ccr4_register(res[3]);
+    // t = t.set_cr1_register(1); // enable
+}
+    // unsafe {
+        // match engine_number {
+            // 1 => t = t.set_ccr1_register(res[0]),
+            // 2 => t = t.set_ccr2_register(res[1]),
+            // 3 => t = t.set_ccr3_register(res[2]),
+            // 4 => t = t.set_ccr4_register(res[3]),
+            // _ => panic!(),
+        // }
+    // }
 }

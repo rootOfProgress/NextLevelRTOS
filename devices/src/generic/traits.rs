@@ -35,7 +35,10 @@ pub mod primitive_extensions {
         fn set_bit(&self, bit_number: u32) {
             unsafe {
                 let address = self.get_addr();
-                volatile_store(address as *mut u32, volatile_load(address as *const u32) | bit_number);
+                volatile_store(
+                    address as *mut u32,
+                    volatile_load(address as *const u32) | bit_number,
+                );
                 // core::ptr::write(address as *mut u32, core::ptr::read(address) | bit_number);
             }
         }
@@ -56,8 +59,8 @@ pub mod primitive_extensions {
                 volatile_store(address as *mut u32, volatile_load(address) & !(bit_number));
 
                 // core::ptr::write(
-                    // address as *mut u32,
-                    // core::ptr::read(address) & !(bit_number),
+                // address as *mut u32,
+                // core::ptr::read(address) & !(bit_number),
                 // );
             }
         }
@@ -70,10 +73,13 @@ pub mod primitive_extensions {
         fn write_whole_register(&self, register_content: u32) {
             unsafe {
                 let address = self.get_addr();
-                volatile_store(address as *mut u32, volatile_load(address) | register_content);
+                volatile_store(
+                    address as *mut u32,
+                    volatile_load(address) | register_content,
+                );
                 // core::ptr::write(
-                    // address as *mut u32,
-                    // core::ptr::read(address) | register_content,
+                // address as *mut u32,
+                // core::ptr::read(address) | register_content,
                 // );
             }
         }

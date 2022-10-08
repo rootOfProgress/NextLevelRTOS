@@ -7,7 +7,7 @@ pub mod tim {
     use super::primitive_extensions::BitOps;
     use super::rcc;
     use super::stm32f3x::adresses;
-    
+
     use super::TIMx;
 
     #[derive(Copy, Clone)]
@@ -68,7 +68,10 @@ pub mod tim {
             self.device.CR1.write_whole_register(value);
             self
         }
-
+        pub unsafe fn clear_cr1_register(self, value: u32) -> TimerDevice {
+            self.device.CR1.clear_bit(value);
+            self
+        }
         pub unsafe fn set_ccr4_register(self, value: u32) -> TimerDevice {
             self.device.CCR4.replace_whole_register(value);
             self
