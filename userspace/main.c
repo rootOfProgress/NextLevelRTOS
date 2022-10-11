@@ -43,9 +43,6 @@ int __attribute((section(".main"))) main(void)
     __asm__("mov r0, 0xAB");
     __asm__("mov r1, 0xBC");
     __asm__("mov r2, 0xCD");
-    os_call(BAR);
-    while(1){
-        // fibonacci(22);
-    };
+    while(1){    };
     return 1;
 }
