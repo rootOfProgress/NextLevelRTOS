@@ -3,6 +3,7 @@ use super::super::generic::platform::stm32f3x;
 
 use super::super::generic::traits::primitive_extensions;
 use super::super::io::i2c::i2c::get_i2c_dev;
+use super::super::sys::tick::init_systick;
 use super::super::registerblocks::usart::USART;
 // use super::super::ext::adx345;
 use core::intrinsics::{volatile_load, volatile_store};
@@ -17,20 +18,29 @@ static mut buffer: [[char; 3]; 4] = [
     ['0', '0', '0'],
 ];
 
+// static mut byte_order: [usize; 4] = [1,0,3,2];
 static mut i2c_buffer: [char; 16] = [
     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
 ];
+// static mut byte_low: u32 = 0;
+// static mut byte_high: u32 = 0;
+
 static mut i2c_idx: u32 = 0;
 static mut i2c_payload: u32 = 0;
 static mut sum: u32 = 0;
+static mut task_target: u32 = 0x20001000;
+static mut task_byte: u32 = 0;
+static mut task_word: u32 = 0;
+
 
 #[derive(PartialEq)]
 enum RCV_STATE {
     PWM,
     I2C,
+    TASK
 }
 
-static mut rcv_state: RCV_STATE = RCV_STATE::I2C;
+static mut rcv_state: RCV_STATE = RCV_STATE::TASK;
 
 pub static mut res: [u32; 4] = [0, 0, 0, 0];
 
@@ -245,10 +255,30 @@ pub extern "C" fn Usart1_MainISR() {
         } else if rx_data as char == 'P' {
             rcv_state = RCV_STATE::PWM;
             return;
+        } else if rx_data as char == 'T' {
+            rcv_state = RCV_STATE::TASK;
+            return;
+        } else if rx_data as char == 'S' {
+            core::ptr::write_volatile(
+                0xE000_E010 as *mut u32,
+                core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
+            );
+            return;
         }
 
         // dummy leave it
-        if rcv_state == RCV_STATE::PWM {
+        if rcv_state == RCV_STATE::TASK {
+            // 2 3 0 1
+            task_word |= (rx_data as u32) << task_byte * 8;
+            if task_byte == 3 {
+                volatile_store(task_target as *mut u32, task_word);
+                task_target += 0x4;
+                task_byte = 0;
+                task_word = 0;
+            } else {
+                task_byte += 1;
+            }
+        } else if rcv_state == RCV_STATE::PWM {
             if rx_data != 10 {
                 if (rx_data as char) == '|' {
                     row += 1;

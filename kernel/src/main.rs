@@ -61,7 +61,7 @@ fn calculate_fibonacci() {
 
 fn user_init() {
     let calculate_fibonacci = create_task(
-        calculate_fibonacci as *const () as u32,
+        0x20001000 as *const () as u32,
         sched::destroy as *const () as u32,
     )
     .unwrap();
@@ -172,12 +172,12 @@ pub unsafe fn kernel_init() -> ! {
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     usart.enable();
     "hello from trait".println();
-   // devices::sys::tick::init_systick(280);
-    // let init =
-        // create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
+   devices::sys::tick::init_systick(280);
+    let init =
+        create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
 // 
-    // sched::spawn(0, init, "init");
-    // sched::start_init_process();
+    sched::spawn(0, init, "init");
+    sched::start_init_process();
     // let mut x: u32 = 0;
     loop {
         alter_engine_speed(TIM_3, 0);
