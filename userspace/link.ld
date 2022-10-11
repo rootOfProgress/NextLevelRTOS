@@ -14,11 +14,11 @@ piece of code which will be loaded into the processor. Logically it is
 the first part of the .text section. */
 ENTRY(main);
 
-
 SECTIONS
 {
   .text :
   {
+    KEEP(*(.main))
     *(.text .text.*);
   } > FLASH
   /* static variables or string literals need .bss .data and .rodata sections */
