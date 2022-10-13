@@ -116,8 +116,17 @@ unsafe fn init_tim_3() {
 /// acts as the first kernel function.
 ///
 #[no_mangle]
-pub unsafe fn kernel_init() -> ! {
-    mem::malloc::init();
+pub unsafe fn kernel_init(edata: usize, sdata: usize) -> ! {
+    mem::malloc::init(edata,sdata);
+    // let a = mem::malloc::get_mem(4);
+    // let b = mem::malloc::get_mem(4);
+    // let c = mem::malloc::get_mem(32);
+    // let d = mem::malloc::get_mem(15);
+    // let e = mem::malloc::get_mem(8);
+    // let f = mem::malloc::get_mem(64);
+    // let g = mem::malloc::get_mem(2);
+    // assert_eq!(1,1);
+    
     sched::init();
 
     // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);

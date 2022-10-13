@@ -7,6 +7,7 @@
 #![feature(asm)]
 use core::panic::PanicInfo;
 use core::ptr;
+use core::arch::asm;
 
 extern "C" {
     fn __br_to_init();
@@ -36,10 +37,11 @@ pub unsafe extern "C" fn Reset() -> ! {
 
     // reference to target function
     extern "Rust" {
-        fn kernel_init() -> !;
+        fn kernel_init(_edata: usize,_sidata: usize) -> !;
     }
-
-    kernel_init();
+    // asm!("bkpt");
+    // loop{}
+    kernel_init(&_edata as *const u8 as usize, &_sidata as *const u8 as usize);
 }
 
 pub union Vector {

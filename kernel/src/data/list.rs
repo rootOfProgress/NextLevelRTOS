@@ -1,5 +1,5 @@
 use super::super::proc::tcb::TCB;
-use crate::mem::malloc::{free, get_mem};
+use crate::mem::malloc::{get_mem};
 
 #[repr(C)]
 struct Node<'a> {
@@ -35,7 +35,7 @@ impl List {
             tail.next = head.next;
             self.head = head.next;
             self.size -= 1;
-            free(addr_of_old_head as u32);
+            // free(addr_of_old_head as u32);
         }
     }
     pub fn insert(&mut self, tcb: TCB) {
