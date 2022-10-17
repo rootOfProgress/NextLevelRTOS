@@ -15,10 +15,9 @@ mod mem;
 mod proc;
 use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
+use devices::generic::platform::stm32f3x::bitfields;
 use proc::task::task::create_task;
 use user::engine::alter_engine_speed;
-use devices::generic::platform::stm32f3x::bitfields;
-
 
 use devices::io::i2c::i2c::I2C1_DEV;
 use proc::sched;
@@ -137,10 +136,13 @@ pub unsafe fn kernel_init() -> ! {
         .as_high_speed();
 
     I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());
-    
-    
-    devices::io::gpio::gpio::GpioDevice::new("A", 0).as_output().turn_off();
-    devices::io::gpio::gpio::GpioDevice::new("A", 1).as_output().turn_off();
+
+    devices::io::gpio::gpio::GpioDevice::new("A", 0)
+        .as_output()
+        .turn_off();
+    devices::io::gpio::gpio::GpioDevice::new("A", 1)
+        .as_output()
+        .turn_off();
 
     // // uart1 tx
     devices::io::gpio::gpio::GpioDevice::new("A", 9)
@@ -172,10 +174,9 @@ pub unsafe fn kernel_init() -> ! {
     let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     usart.enable();
     "hello from trait".println();
-   devices::sys::tick::init_systick(280);
-    let init =
-        create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
-// 
+    devices::sys::tick::init_systick(280);
+    let init = create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
+    //
     sched::spawn(0, init, "init");
     sched::start_init_process();
     // let mut x: u32 = 0;

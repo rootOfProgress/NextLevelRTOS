@@ -2,8 +2,8 @@
 //----------------------------IMPORTS----------------------------//
 //---------------------------------------------------------------//
 use super::super::data::list::List;
-use super::tcb::TCB;
 use super::task::task::Frame;
+use super::tcb::TCB;
 use core::intrinsics::{volatile_load, volatile_store};
 static mut TASK_LIST_ADDR: u32 = 0;
 
@@ -86,16 +86,27 @@ pub extern "C" fn SysTick() {
     unsafe {
         // turn on PA1
 
-        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) | 1 << 1);
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) | 1 << 1,
+        );
 
-        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !1);
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) & !1,
+        );
 
         // turn off PA1
-        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !(1 << 1));
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) & !(1 << 1),
+        );
 
-    
         // turn on PA0
-        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) | 1);
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) | 1,
+        );
 
         //context_switch();
         let old_sp = __save_process_context();
@@ -105,11 +116,13 @@ pub extern "C" fn SysTick() {
         // list.update_tcb(old_sp);
         // let sp = list.sr_cursor_sp();
 
-        __load_process_context(sp);  
+        __load_process_context(sp);
         // turn on PA0
-        volatile_store(0x4800_0014 as *mut u32, volatile_load(0x4800_0014 as *const u32) & !1);
+        volatile_store(
+            0x4800_0014 as *mut u32,
+            volatile_load(0x4800_0014 as *const u32) & !1,
+        );
     }
-
 }
 
 #[no_mangle]

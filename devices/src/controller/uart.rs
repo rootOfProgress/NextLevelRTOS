@@ -3,8 +3,8 @@ use super::super::generic::platform::stm32f3x;
 
 use super::super::generic::traits::primitive_extensions;
 use super::super::io::i2c::i2c::get_i2c_dev;
-use super::super::sys::tick::init_systick;
 use super::super::registerblocks::usart::USART;
+use super::super::sys::tick::init_systick;
 // use super::super::ext::adx345;
 use core::intrinsics::{volatile_load, volatile_store};
 extern crate ext;
@@ -22,6 +22,26 @@ static mut buffer: [[char; 3]; 4] = [
 static mut i2c_buffer: [char; 16] = [
     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
 ];
+
+static mut task_buffer: [u8; 512] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];
+
 // static mut byte_low: u32 = 0;
 // static mut byte_high: u32 = 0;
 
@@ -32,12 +52,11 @@ static mut task_target: u32 = 0x20001000;
 static mut task_byte: u32 = 0;
 static mut task_word: u32 = 0;
 
-
 #[derive(PartialEq)]
 enum RCV_STATE {
     PWM,
     I2C,
-    TASK
+    TASK,
 }
 
 static mut rcv_state: RCV_STATE = RCV_STATE::TASK;
@@ -247,9 +266,9 @@ pub extern "C" fn Usart1_MainISR() {
     unsafe {
         let rx_data: u8 = core::ptr::read_volatile(USART1_RDR as *const u32) as u8;
         // echo
-       // transmit(rx_data as u32);
+        // transmit(rx_data as u32);
 
-        if rx_data as char == 'I' {
+        /* if rx_data as char == 'I' {
             rcv_state = RCV_STATE::I2C;
             return;
         } else if rx_data as char == 'P' {
@@ -258,17 +277,29 @@ pub extern "C" fn Usart1_MainISR() {
         } else if rx_data as char == 'T' {
             rcv_state = RCV_STATE::TASK;
             return;
-        } else if rx_data as char == 'S' {
+        } else */ if rx_data as char == 'f' {
+            task_target = 0x20001000;
+            // flush memory
+            for i in (0x0..0x60).step_by(0x4) {
+                volatile_store((task_target + i) as *mut u32, 0x0);
+            }
+            task_target = 0x20001000;
+            task_byte = 0;
+            task_word = 0;
+            return;
+        } /* else if rx_data as char == 'S' {
             core::ptr::write_volatile(
                 0xE000_E010 as *mut u32,
                 core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
             );
             return;
         }
-
+ */
         // dummy leave it
         if rcv_state == RCV_STATE::TASK {
-            // 2 3 0 1
+            // task_buffer[task_byte as usize] = rx_data;
+            // task_byte += 1;
+            // // 2 3 0 1
             task_word |= (rx_data as u32) << task_byte * 8;
             if task_byte == 3 {
                 volatile_store(task_target as *mut u32, task_word);
