@@ -19,10 +19,17 @@ pub mod task {
 
     pub fn create_task(target: u32, end_destination: u32) -> Option<Frame> {
         let mut frame = Frame::new();
+
         frame = match frame {
             Some(mut p) => {
-                p.set_target_addr(target);
-                p.set_end_destination_addr(end_destination);
+                let register = p.buffer as *mut CoreRegister;
+                unsafe {
+                    (*register).pc = target;
+                    (*register).lr = end_destination;
+                    (*register).psr = 0x21000000;
+                }
+                // p.set_target_addr(target);
+                // p.set_end_destination_addr(end_destination);
                 Some(p)
             }
             None => None,
@@ -50,19 +57,12 @@ pub mod task {
                 (*register).psr = 0x21000000;
             }
         }
-        pub fn get_target_addr(&mut self) -> u32 {
-            0
-            // self.initialized_core_registers.pc
-        }
-
-        pub fn set_end_destination_addr(&mut self, destination: u32) {
-            
-            // self.initialized_core_registers.lr = destination;
-        }
-
+    
         pub fn get_r4_location(&self) -> u32 {
-            0
-            // core::ptr::addr_of!(self.initialized_core_registers.r4) as u32
+            let register = self.buffer as *mut CoreRegister;
+            unsafe {
+                core::ptr::addr_of!((*register).r4) as u32
+            }
         }
     }
 }
