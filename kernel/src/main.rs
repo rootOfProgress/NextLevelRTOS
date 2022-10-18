@@ -74,9 +74,9 @@ fn user_init() {
         sched::destroy as *const () as u32,
     )
     .unwrap();
-    sched::spawn(1, calculate_fibonacci, "calculate_fibonacci");
-    sched::spawn(2, led_off, "led_off");
-    sched::spawn(3, led_on, "led_on");
+    sched::spawn(calculate_fibonacci);
+    sched::spawn(led_off);
+    sched::spawn(led_on);
     loop {}
 }
 unsafe fn init_tim_3() {
@@ -186,7 +186,7 @@ pub unsafe fn kernel_init(edata: usize, sdata: usize) -> ! {
     devices::sys::tick::init_systick(280);
     let init = create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
     //
-    sched::spawn(0, init, "init");
+    sched::spawn(init);
     sched::start_init_process();
     // let mut x: u32 = 0;
     loop {

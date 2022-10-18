@@ -62,11 +62,12 @@ pub fn start_init_process() {
     }
 }
 
-pub fn spawn(pid: u32, p: Frame, name: &str) {
-    let list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
+pub fn spawn(p: Frame) {
+    let task_list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
+    // @todo
     let r4 = p.get_r4_location();
-    let tcb = TCB::create(r4, pid, name);
-    list.insert(tcb);
+    let tcb = TCB::create(r4, task_list.task_queue_get_size());
+    task_list.insert(tcb);
 }
 
 pub fn context_switch() {

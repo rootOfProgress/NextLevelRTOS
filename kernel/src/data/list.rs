@@ -1,10 +1,10 @@
 use super::super::proc::tcb::TCB;
-use crate::mem::malloc::{get_mem};
+use crate::mem::malloc::{memory_mng_allocate};
 
 #[repr(C)]
-struct Node<'a> {
+struct Node {
     next: *const u32,
-    data: TCB<'a>,
+    data: TCB,
 }
 
 #[repr(C)]
@@ -17,7 +17,7 @@ pub struct List {
 impl List {
     pub fn new() -> u32 {
         unsafe {
-            let mem_start = get_mem(core::mem::size_of::<List>() as u32);
+            let mem_start = memory_mng_allocate(core::mem::size_of::<List>() as u32);
             let list = &mut *(mem_start as *mut List);
             *list = List {
                 size: 0,
@@ -27,6 +27,11 @@ impl List {
             mem_start
         }
     }
+
+    pub fn task_queue_get_size(&self) -> u32 {
+        self.size
+    }
+
     pub fn delete_head_node(&mut self) {
         let addr_of_old_head = self.head;
         unsafe {
@@ -40,7 +45,7 @@ impl List {
     }
     pub fn insert(&mut self, tcb: TCB) {
         unsafe {
-            let mem_for_new_node = get_mem(core::mem::size_of::<Node>() as u32);
+            let mem_for_new_node = memory_mng_allocate(core::mem::size_of::<Node>() as u32);
             let node = &mut *(mem_for_new_node as *mut Node);
 
             *node = Node {

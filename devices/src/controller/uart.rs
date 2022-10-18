@@ -7,7 +7,6 @@ use super::super::registerblocks::usart::USART;
 use super::super::sys::tick::init_systick;
 // use super::super::ext::adx345;
 use core::intrinsics::{volatile_load, volatile_store};
-extern crate ext;
 
 static mut column: usize = 0;
 static mut row: usize = 0;

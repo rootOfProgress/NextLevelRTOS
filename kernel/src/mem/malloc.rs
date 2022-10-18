@@ -43,7 +43,20 @@ pub unsafe fn memory_mng_deallocate(address: u32) {
     }
 }
 
-pub unsafe fn get_mem(size: u32) -> u32 {
+pub fn memory_mng_allocate(size: u32) -> u32 {
+    unsafe {
+        allocate(size)
+    }
+}
+
+pub fn memory_mng_allocate_process(size: u32) -> u32 {
+    unsafe {
+        allocate(size) + size
+    }
+}
+
+#[inline(always)]
+unsafe fn allocate(size: u32) -> u32 {
     let mut requested_size = size;
     let mut next_useable_chunk = 0;
 
