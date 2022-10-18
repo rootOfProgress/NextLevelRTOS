@@ -32,6 +32,17 @@ pub unsafe fn init(start_os_section: usize, bar: usize) {
     }
 }
 
+pub unsafe fn memory_mng_deallocate(address: u32) {
+    let address_offset: u32 = address - USEABLE_MEM_START as u32 ;
+    for index in (0x00..0x2F).step_by(0x04) {
+        let alloc_entry: u32 = volatile_load((MEM_TABLE_START as u32 + index) as *mut u32);
+        if (alloc_entry >> 16) == address_offset {
+            volatile_store((MEM_TABLE_START as u32 + index) as *mut u32, alloc_entry & !1);
+            return;
+        }
+    }
+}
+
 pub unsafe fn get_mem(size: u32) -> u32 {
     let mut requested_size = size;
     let mut next_useable_chunk = 0;
