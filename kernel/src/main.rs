@@ -59,24 +59,24 @@ fn calculate_fibonacci() {
 }
 
 fn user_init() {
-    let calculate_fibonacci = create_task(
-        0x20001000 as *const () as u32,
-        sched::destroy as *const () as u32,
-    )
-    .unwrap();
-    let led_off = create_task(
-        led_off as *const () as u32,
-        sched::destroy as *const () as u32,
-    )
-    .unwrap();
-    let led_on = create_task(
-        led_on as *const () as u32,
-        sched::destroy as *const () as u32,
-    )
-    .unwrap();
-    sched::spawn(calculate_fibonacci);
-    sched::spawn(led_off);
-    sched::spawn(led_on);
+    // let calculate_fibonacci = create_task(
+    //     0x20001000 as *const () as u32,
+    //     sched::destroy as *const () as u32,
+    // )
+    // .unwrap();
+    // let led_off = create_task(
+    //     led_off as *const () as u32,
+    //     sched::destroy as *const () as u32,
+    // )
+    // .unwrap();
+    // let led_on = create_task(
+    //     led_on as *const () as u32,
+    //     sched::destroy as *const () as u32,
+    // )
+    // .unwrap();
+    // sched::spawn(calculate_fibonacci);
+    // sched::spawn(led_off);
+    // sched::spawn(led_on);
     loop {}
 }
 unsafe fn init_tim_3() {
@@ -117,7 +117,7 @@ unsafe fn init_tim_3() {
 ///
 #[no_mangle]
 pub unsafe fn kernel_init(edata: usize, sdata: usize) -> ! {
-    mem::malloc::init(edata,sdata);
+    mem::malloc::init(edata, sdata);
     // let a = mem::malloc::get_mem(4);
     // let b = mem::malloc::get_mem(4);
     // let c = mem::malloc::get_mem(32);
@@ -126,70 +126,70 @@ pub unsafe fn kernel_init(edata: usize, sdata: usize) -> ! {
     // let f = mem::malloc::get_mem(64);
     // let g = mem::malloc::get_mem(2);
     // assert_eq!(1,1);
-    
+
     sched::init();
 
-    // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);
+    // // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);
 
-    // // i2c1 sda
-    devices::io::gpio::gpio::GpioDevice::new("B", 7)
-        .as_af(4)
-        .as_alternate_function()
-        .as_open_drain()
-        .as_high_speed();
-    // // i2c1 scl
-    devices::io::gpio::gpio::GpioDevice::new("B", 8)
-        .as_af(4)
-        .as_alternate_function()
-        .as_open_drain()
-        .as_high_speed();
+    // // // i2c1 sda
+    // devices::io::gpio::gpio::GpioDevice::new("B", 7)
+    //     .as_af(4)
+    //     .as_alternate_function()
+    //     .as_open_drain()
+    //     .as_high_speed();
+    // // // i2c1 scl
+    // devices::io::gpio::gpio::GpioDevice::new("B", 8)
+    //     .as_af(4)
+    //     .as_alternate_function()
+    //     .as_open_drain()
+    //     .as_high_speed();
 
-    I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());
+    // I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());
 
-    devices::io::gpio::gpio::GpioDevice::new("A", 0)
-        .as_output()
-        .turn_off();
-    devices::io::gpio::gpio::GpioDevice::new("A", 1)
-        .as_output()
-        .turn_off();
+    // devices::io::gpio::gpio::GpioDevice::new("A", 0)
+    //     .as_output()
+    //     .turn_off();
+    // devices::io::gpio::gpio::GpioDevice::new("A", 1)
+    //     .as_output()
+    //     .turn_off();
 
-    // // uart1 tx
-    devices::io::gpio::gpio::GpioDevice::new("A", 9)
-        .as_alternate_function()
-        .as_af(7)
-        .as_push_pull();
-    // // uart1 rx
-    devices::io::gpio::gpio::GpioDevice::new("A", 10)
-        .as_input()
-        .as_alternate_function()
-        .as_af(7);
+    // // // uart1 tx
+    // devices::io::gpio::gpio::GpioDevice::new("A", 9)
+    //     .as_alternate_function()
+    //     .as_af(7)
+    //     .as_push_pull();
+    // // // uart1 rx
+    // devices::io::gpio::gpio::GpioDevice::new("A", 10)
+    //     .as_input()
+    //     .as_alternate_function()
+    //     .as_af(7);
 
-    // // speed regulation
-    init_tim_3();
+    // // // speed regulation
+    // init_tim_3();
 
-    let _gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
-        .as_alternate_function()
-        .as_af(2);
-    let _gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
-        .as_alternate_function()
-        .as_af(2);
-    let _gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
-        .as_alternate_function()
-        .as_af(2);
-    let _gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
-        .as_alternate_function()
-        .as_af(2);
+    // let _gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
+    //     .as_alternate_function()
+    //     .as_af(2);
+    // let _gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
+    //     .as_alternate_function()
+    //     .as_af(2);
+    // let _gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
+    //     .as_alternate_function()
+    //     .as_af(2);
+    // let _gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
+    //     .as_alternate_function()
+    //     .as_af(2);
 
-    let usart = devices::controller::uart::usart::UsartDevice::new(9600);
-    usart.enable();
-    "hello from trait".println();
-    devices::sys::tick::init_systick(280);
-    let init = create_task(user_init as *const () as u32, user_init as *const () as u32).unwrap();
-    //
+    // let usart = devices::controller::uart::usart::UsartDevice::new(9600);
+    // usart.enable();
+    // "hello from trait".println();
+    // devices::sys::tick::init_systick(280);
+    let init = create_task(user_init as *const () as u32, user_init as *const () as u32);
+    // //
     sched::spawn(init);
     sched::start_init_process();
     // let mut x: u32 = 0;
     loop {
-        alter_engine_speed(TIM_3, 0);
+        // alter_engine_speed(TIM_3, 0);
     }
 }

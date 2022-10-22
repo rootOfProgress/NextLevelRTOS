@@ -5,6 +5,11 @@ const WORD: u32 = 0x4;
 use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::swap;
 
+pub struct MemoryResult {
+    pub start_address: u32,
+    pub end_address: u32,
+}
+
 extern "C" {
     static mut _sbss: u8;
     static mut _ebss: u8;
@@ -22,7 +27,7 @@ extern "C" {
 pub unsafe fn init(start_os_section: usize, bar: usize) {
     // @bug
     let mut start = start_os_section;
-    while (start % 4 != 0) {
+    while start % 4 != 0 {
         start += 1;
     }
     MEM_TABLE_START = start as *const u32;
@@ -33,30 +38,36 @@ pub unsafe fn init(start_os_section: usize, bar: usize) {
 }
 
 pub unsafe fn memory_mng_deallocate(address: u32) {
-    let address_offset: u32 = address - USEABLE_MEM_START as u32 ;
+    let address_offset: u32 = address - USEABLE_MEM_START as u32;
     for index in (0x00..0x2F).step_by(0x04) {
         let alloc_entry: u32 = volatile_load((MEM_TABLE_START as u32 + index) as *mut u32);
         if (alloc_entry >> 16) == address_offset {
-            volatile_store((MEM_TABLE_START as u32 + index) as *mut u32, alloc_entry & !1);
+            volatile_store(
+                (MEM_TABLE_START as u32 + index) as *mut u32,
+                alloc_entry & !1,
+            );
             return;
         }
     }
 }
 
-pub fn memory_mng_allocate(size: u32) -> u32 {
-    unsafe {
-        allocate(size)
-    }
-}
+// pub fn memory_mng_allocate(size: u32) -> u32 {
+//     unsafe {
+//         allocate(size)
+//     }
+// }
 
-pub fn memory_mng_allocate_process(size: u32) -> u32 {
-    unsafe {
-        allocate(size) + size
-    }
-}
+// pub fn memory_mng_allocate_process(size: u32) -> u32 {
+//     unsafe {
+//         // @todo
+//         // configure MPU for proc id
+//         // return start & end size
+//         allocate(size) + size /* - 0x04 */
+//     }
+// }
 
-#[inline(always)]
-unsafe fn allocate(size: u32) -> u32 {
+// #[inline(always)]
+pub unsafe fn allocate(size: u32) -> Option<MemoryResult> {
     let mut requested_size = size;
     let mut next_useable_chunk = 0;
 
@@ -67,13 +78,14 @@ unsafe fn allocate(size: u32) -> u32 {
 
     /*
      *  CHUNK LIST LAYOUT
-     *  
+     *
      *  start_of_memory_block: 0x2000_0100 + OFFSET
      *  adress  0x00 | OFFSET , SIZE, IS_OCUPIED | [31..16, 15..1, 0]
-     * 
-     *  
-     **/ 
-    for index in (0x00..0x2F).step_by(0x04) { // 47 possible allocs
+     *
+     *
+     **/
+    for index in (0x00..0x2F).step_by(0x04) {
+        // 47 possible allocs @todo WRONG COUNT!!
         let mut meta_of_data_chunk = volatile_load((MEM_TABLE_START as u32 + index) as *const u32);
 
         // check if occupied
@@ -85,17 +97,24 @@ unsafe fn allocate(size: u32) -> u32 {
 
         // check if size fits
         if ((meta_of_data_chunk >> 1) & !(0xFFFF_0000)) >= requested_size {
-            // clear old meta info 
+            // clear old meta info
             meta_of_data_chunk &= !(0xFFFFFFFF);
 
             // update offsetadress, size, mark as occupied
             meta_of_data_chunk = (next_useable_chunk << 16) | (requested_size << 1) | 1;
 
             // write back changes
-            volatile_store((MEM_TABLE_START as u32 + index) as *mut u32, meta_of_data_chunk);
+            volatile_store(
+                (MEM_TABLE_START as u32 + index) as *mut u32,
+                meta_of_data_chunk,
+            );
 
-            return (meta_of_data_chunk >> 16) + USEABLE_MEM_START as u32 ;
+            let start_address = (meta_of_data_chunk >> 16) + USEABLE_MEM_START as u32;
+            return Some(MemoryResult {
+                start_address: start_address,
+                end_address: start_address + size,
+            });
         }
     }
-    0
+    None
 }

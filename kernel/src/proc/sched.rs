@@ -66,7 +66,7 @@ pub fn spawn(p: Frame) {
     let task_list = unsafe { &mut *(TASK_LIST_ADDR as *mut List) };
     // @todo
     let r4 = p.get_r4_location();
-    let tcb = TCB::create(r4, task_list.task_queue_get_size());
+    let tcb = TCB::create(r4, task_list.task_queue_get_size(), 0, 0);
     task_list.insert(tcb);
 }
 
