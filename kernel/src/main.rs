@@ -59,6 +59,14 @@ fn calculate_fibonacci() {
 }
 
 fn user_init() {
+    let led_on = create_task(
+        led_on as *const () as u32,
+        sched::destroy as *const () as u32,
+    );
+    // let led_off = create_task(
+    //     led_off as *const () as u32,
+    //     sched::destroy as *const () as u32,
+    // );
     // let calculate_fibonacci = create_task(
     //     0x20001000 as *const () as u32,
     //     sched::destroy as *const () as u32,
@@ -72,7 +80,7 @@ fn user_init() {
     // let led_on = create_task(
     //     led_on as *const () as u32,
     //     sched::destroy as *const () as u32,
-    // )
+    // );
     // .unwrap();
     // sched::spawn(calculate_fibonacci);
     // sched::spawn(led_off);
@@ -118,6 +126,7 @@ unsafe fn init_tim_3() {
 #[no_mangle]
 pub unsafe fn kernel_init(edata: usize, sdata: usize) -> ! {
     mem::malloc::init(edata, sdata);
+
     // let a = mem::malloc::get_mem(4);
     // let b = mem::malloc::get_mem(4);
     // let c = mem::malloc::get_mem(32);

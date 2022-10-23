@@ -59,6 +59,7 @@ extern "C" {
     fn SysTick();
     fn SVCall();
     fn Usart1_MainISR();
+    fn MemoryManagementFault();
 }
 
 
@@ -75,7 +76,7 @@ pub static RESET: [VectorDivergentFn; 1] = [VectorDivergentFn { handler: Reset }
 pub static EXCEPTIONS: [Vector; 53] = [
     Vector { reserved: 0 }, // 2
     Vector { handler: HardFaultHandler },
-    Vector { reserved: 0 },
+    Vector { handler: MemoryManagementFault },
     Vector { reserved: 0 }, // 5 
     Vector { reserved: 0 },
     Vector { reserved: 0 },
@@ -140,5 +141,14 @@ pub extern "C" fn HardFaultHandler() {
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
-    loop {}
+
+        if let Some(s) = _panic.payload().downcast_ref::<&str>() {
+            //println!("panic occurred: {s:?}");
+            loop {}
+
+        } else {
+            //println!("panic occurred");
+            loop {}
+        }
+
 }

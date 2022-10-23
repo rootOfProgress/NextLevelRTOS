@@ -9,7 +9,9 @@ set print asm-demangle on
 set backtrace limit 32
 
 #break main.c:60
-#break main.rs:187
+break main.rs:61
+break malloc.rs:120
+#break malloc.rs:90
 #break task.rs:23
 #break task.rs:35
 #break sched.rs:31

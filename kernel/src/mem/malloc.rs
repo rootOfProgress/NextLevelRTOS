@@ -71,6 +71,7 @@ pub unsafe fn allocate(size: u32) -> Option<MemoryResult> {
     let mut requested_size = size;
     let mut next_useable_chunk = 0;
 
+    // panic!("asd");
     // replace soon
     while (requested_size % 4) != 0 {
         requested_size += 1;
@@ -117,4 +118,9 @@ pub unsafe fn allocate(size: u32) -> Option<MemoryResult> {
         }
     }
     None
+}
+
+#[no_mangle]
+pub extern "C" fn MemoryManagementFault() {
+    loop{}
 }
