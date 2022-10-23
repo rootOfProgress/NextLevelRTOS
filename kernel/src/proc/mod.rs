@@ -1,3 +1,3 @@
 pub mod sched;
-mod task;
+pub mod task;
 pub mod tcb;

@@ -1,16 +1,32 @@
 //!
-//! This file contains a struct containing the registers for the USART device. The fields of the struct are in C presentation 
+//! This file contains a struct containing the registers for the USART device. The fields of the struct are in C presentation
 //! to prevent compiler mangling. The fields then match the offsets of the according register.
 //!
+// STM32F4X
+// #[repr(C)]
+// pub struct USART {
+// pub sr: u32,
+// pub dr: u32,
+// pub brr: u32,
+// pub cr1: u32,
+// pub cr2: u32,
+// pub cr3: u32,
+// pub gtpr: u32,
+// }
+
 #[repr(C)]
 pub struct USART {
-    pub sr: u32,
-    pub dr: u32,
-    pub brr: u32,
     pub cr1: u32,
     pub cr2: u32,
     pub cr3: u32,
+    pub brr: u32,
     pub gtpr: u32,
+    pub rtor: u32,
+    pub rqr: u32,
+    pub isr: u32,
+    pub icr: u32,
+    pub rdr: u32,
+    pub tdr: u32,
 }
 
 impl USART {

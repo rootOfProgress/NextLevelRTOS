@@ -12,11 +12,11 @@ pub struct CoreRegister {
     r8: u32,
     r9: u32,
     r10: u32,
-    r11: u32,
-    r0: u32,
-    r1: u32,
-    r2: u32,
-    r3: u32,
+    pub r11: u32,
+    pub r0: u32, // 8
+    r1: u32, // 4
+    r2: u32, // 0
+    r3: u32, // 3c
     r12: u32,
     pub lr: u32,
     pub pc: u32,

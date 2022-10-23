@@ -4,7 +4,7 @@
 //! a provided builder.
 //!
 use super::super::bus::rcc;
-use super::super::generic::platform::stm32f407ve;
+use super::super::generic::platform::stm32f3x;
 use super::super::generic::traits::primitive_extensions;
 use super::super::registerblocks::gpio::GPIO;
 
@@ -12,10 +12,10 @@ pub mod gpio {
     //---------------------------------------------------------------//
     //----------------------------IMPORTS----------------------------//
     //---------------------------------------------------------------//
-    use super::rcc;
-    use super::stm32f407ve::adresses;
-    use super::stm32f407ve::bitfields;
     use super::primitive_extensions::BitOps;
+    use super::rcc;
+    use super::stm32f3x::adresses;
+    use super::stm32f3x::bitfields;
     use super::GPIO;
 
     //---------------------------------------------------------------//
@@ -24,6 +24,19 @@ pub mod gpio {
     pub enum OutputTypes {
         PushPull,
         OpenDrain,
+    }
+
+    pub enum SpeedModes {
+        Low,
+        Medium,
+        Fast,
+        High,
+    }
+
+    pub enum PullTypes {
+        Nothing,
+        PullUp,
+        PullDown,
     }
 
     pub enum ModerTypes {
@@ -67,7 +80,19 @@ pub mod gpio {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
                     adresses::gpio::GPIOA_BASE
                 }
-                _ => adresses::gpio::GPIOA_BASE,
+                "B" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOB_BASE
+                }
+                "C" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOC_BASE
+                }
+                "E" => {
+                    rcc::rcc::activate_gpio_bus_clock(port_mnemonic);
+                    adresses::gpio::GPIOE_BASE
+                }
+                _ => panic!(),
             };
 
             GpioDevice {
@@ -91,14 +116,51 @@ pub mod gpio {
             self
         }
 
-        pub fn as_push_pull(self) -> GpioDevice {
-            self.set_otyper(OutputTypes::PushPull);
+        pub fn as_pull_up(self) -> GpioDevice {
+            self.set_pupdr(PullTypes::PullUp);
+            self
+        }
+
+        pub fn as_high_speed(self) -> GpioDevice {
+            self.set_ospeedr(SpeedModes::High);
             self
         }
 
         pub fn as_open_drain(self) -> GpioDevice {
             self.set_otyper(OutputTypes::OpenDrain);
             self
+        }
+
+        pub fn as_push_pull(self) -> GpioDevice {
+            self.set_otyper(OutputTypes::PushPull);
+            self
+        }
+
+        pub fn is_pressed(&self) -> bool {
+            let reg_content = self.port.idr.read_register();
+            // let pin_masked = 0xFFFF & !(self.pin);
+            if (reg_content & (1 << self.pin)) > 0 {
+                return true;
+            }
+            false
+        }
+
+        fn set_ospeedr(&self, speed: SpeedModes) {
+            // @todo: those are EXCLUSIVE!! clear field first!
+            match speed {
+                SpeedModes::Low => {
+                    self.port.moder.set_bit(00 << self.pin * 2);
+                }
+                SpeedModes::Medium => {
+                    self.port.moder.set_bit(01 << self.pin * 2);
+                }
+                SpeedModes::High => {
+                    self.port.moder.set_bit(10 << self.pin * 2);
+                }
+                SpeedModes::Fast => {
+                    self.port.moder.set_bit(0b11 << self.pin * 2);
+                }
+            };
         }
 
         pub fn turn_on(&self) {
@@ -109,12 +171,13 @@ pub mod gpio {
             self.set_odr(OutputState::High);
         }
 
-        pub fn as_af(self, af_port: u32) -> GpioDevice {
-            self.into_af(af_port);
+        pub fn as_af(self, af_number: u32) -> GpioDevice {
+            self.into_af(af_number);
             self
         }
 
         fn set_moder(&self, moder_type: ModerTypes) {
+            // @todo: those are EXCLUSIVE!! clear field first!
             match moder_type {
                 ModerTypes::InputMode => {
                     self.port
@@ -139,6 +202,19 @@ pub mod gpio {
             };
         }
 
+        fn set_pupdr(&self, pu_type: PullTypes) {
+            match pu_type {
+                _Nothing => {}
+                PullTypes::PullUp => {
+                    self.port.otyper.clear_bit(0b11 << 2 * self.pin);
+                    self.port.otyper.set_bit(0b01 << 2 * self.pin);
+                }
+                PullTypes::PullDown => {
+                    self.port.otyper.set_bit(0b10 << 2 * self.pin);
+                }
+            };
+        }
+
         // 11.4.6 GPIO port output data register (GPIOx_ODR) (x = A..H)
         fn set_odr(&self, odr_type: OutputState) {
             match odr_type {
@@ -154,34 +230,31 @@ pub mod gpio {
         fn set_otyper(&self, output_type: OutputTypes) {
             match output_type {
                 OutputTypes::PushPull => {
-                    self.port.otyper.clear_bit(0b1 << self.pin);
+                    self.port.otyper.clear_bit(1 << self.pin);
                 }
                 OutputTypes::OpenDrain => {
-                    self.port.otyper.set_bit(0b1 << self.pin);
+                    self.port.otyper.set_bit(1 << self.pin);
                 }
             };
         }
         fn into_af(&self, af_number: u32) {
-            let alternate_function_register = if self.pin < 8 {
-                self.port.afrl.clear_bit((0xF as u32) << self.pin * 4);
-                self.port.afrl.set_bit(af_number << self.pin * 4);
-            } else {
-                let pin = self.pin - 8;
-                self.port.afrh.clear_bit((0xF as u32) << pin * 4);
-                self.port.afrh.set_bit(af_number << pin * 4);
-            };
-            // unsafe {
-            //     ptr::write_volatile(
-            //         alternate_function_register as *mut u32,
-            //         ptr::read_volatile(alternate_function_register as *const u32)
-            //             & !(0xF as u32) << pin * 4,
-            //     );
-            //     ptr::write_volatile(
-            //         alternate_function_register as *mut u32,
-            //         ptr::read_volatile(alternate_function_register as *const u32)
-            //             | af_number << pin * 4,
-            //     );
-            // }
+            unsafe {
+                if self.pin < 8 {
+                    self.port.afrl.clear_bit((0xF as u32) << self.pin * 4);
+                    self.port.afrl.set_bit(af_number << self.pin * 4);
+                } else {
+                    // asm!("bkpt");
+                    let pin = self.pin - 8;
+                    // asm!("bkpt");
+                    let _toclear = (0xF as u32) << (pin * 4);
+                    let _toset = af_number << (pin * 4);
+                    // self.port.afrh.clear_bit((0xF as u32) << (pin * 4));
+                    // asm!("bkpt");
+                    self.port.afrh.set_bit(af_number << (pin * 4));
+                    // asm!("bkpt");
+                    // core::ptr::write(0x4800_0024 as *mut u32, 0x0400_0000);
+                };
+            }
         }
     }
 }
