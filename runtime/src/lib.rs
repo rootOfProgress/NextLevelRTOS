@@ -8,6 +8,7 @@
 use core::panic::PanicInfo;
 use core::ptr;
 use core::arch::asm;
+use core::cell::Cell;
 
 extern "C" {
     fn __br_to_init();
@@ -35,13 +36,10 @@ pub unsafe extern "C" fn Reset() -> ! {
     let count = &_edata as *const u8 as usize - &_sdata as *const u8 as usize;
     ptr::copy_nonoverlapping(&_sidata as *const u8, &mut _sdata as *mut u8, count);
 
-    // reference to target function
     extern "Rust" {
-        fn kernel_init(_edata: usize,_sidata: usize) -> !;
+        fn kernel_init(_edata: Cell<u32>) -> !;
     }
-    // asm!("bkpt");
-    // loop{}
-    kernel_init(&_edata as *const u8 as usize, &_sidata as *const u8 as usize);
+    kernel_init(Cell::new(&_edata as *const u8 as u32));
 }
 
 pub union Vector {

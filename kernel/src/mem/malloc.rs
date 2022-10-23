@@ -1,9 +1,9 @@
-static mut MEM_TABLE_START: *const u32 = core::ptr::null();
-static mut USEABLE_MEM_START: *const u32 = core::ptr::null();
-const WORD: u32 = 0x4;
+use core::cell::Cell;
+// static mut MEM_TABLE_START: *const u32 = core::ptr::null();
+static mut MEM_TABLE_START: Cell<u32> = Cell::new(0);
+static mut USEABLE_MEM_START: Cell<u32> = Cell::new(0);
 
 use core::intrinsics::{volatile_load, volatile_store};
-use core::ptr::swap;
 
 pub struct MemoryResult {
     pub start_address: u32,
@@ -24,26 +24,24 @@ extern "C" {
     fn read_memory(adress: u32) -> u32;
 }
 
-pub unsafe fn init(start_os_section: usize, bar: usize) {
-    // @bug
-    let mut start = start_os_section;
-    while start % 4 != 0 {
-        start += 1;
+pub unsafe fn init(mut start_os_section: Cell<u32>) {
+    while start_os_section.get() % 4 != 0 {
+        *start_os_section.get_mut() += 1;
     }
-    MEM_TABLE_START = start as *const u32;
-    USEABLE_MEM_START = (MEM_TABLE_START as u32 + 0x30) as *const u32;
+    *MEM_TABLE_START.get_mut() = start_os_section.get();
+    *USEABLE_MEM_START.get_mut() = MEM_TABLE_START.get() + 0x30;
     for index in (0x00..0x2F).step_by(0x04) {
-        volatile_store((MEM_TABLE_START as u32 + index) as *mut u32, 0x0000_FFFE);
+        volatile_store((MEM_TABLE_START.get() + index) as *mut u32, 0x0000_FFFE);
     }
 }
 
 pub unsafe fn memory_mng_deallocate(address: u32) {
-    let address_offset: u32 = address - USEABLE_MEM_START as u32;
+    let address_offset: u32 = address - USEABLE_MEM_START.get() as u32;
     for index in (0x00..0x2F).step_by(0x04) {
-        let alloc_entry: u32 = volatile_load((MEM_TABLE_START as u32 + index) as *mut u32);
+        let alloc_entry: u32 = volatile_load((MEM_TABLE_START.get() + index) as *mut u32);
         if (alloc_entry >> 16) == address_offset {
             volatile_store(
-                (MEM_TABLE_START as u32 + index) as *mut u32,
+                (MEM_TABLE_START.get() + index) as *mut u32,
                 alloc_entry & !1,
             );
             return;
@@ -87,7 +85,7 @@ pub unsafe fn allocate(size: u32) -> Option<MemoryResult> {
      **/
     for index in (0x00..0x2F).step_by(0x04) {
         // 47 possible allocs @todo WRONG COUNT!!
-        let mut meta_of_data_chunk = volatile_load((MEM_TABLE_START as u32 + index) as *const u32);
+        let mut meta_of_data_chunk = volatile_load((MEM_TABLE_START.get() + index) as *const u32);
 
         // check if occupied
         if (meta_of_data_chunk & 1) == 1 {
@@ -98,19 +96,16 @@ pub unsafe fn allocate(size: u32) -> Option<MemoryResult> {
 
         // check if size fits
         if ((meta_of_data_chunk >> 1) & !(0xFFFF_0000)) >= requested_size {
-            // clear old meta info
-            meta_of_data_chunk &= !(0xFFFFFFFF);
-
             // update offsetadress, size, mark as occupied
             meta_of_data_chunk = (next_useable_chunk << 16) | (requested_size << 1) | 1;
 
             // write back changes
             volatile_store(
-                (MEM_TABLE_START as u32 + index) as *mut u32,
+                (MEM_TABLE_START.get() + index) as *mut u32,
                 meta_of_data_chunk,
             );
 
-            let start_address = (meta_of_data_chunk >> 16) + USEABLE_MEM_START as u32;
+            let start_address = (meta_of_data_chunk >> 16) + USEABLE_MEM_START.get();
             return Some(MemoryResult {
                 start_address: start_address,
                 end_address: start_address + size,

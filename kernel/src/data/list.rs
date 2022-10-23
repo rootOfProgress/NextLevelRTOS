@@ -1,9 +1,10 @@
 use super::super::proc::tcb::TCB;
 use crate::mem::malloc::{allocate, MemoryResult};
+use core::cell::Cell;
 
 #[repr(C)]
 struct Node<T> {
-    next: *const u32,
+    next: Cell<u32>,
     data: T,
 }
 
@@ -16,8 +17,8 @@ impl<T> Node<T> {
 #[repr(C)]
 pub struct List {
     size: u32,
-    head: *const u32,
-    tail: *const u32,
+    head: Cell<u32>,
+    tail: Cell<u32>,
 }
 
 impl List {
@@ -29,8 +30,8 @@ impl List {
                     let list = &mut *(result.start_address as *mut List);
                     *list = List {
                         size: 0,
-                        head: core::ptr::null(),
-                        tail: core::ptr::null(),
+                        head: Cell::new(0),
+                        tail: Cell::new(0),
                     };
                     result.start_address
                 }
@@ -46,7 +47,7 @@ impl List {
     }
 
     pub fn delete_head_node(&mut self) {
-        let addr_of_old_head = self.head;
+        //let addr_of_old_head = self.head;
         todo!();
         // unsafe {
         //     let head = &mut *(self.head as *mut Node<T>);
@@ -66,19 +67,19 @@ impl List {
 
                     *node = Node {
                         data,
-                        next: core::ptr::null(),
+                        next: Cell::new(0),
                     };
 
-                    if self.head.is_null() {
-                        node.next = result.start_address as *const u32;
-                        self.tail = result.start_address as *const u32;
-                        self.head = result.start_address as *const u32;
+                    if self.head.get() == 0 {
+                        *node.next.get_mut() = result.start_address;
+                        *self.tail.get_mut() = result.start_address;
+                        *self.head.get_mut() = result.start_address;
                     } else {
                         // append to tail / fifo
-                        node.next = self.head;
-                        let tail_node = &mut *(self.tail as *mut Node<T>);
-                        tail_node.next = result.start_address as *const u32;
-                        self.tail = result.start_address as *const u32;
+                        *node.next.get_mut() = self.head.get();
+                        let tail_node: &mut Node<T> = &mut *(self.tail.get() as *mut Node<T>);
+                        *tail_node.next.get_mut() = result.start_address;
+                        *self.tail.get_mut() = result.start_address;
                     }
                     self.size += 1;
                 }
@@ -90,11 +91,11 @@ impl List {
     }
     // returns sp only and shifts pointer 1 node
     pub fn sr_cursor_sp(&mut self) -> u32 {
-        let current_node = unsafe { &mut *(self.head as *mut Node<TCB>) };
-        self.head = current_node.next;
-        let tail_node = unsafe { &mut *(self.tail as *mut Node<TCB>) };
-        self.tail = tail_node.next;
-        let node_new = unsafe { &mut *(self.head as *mut Node<TCB>) };
+        let current_node = unsafe { &mut *(self.head.get() as *mut Node<TCB>) };
+        *self.head.get_mut() = current_node.next.get();
+        let tail_node = unsafe { &mut *(self.tail.get() as *mut Node<TCB>) };
+        *self.tail.get_mut() = tail_node.next.get();
+        let node_new = unsafe { &mut *(self.head.get() as *mut Node<TCB>) };
         let t = &mut *(&mut node_new.data as &mut TCB);
         t.sp
         // 0
