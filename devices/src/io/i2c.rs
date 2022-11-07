@@ -60,7 +60,6 @@ pub mod i2c {
             self.set_cr2_register(
                 slave_addr << bitfields::i2c::SADD_7_1
                     | num_bytes << bitfields::i2c::NBYTES
-                    /*| 1 << bitfields::i2c::AUTOEND,*/
             );
             let mut tx_buffer: [u32; 4] = [0, 0, 0, 0];
             for byte in 0..num_bytes {

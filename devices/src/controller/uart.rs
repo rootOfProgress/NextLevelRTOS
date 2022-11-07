@@ -267,7 +267,7 @@ pub extern "C" fn Usart1_MainISR() {
         // echo
         // transmit(rx_data as u32);
 
-        /* if rx_data as char == 'I' {
+        if rx_data as char == 'I' {
             rcv_state = RCV_STATE::I2C;
             return;
         } else if rx_data as char == 'P' {
@@ -276,7 +276,7 @@ pub extern "C" fn Usart1_MainISR() {
         } else if rx_data as char == 'T' {
             rcv_state = RCV_STATE::TASK;
             return;
-        } else */ if rx_data as char == 'f' {
+        } else if rx_data as char == 'f' {
             task_target = 0x20001000;
             // flush memory
             for i in (0x0..0x60).step_by(0x4) {
@@ -296,9 +296,6 @@ pub extern "C" fn Usart1_MainISR() {
  */
         // dummy leave it
         if rcv_state == RCV_STATE::TASK {
-            // task_buffer[task_byte as usize] = rx_data;
-            // task_byte += 1;
-            // // 2 3 0 1
             task_word |= (rx_data as u32) << task_byte * 8;
             if task_byte == 3 {
                 volatile_store(task_target as *mut u32, task_word);
@@ -324,7 +321,6 @@ pub extern "C" fn Usart1_MainISR() {
             }
         } else if rcv_state == RCV_STATE::I2C {
             if rx_data as char == ';' {
-                // i2c_buffer[i2c_idx as usize] = ';';
                 if i2c_buffer[0] as char == 'w' {
                     let _register = sum >> 8;
                     let mut num_bytes = 1;
@@ -361,9 +357,9 @@ pub extern "C" fn Usart1_MainISR() {
                     }
                     sum = 0;
                 } else if i2c_buffer[0] as char == 't' {
-                    // let d = get_i2c_dev();
+                    let d = get_i2c_dev();
                     // d.rw_test();
-                    transmit_int(123429);
+                    // transmit_int(123429);
                 }
                 i2c_idx = 0;
             } else if rx_data as char != '\n' {

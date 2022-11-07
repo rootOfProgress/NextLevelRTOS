@@ -4,16 +4,24 @@
 use super::super::data::list::List;
 use super::task::task::Frame;
 use super::tcb::TCB;
+use core::arch::asm;
 use core::intrinsics::{volatile_load, volatile_store};
 static mut TASK_LIST_ADDR: u32 = 0;
+
+#[repr(C)]
+enum SvCallId {
+    RunThreadMode = 0,
+}
 
 extern "C" {
     ///
     /// Points to extern asm instruction.
     ///
     // fn __br_to(sp: u32);
+    fn __get_r0() -> u32;
     fn __br_to_init();
-    fn __trap(f: u32);
+    //             R0          R1
+    fn __trap(id: SvCallId, arg: u32);
     fn __load_process_context(stack_addr: u32);
     fn __save_process_context() -> u32;
 }
@@ -41,7 +49,7 @@ pub fn destroy() {
             0xE000_E010 as *mut u32,
             core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
         );
-        __trap(p);
+        // __trap(p);
     }
 }
 
@@ -58,7 +66,7 @@ pub fn start_init_process() {
         //     0xE000_E010 as *mut u32,
         //     core::ptr::read_volatile(0xE000_E010 as *const u32) | 0b1,
         // );
-        __trap(p);
+        __trap(SvCallId::RunThreadMode, p);
     }
 }
 
@@ -128,5 +136,19 @@ pub extern "C" fn SysTick() {
 
 #[no_mangle]
 pub extern "C" fn SVCall() {
-    unsafe { __br_to_init() };
+    // let register_pair: (u32,u32) = __get_r0_r1(); 
+    let id: &mut SvCallId = unsafe { &mut *(__get_r0() as *mut SvCallId) };
+    match id { //unsafe { &mut *(register_pair as *mut SvCallId) }; {
+        SvCallId::RunThreadMode => {
+            unsafe {
+                asm!(
+                    "ldmfd r1!, {{r4-r11}}\n
+                     msr psp, r1\n
+                     mov lr, #0xfffffffd\n
+                     bx lr"
+                );
+            }
+            // unsafe { __br_to_init() };
+        }
+    }
 }

@@ -2,18 +2,18 @@
 extern crate cpu;
 use super::tcb::TCB;
 use crate::mem::malloc::{allocate, MemoryResult};
-use cpu::core::CoreRegister;
 use core::cell::Cell;
+use cpu::core::CoreRegister;
 
 pub mod task {
-    use super::CoreRegister;
     use super::Cell;
+    use super::CoreRegister;
     use super::{allocate, MemoryResult};
 
     pub fn create_task(target: u32, end_destination: u32) -> Frame {
         let process_frame = Frame::new();
-        let register =
-            (process_frame.buffer.get() - core::mem::size_of::<CoreRegister>() as u32) as *mut CoreRegister;
+        let register = (process_frame.buffer.get() - core::mem::size_of::<CoreRegister>() as u32)
+            as *mut CoreRegister;
         unsafe {
             (*register).r0 = 0xAB;
             (*register).psr = 0x21000000;
@@ -34,14 +34,14 @@ pub mod task {
         pub fn new() -> Self {
             unsafe {
                 let process_memory: Option<MemoryResult> =
-                    allocate(512 + core::mem::size_of::<CoreRegister>() as u32);
+                    allocate(1024 + core::mem::size_of::<CoreRegister>() as u32);
 
                 match process_memory {
                     Some(result) => Frame {
                         buffer: Cell::new(result.end_address),
                     },
                     None => {
-                        loop{}
+                        loop {}
                         todo!()
                     }
                 }

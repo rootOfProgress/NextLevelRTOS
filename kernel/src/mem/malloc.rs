@@ -1,9 +1,8 @@
 use core::cell::Cell;
-// static mut MEM_TABLE_START: *const u32 = core::ptr::null();
+use core::intrinsics::{volatile_load, volatile_store};
+
 static mut MEM_TABLE_START: Cell<u32> = Cell::new(0);
 static mut USEABLE_MEM_START: Cell<u32> = Cell::new(0);
-
-use core::intrinsics::{volatile_load, volatile_store};
 
 pub struct MemoryResult {
     pub start_address: u32,
@@ -117,5 +116,5 @@ pub unsafe fn allocate(size: u32) -> Option<MemoryResult> {
 
 #[no_mangle]
 pub extern "C" fn MemoryManagementFault() {
-    loop{}
+    loop {}
 }

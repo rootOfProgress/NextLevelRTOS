@@ -4,6 +4,8 @@
 .global __trap
 .global __br_to
 .global __branch
+.global __get_r0
+
 .cpu cortex-m4
 .syntax unified
 .thumb
@@ -16,6 +18,9 @@ __br_to_init:
 	msr psp, r0
 	mov lr, #0xfffffffd
     bx lr
+
+__get_r0:
+	bx lr
 
 // __br_to:
 // 	ldmfd r0!, {r4-r11}

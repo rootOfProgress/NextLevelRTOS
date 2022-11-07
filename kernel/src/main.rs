@@ -13,14 +13,14 @@ extern crate user;
 mod data;
 mod mem;
 mod proc;
+use core::cell::Cell;
 use devices::controller::timer::tim::TimerDevice;
 use devices::controller::uart::iostream;
 use devices::generic::platform::stm32f3x::bitfields;
-use proc::task::task::create_task;
-use user::engine::alter_engine_speed;
-use core::cell::Cell;
 use devices::io::i2c::i2c::I2C1_DEV;
 use proc::sched;
+use proc::task::task::create_task;
+use user::engine::alter_engine_speed;
 
 static mut TIM_3: Option<TimerDevice> = None;
 
@@ -128,57 +128,56 @@ pub unsafe fn kernel_init(edata: Cell<u32>) -> ! {
     mem::malloc::init(edata);
     sched::init();
 
-    // // let gpio_port_a0 = devices::io::gpio::gpio::GpioDevice::new("A", 0);
+    if cfg!(_HW_) {
+        // // i2c1 sda
+        devices::io::gpio::gpio::GpioDevice::new("B", 7)
+            .as_af(4)
+            .as_alternate_function()
+            .as_open_drain()
+            .as_high_speed();
+        // // i2c1 scl
+        devices::io::gpio::gpio::GpioDevice::new("B", 8)
+            .as_af(4)
+            .as_alternate_function()
+            .as_open_drain()
+            .as_high_speed();
 
-    // // // i2c1 sda
-    // devices::io::gpio::gpio::GpioDevice::new("B", 7)
-    //     .as_af(4)
-    //     .as_alternate_function()
-    //     .as_open_drain()
-    //     .as_high_speed();
-    // // // i2c1 scl
-    // devices::io::gpio::gpio::GpioDevice::new("B", 8)
-    //     .as_af(4)
-    //     .as_alternate_function()
-    //     .as_open_drain()
-    //     .as_high_speed();
+        I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());
 
-    // I2C1_DEV = Some(devices::io::i2c::i2c::I2cDevice::new().init());
+        devices::io::gpio::gpio::GpioDevice::new("A", 0)
+            .as_output()
+            .turn_off();
+        devices::io::gpio::gpio::GpioDevice::new("A", 1)
+            .as_output()
+            .turn_off();
 
-    // devices::io::gpio::gpio::GpioDevice::new("A", 0)
-    //     .as_output()
-    //     .turn_off();
-    // devices::io::gpio::gpio::GpioDevice::new("A", 1)
-    //     .as_output()
-    //     .turn_off();
+        // // uart1 tx
+        devices::io::gpio::gpio::GpioDevice::new("A", 9)
+            .as_alternate_function()
+            .as_af(7)
+            .as_push_pull();
+        // // uart1 rx
+        devices::io::gpio::gpio::GpioDevice::new("A", 10)
+            .as_input()
+            .as_alternate_function()
+            .as_af(7);
 
-    // // // uart1 tx
-    // devices::io::gpio::gpio::GpioDevice::new("A", 9)
-    //     .as_alternate_function()
-    //     .as_af(7)
-    //     .as_push_pull();
-    // // // uart1 rx
-    // devices::io::gpio::gpio::GpioDevice::new("A", 10)
-    //     .as_input()
-    //     .as_alternate_function()
-    //     .as_af(7);
+        // // speed regulation
+        init_tim_3();
 
-    // // // speed regulation
-    // init_tim_3();
-
-    // let _gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
-    //     .as_alternate_function()
-    //     .as_af(2);
-    // let _gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
-    //     .as_alternate_function()
-    //     .as_af(2);
-    // let _gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
-    //     .as_alternate_function()
-    //     .as_af(2);
-    // let _gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
-    //     .as_alternate_function()
-    //     .as_af(2);
-
+        let _gpio_port_c6 = devices::io::gpio::gpio::GpioDevice::new("C", 6)
+            .as_alternate_function()
+            .as_af(2);
+        let _gpio_port_c7 = devices::io::gpio::gpio::GpioDevice::new("C", 7)
+            .as_alternate_function()
+            .as_af(2);
+        let _gpio_port_c8 = devices::io::gpio::gpio::GpioDevice::new("C", 8)
+            .as_alternate_function()
+            .as_af(2);
+        let _gpio_port_c9 = devices::io::gpio::gpio::GpioDevice::new("C", 9)
+            .as_alternate_function()
+            .as_af(2);
+    }
     // let usart = devices::controller::uart::usart::UsartDevice::new(9600);
     // usart.enable();
     // "hello from trait".println();
