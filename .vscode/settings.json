@@ -3,6 +3,7 @@
   "files.associations": {
     "functional": "c",
     "types.h": "c",
-    "device.h": "c"
+    "device.h": "c",
+    "exception.h": "c"
   }
 }
