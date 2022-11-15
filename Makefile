@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 CFLAGS = -fno-common -O2 \
 	 -mcpu=cortex-m4 -mthumb \
-	 -T link1.ld -g -nostartfiles -Wall -Wextra \
+	 -T link1.ld -g -nostartfiles -Wall -Wextra -I./include \
 
 SRC=$(shell find $('./src') -name '*.c')
 TARGET = firmware

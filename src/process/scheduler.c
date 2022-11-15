@@ -1,4 +1,4 @@
-#include "../../include/process/scheduler.h"
+#include "process/scheduler.h"
 int *addr = 0x20001000;
 
 void run_init_process()

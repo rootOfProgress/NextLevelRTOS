@@ -4,6 +4,7 @@
 #include "../include/process/scheduler.h"
 #include "../include/types.h"
 #include "../include/device.h"
+#include "memory.h"
 
 #include <stddef.h>
 

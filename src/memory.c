@@ -1,4 +1,4 @@
-#include "../include/memory.h"
+#include "memory.h"
 
 static int* MEM_TABLE_START = 0;
 static int* USEABLE_MEM_START = 0;
@@ -42,7 +42,7 @@ void memory_mng_deallocate(int address) {
 }
 
 // #[inline(always)]
-MemoryResult_t allocate(int size) {
+MemoryResult_t allocate(unsigned int size) {
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 

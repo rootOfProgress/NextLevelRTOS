@@ -4,8 +4,9 @@
 #define FOURBYTE 0x04
 
 typedef struct MemoryResult {
-    int* start_address;
-    int* end_address;
+    unsigned int* start_address;
+    unsigned int* end_address;
 } MemoryResult_t;
 
+MemoryResult_t allocate(unsigned int);
 #endif
