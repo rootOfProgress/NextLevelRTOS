@@ -8,5 +8,7 @@ typedef struct MemoryResult {
     unsigned int* end_address;
 } MemoryResult_t;
 
-MemoryResult_t allocate(unsigned int);
+void init(unsigned int);
+
+MemoryResult_t* allocate(unsigned int);
 #endif

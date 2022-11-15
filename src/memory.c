@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "lang.h"
 
 static int* MEM_TABLE_START = 0;
 static int* USEABLE_MEM_START = 0;
@@ -17,7 +18,7 @@ static int* USEABLE_MEM_START = 0;
 //     fn read_memory(adress: u32) -> u32;
 // }
 
-void init(int start_os_section) {
+void init(unsigned int start_os_section) {
     while (start_os_section % FOURBYTE != 0) {
         start_os_section += 1;
     }
@@ -41,8 +42,7 @@ void memory_mng_deallocate(int address) {
     }
 }
 
-// #[inline(always)]
-MemoryResult_t allocate(unsigned int size) {
+MemoryResult_t* allocate(unsigned int size) {
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
@@ -78,18 +78,14 @@ MemoryResult_t allocate(unsigned int size) {
             // write back changes
             *(MEM_TABLE_START + index) = meta_of_data_chunk;
 
-            int start_address = (meta_of_data_chunk >> 16) + *USEABLE_MEM_START;
+            int *start_address = (meta_of_data_chunk >> 16) + *USEABLE_MEM_START;
 
-            MemoryResult_t result = {
-                .start_address = start_address,
-                .end_address = start_address + size,
-            };
-            return result;
+            MemoryResult_t* memory_result = (MemoryResult_t*) start_address; 
+            memory_result->start_address = start_address;
+            memory_result->end_address = start_address + size;
+    
+            return memory_result;
         }
     }
-    MemoryResult_t result = {
-        .start_address = 0,
-        .end_address = 0,
-    };
-    return result;
+    return NULL;
 }
