@@ -4,6 +4,7 @@
     "functional": "c",
     "types.h": "c",
     "device.h": "c",
-    "exception.h": "c"
+    "exception.h": "c",
+    "stddef.h": "c"
   }
 }

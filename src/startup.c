@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "../include/reg.h"
+#include "memory.h"
 #include "../include/exception.h"
 
 extern void main_init(void);
@@ -9,13 +10,14 @@ extern void SVCall(uint32_t *);
 
 extern uint32_t _sidata;
 extern uint32_t _sdata;
-extern uint32_t _edata;
+extern unsigned int _edata;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
 extern uint32_t stack_top;
 
 void reset_handler(void)
 {
+    init_allocator( (unsigned int) &_ebss);
     main_init();
 }
 

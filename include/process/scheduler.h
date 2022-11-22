@@ -1,13 +1,10 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
+#include "data/queue.h"
+#include "lang.h"
 
-#include <stdint.h>
-
-typedef struct {
-    short pid;
-    uint32_t stackpointer_adress;
-} TCB;
+static Queue_t* task_queue = NULL;
 
 void run_init_process();
-TCB* create_task(uint32_t, short);
+
 #endif

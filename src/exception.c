@@ -1,7 +1,6 @@
 #include "../include/exception.h"
 #include "../include/types.h"
 #include "../include/lang.h"
-#include "../include/device.h"
 #include "../include/uart.h"
 
 volatile uint32_t sp_msp;

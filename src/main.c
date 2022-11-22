@@ -3,15 +3,9 @@
 #include "../include/exception.h"
 #include "../include/process/scheduler.h"
 #include "../include/types.h"
-#include "../include/device.h"
 #include "memory.h"
 
-#include <stddef.h>
-
-
-frame_t *task0 = (frame_t*) 0x20001000;
-int addr1 = 0x20002345;
-volatile static void (*fn)();
+// #include <stddef.h>
 
 void enable_exti0_cpu_irq()
 {
@@ -61,35 +55,6 @@ void user_loop(void)
 
 void main_loop(void)
 {
-  // fn = user_loop;
-  // volatile frame_t task0;
-  *(frame_t*) task0 = (frame_t)
-  {
-    .0
-  };
-  task0->r4 = 0x1A;
-  task0->r11 = 0x1F;
-  task0->r0 = 0x2A;
-  task0->r3 = 0x2F;
-
-  task0->pc = (uint32_t) &user_loop;
-  task0->xPsr = (uint32_t) 0x21000000;
-
-  __asm__("mov r0, 0xAB\n"
-          "mov r1, 0xBC\n"
-          "mov r2, 0xCD\n"
-          "mov r3, 0xEF\n"
-          "mov r4, 0x11\n"
-          "mov r10, 0x88\n"
-          "mov r11, 0x99\n");
-
-  opcode = 1;
-  __asm__("svc 0");
-
-  opcode = 2;
-  arg = (void*) task0;
-  __asm__("svc 0");
-  // trap(1);
   while (1)
   {
 
@@ -98,6 +63,7 @@ void main_loop(void)
 
 int main_init(void)
 {
+  MemoryResult_t *mt = allocate(4);
   // enable_exti0_cpu_irq();
   // enable_usart_cpu_irq();
   // setup_nvic_controller();

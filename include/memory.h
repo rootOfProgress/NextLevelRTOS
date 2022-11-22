@@ -1,5 +1,5 @@
-#ifndef EXCEPTION_H
-#define EXCEPTION_H
+#ifndef MEMORY_H
+#define MEMORY_H
 
 #define FOURBYTE 0x04
 
@@ -8,7 +8,7 @@ typedef struct MemoryResult {
     unsigned int* end_address;
 } MemoryResult_t;
 
-void init(unsigned int);
+void init_allocator(unsigned int);
 
 MemoryResult_t* allocate(unsigned int);
 #endif
