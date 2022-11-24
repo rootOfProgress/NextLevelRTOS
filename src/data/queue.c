@@ -4,13 +4,11 @@
 
 Queue_t* new_queue(void)
 {
-    MemoryResult_t *memory = allocate(sizeof(Queue_t));
-
-    if (memory == NULL)
+    Queue_t* queue = (Queue_t*) allocate(sizeof(Queue_t));
+    if (queue == NULL)
     {
         // error
     }
-    Queue_t* queue = (Queue_t*) memory->start_address;
     queue->size = 0;
     queue->head = NULL;
     queue->tail = NULL;
@@ -18,26 +16,42 @@ Queue_t* new_queue(void)
     return queue;
 }
 
-void insert(Queue_t* queue, void* data)
+void dequeue_element(Queue_t* queue, Node_t* node)
 {
-    MemoryResult_t *node_memory = allocate(sizeof(Node_t));
+    node->prev->next = node->next;
+    node->prev = NULL;
+    node->next = NULL;
 
-    if (node_memory == NULL)
+    // @todo needs tests
+    deallocate((void*) node);
+    queue->size--;
+}
+
+void* get_head_element(Queue_t* queue)
+{
+    return queue->head;
+}
+
+void enqueue_element(Queue_t* queue, void* data)
+{
+    Node_t* new_node = (Node_t*) allocate(sizeof(Node_t));
+    if (new_node == NULL)
     {
         // error
     }
-    Node_t* new_node = (Node_t*) node_memory->start_address;
     new_node->next = NULL;
     new_node->data = data;
 
     if (queue->size == 0)
     {
         new_node->next = new_node;
+        new_node->prev = new_node;
         queue->tail = new_node;
         queue->head = new_node;
     }
     else
     {
+        new_node->prev = queue->tail;
         new_node->next = queue->head;
         queue->tail->next = new_node;
         queue->tail = new_node;

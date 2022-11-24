@@ -5,6 +5,7 @@ typedef struct Node Node_t;
 
 typedef struct Node {
     Node_t* next;
+    Node_t* prev;
     void* data;
 } Node_t;
 
@@ -15,6 +16,9 @@ typedef struct Queue {
 } Queue_t;
 
 Queue_t* new_queue(void);
-void insert(Queue_t*, void*);
+void enqueue_element(Queue_t*, void*);
+void dequeue_element(Queue_t* queue, Node_t* node);
+void* get_head_element(Queue_t*);
+
 
 #endif

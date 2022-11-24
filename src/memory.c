@@ -31,19 +31,19 @@ void init_allocator(unsigned int start_os_section) {
     }
 }
 
-void memory_mng_deallocate(int address) {
-    int address_offset = address - *USEABLE_MEM_START;
-    for (int index = 0x00; index < 0x02F; index += FOURBYTE)
+void deallocate(void* address) {
+    unsigned int address_offset = (unsigned int) address - *USEABLE_MEM_START;
+    for (unsigned int index = 0; index < 30; index++)
     {
-        int alloc_entry = *(MEM_TABLE_START + index);
+        unsigned int alloc_entry = *(MEM_TABLE_START + index);
         if ((alloc_entry >> 16) == address_offset) {
-            *(MEM_TABLE_START + index) = alloc_entry & !1;
+            *(MEM_TABLE_START + index) = alloc_entry & ~1;
             return;
         }
     }
 }
 
-MemoryResult_t* allocate(unsigned int size) {
+unsigned int* allocate(unsigned int size) {
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
@@ -55,11 +55,11 @@ MemoryResult_t* allocate(unsigned int size) {
      *  CHUNK LIST LAYOUT
      *
      *  start_of_memory_block: 0x2000_0100 + OFFSET
-     *  adress  0x00 | OFFSET , SIZE, IS_OCUPIED | [31..16, 15..1, 0]
+     *  | OFFSET , SIZE, IS_OCUPIED | [31..16, 15..1, 0]
      *
      *
      **/
-    for (int index = 0; index < 30; index++)
+    for (unsigned int index = 0; index < 30; index++)
     {
         // 47 possible allocs @todo WRONG COUNT!!
         unsigned int meta_of_data_chunk = *(MEM_TABLE_START + index);
@@ -67,25 +67,25 @@ MemoryResult_t* allocate(unsigned int size) {
         // check if occupied
         if ((meta_of_data_chunk & 1) == 1) {
             // get size and add to offset
-            next_useable_chunk += (meta_of_data_chunk >> 1) & !(0xFFFF0000);
+            next_useable_chunk += (meta_of_data_chunk & 0xFFFE) >> 1;
             continue;
         }
 
         // check if size fits
-        if (((meta_of_data_chunk >> 1) & !(0xFFFF0000)) >= requested_size) {
+        if (((meta_of_data_chunk & 0xFFFE) >> 1) >= requested_size) {
             // update offsetadress, size, mark as occupied
             meta_of_data_chunk = (next_useable_chunk << 16) | (requested_size << 1) | 1;
 
             // write back changes
             *(MEM_TABLE_START + index) = meta_of_data_chunk;
 
-            unsigned int *start_address = (unsigned int*) (meta_of_data_chunk >> 16) + *USEABLE_MEM_START;
+            unsigned int *start_address = (unsigned int*) ((meta_of_data_chunk >> 16) + (unsigned int) USEABLE_MEM_START);
 
-            MemoryResult_t* memory_result = (MemoryResult_t*) start_address; 
-            memory_result->start_address = start_address;
-            memory_result->end_address = start_address + size;
+            // MemoryResult_t* memory_result = (MemoryResult_t*) start_address; 
+            // memory_result->start_address = start_address;
+            // memory_result->end_address = start_address + size;
     
-            return memory_result;
+            return start_address;
         }
     }
     return NULL;

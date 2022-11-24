@@ -6,31 +6,42 @@
 
 void create_task(void (*task_function)())
 {
-    MemoryResult_t *process_memory = allocate(sizeof(CpuRegister_t) + 512);
+    unsigned int* address = allocate(sizeof(CpuRegister_t) + 512);
+    // @todo
+    CpuRegister_t* cpu_register =  (CpuRegister_t*) (address + 512 / 4);
 
-    if (!process_memory)
+    if (!cpu_register)
     {
         // error
     }
 
-    CpuRegister_t* cpu_register = (CpuRegister_t*) (process_memory->end_address - sizeof(CpuRegister_t));
-    cpu_register->r0 = 0xAB;
+    // CpuRegister_t* cpu_register = (CpuRegister_t*) (process_memory + sizeof(CpuRegister_t) + 512 - sizeof(CpuRegister_t));
+    cpu_register->r4 = 0x4;
+    cpu_register->r5 = 0x5;
+    cpu_register->r6 = 0x6;
+    cpu_register->r7 = 0x7;
+    cpu_register->r8 = 0x8;
+    cpu_register->r9 = 0x9;
+    cpu_register->r10 = 0xA;
+    cpu_register->r11 = 0xB;
+    cpu_register->r0 = 0x0;
+    cpu_register->r1 = 0x1;
+    cpu_register->r2 = 0x2;
+    cpu_register->r3 = 0x3;
     cpu_register->psr = 0x21000000;
-    cpu_register->r4 = 0x66;
-    cpu_register->r11 = 0xBC;
     // todo
-    cpu_register->pc = (unsigned int*) task_function;
-    cpu_register->lr = 0x0;
+    cpu_register->pc = (unsigned int) task_function;
+    cpu_register->lr = (unsigned int) remove_scheduled_task;
 
     // todo: useful values here
-    cpu_register->psr = 0x21000000;
 
-    Tcb_t *tcb = allocate(sizeof(Tcb_t));
+    // unsigned int *tcb_memory = allocate(sizeof(Tcb_t));
+    Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
     tcb->pid = task_queue->size;
     tcb->sp = &cpu_register->r4;
-    tcb->memory_lower_bound = process_memory->start_address;
-    tcb->memory_upper_bound = process_memory->end_address;
+    tcb->memory_lower_bound = address;
+    tcb->memory_upper_bound = (address + 512 / 4);
+    tcb->task_state = READY;
 
-    insert(task_queue, (void*) tcb);
-
+    insert_scheduled_task(tcb);
 }

@@ -1,11 +1,9 @@
-#include <stdint.h>
-#include "../include/uart.h"
-#include "../include/exception.h"
-#include "../include/process/scheduler.h"
-#include "../include/types.h"
+#include "uart.h"
+#include "exception.h"
+#include "process/scheduler.h"
+#include "process/task.h"
+#include "types.h"
 #include "memory.h"
-
-// #include <stddef.h>
 
 void enable_exti0_cpu_irq()
 {
@@ -63,7 +61,10 @@ void main_loop(void)
 
 int main_init(void)
 {
-  MemoryResult_t *mt = allocate(4);
+  init_scheduler();
+  create_task(&idle);
+  create_task(&user_loop);
+  create_task(&enable_device_interrupts);
   // enable_exti0_cpu_irq();
   // enable_usart_cpu_irq();
   // setup_nvic_controller();

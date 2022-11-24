@@ -5,6 +5,7 @@
     "types.h": "c",
     "device.h": "c",
     "exception.h": "c",
-    "stddef.h": "c"
+    "stddef.h": "c",
+    "tcb.h": "c"
   }
 }
