@@ -3,12 +3,14 @@
 #include "data/queue.h"
 #include "process/tcb.h"
 #include "lang.h"
+#include "exception.h"
+
+extern void __trap(TrapType_t, unsigned int);
 
 static Queue_t* task_queue = NULL;
 static Node_t* currently_running = NULL;
 static void (*switch_task)() = NULL;
-// static unsigned int pid_of_currently_running = 0;
-// static void inline policy_round_robin(void);
+
 Tcb_t* next_task(void);
 
 static void inline policy_round_robin(void)
@@ -33,6 +35,6 @@ static void inline policy_fifo(void)
 void init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);
-void run_init_process();
+void run_scheduler(void);
 
 #endif

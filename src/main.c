@@ -39,7 +39,7 @@ void idle()
 
 void user_loop(void)
 {
-  opcode = 3;
+  // opcode = 3;
   __asm__("mov r0, 0x4AB\n"
           "mov r1, 0x4BC\n"
           "mov r2, 0x4CD\n"
@@ -63,8 +63,9 @@ int main_init(void)
 {
   init_scheduler();
   create_task(&idle);
-  create_task(&user_loop);
-  create_task(&enable_device_interrupts);
+  run_scheduler();
+  // create_task(&user_loop);
+  // create_task(&enable_device_interrupts);
   // enable_exti0_cpu_irq();
   // enable_usart_cpu_irq();
   // setup_nvic_controller();

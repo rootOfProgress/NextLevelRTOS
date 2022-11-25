@@ -6,7 +6,7 @@
 extern void main_init(void);
 extern void hostIfISR(void);
 extern void uart_isr_handler(void);
-extern void SVCall(uint32_t *);
+extern void SVCall(unsigned int, unsigned int);
 
 extern uint32_t _sidata;
 extern uint32_t _sdata;

@@ -1,6 +1,4 @@
 #include "process/scheduler.h"
-#include "process/tcb.h"
-#include "data/queue.h"
 
 void init_scheduler(void)
 {
@@ -21,6 +19,7 @@ void run_scheduler(void)
 
     Node_t* task_0 = get_head_element(task_queue);
     Tcb_t* t = task_0->data;
+    __trap(0, (unsigned int) t->sp);
 }
 
 
