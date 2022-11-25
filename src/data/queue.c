@@ -12,7 +12,7 @@ Queue_t* new_queue(void)
     queue->size = 0;
     queue->head = NULL;
     queue->tail = NULL;
-
+    
     return queue;
 }
 
@@ -27,7 +27,7 @@ void dequeue_element(Queue_t* queue, Node_t* node)
     queue->size--;
 }
 
-void* get_head_element(Queue_t* queue)
+Node_t* get_head_element(Queue_t* queue)
 {
     return queue->head;
 }
@@ -51,10 +51,12 @@ void enqueue_element(Queue_t* queue, void* data)
     }
     else
     {
+        // @todo: update head nodes prev to tail!
         new_node->prev = queue->tail;
         new_node->next = queue->head;
         queue->tail->next = new_node;
         queue->tail = new_node;
+        queue->head->prev = queue->tail;
     }
     queue->size++;
 }

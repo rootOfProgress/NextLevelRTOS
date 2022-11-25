@@ -1,23 +1,29 @@
-#include "../include/exception.h"
-#include "../include/types.h"
-#include "../include/lang.h"
-#include "../include/uart.h"
-
-volatile uint32_t sp_msp;
-volatile uint32_t sp_psp;
-volatile uint32_t opcode;
-volatile uint32_t bar;
-volatile void* arg;
+#include "exception.h"
+#include "types.h"
+#include "lang.h"
+#include "uart.h"
+#include "hw/cpu.h"
+#include "process/scheduler.h"
 
 
 void SVCall(TrapType_t type, unsigned int arg)
 {
   __asm__("TST lr, \#4\n");
   __asm__("ITTEE EQ\n");
+  __asm__("moveq r2, \#0\n");
   __asm__("nop\n");
-  __asm__("nop\n");
+  // __asm__("nop\n");
   __asm__("MRSNE r2,psp\n");
   __asm__("stmdbne r2!, {r4-r11}");
+  // __asm__("MSRNE psp, r2");
+
+  unsigned int r2;
+  __asm__("mov %0, r2" : "=r"(r2));
+  if (r2 != 0)
+    ((Tcb_t*) currently_running->data)->sp = r2;
+  // unsigned int old_sp;
+  // __asm__("mov r0, %0" : "=r"(sp1));
+
   
 
   switch (type)
@@ -28,7 +34,9 @@ void SVCall(TrapType_t type, unsigned int arg)
     __asm__("msr psp, r1"); // move r0 value to psp
     __asm__("bx lr");
     break;
-  
+  case YIELD_TASK:
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    break;
   default:
     break;
   }

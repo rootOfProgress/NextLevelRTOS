@@ -6,6 +6,7 @@
     "device.h": "c",
     "exception.h": "c",
     "stddef.h": "c",
-    "tcb.h": "c"
+    "tcb.h": "c",
+    "uart.h": "c"
   }
 }

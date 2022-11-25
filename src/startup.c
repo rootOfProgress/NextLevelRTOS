@@ -7,6 +7,7 @@ extern void main_init(void);
 extern void hostIfISR(void);
 extern void uart_isr_handler(void);
 extern void SVCall(unsigned int, unsigned int);
+extern void PendSV(void);
 
 extern uint32_t _sidata;
 extern uint32_t _sdata;
@@ -48,7 +49,7 @@ uint32_t *isr_vectors[] =
     (uint32_t *) SVCall,
     (uint32_t *) 0,
     (uint32_t *) 0,
-    (uint32_t *) 0,
+    (uint32_t *) PendSV,
     (uint32_t *) 0,
     (uint32_t *) 0,
     (uint32_t *) 0,

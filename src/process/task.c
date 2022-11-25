@@ -8,7 +8,7 @@ void create_task(void (*task_function)())
 {
     unsigned int* address = allocate(sizeof(CpuRegister_t) + 512);
     // @todo
-    CpuRegister_t* cpu_register =  (CpuRegister_t*) (address + 512 / 4);
+    CpuRegister_t* cpu_register =  (CpuRegister_t*) ((unsigned int) address + (unsigned int) 512 - sizeof(CpuRegister_t));
 
     if (!cpu_register)
     {

@@ -1,6 +1,12 @@
 #ifndef CPU_H
 #define CPU_H
 
+// #define ICSR 0xE000ED04 
+
+typedef enum {
+    Icsr = 0xE000ED04
+} Scb_t;
+
 typedef struct CpuRegister {
     unsigned int r4;
     unsigned int r5;
@@ -19,5 +25,10 @@ typedef struct CpuRegister {
     unsigned int pc;
     unsigned int psr;
 } CpuRegister_t; 
+
+typedef enum {
+    PendSVClear = 27,
+    PendSVSet = 28,
+} Icsr_t;
 
 #endif

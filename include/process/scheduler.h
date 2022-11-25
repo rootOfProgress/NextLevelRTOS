@@ -13,15 +13,8 @@ static void (*switch_task)() = NULL;
 
 Tcb_t* next_task(void);
 
-static void inline policy_round_robin(void)
-{   
-    Tcb_t *tcb_of_next = NULL;
-    if ((tcb_of_next = next_task()) == NULL)
-    {
-        // activate idle task which forces sleep.
-    }
-}
-
+// @todo: inline?
+void policy_round_robin(void);
 static void inline policy_fifo(void)
 {   
     Tcb_t *tcb_of_next = NULL;
@@ -30,6 +23,7 @@ static void inline policy_fifo(void)
     {
         // activate idle task which forces sleep.
     }
+    return;
 }
 
 void init_scheduler(void);

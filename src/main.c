@@ -34,27 +34,21 @@ void enable_device_interrupts()
 
 void idle()
 {
-  while (1);
+  __trap(YIELD_TASK, 0);
+  // while (1);
 }
 
 void user_loop(void)
 {
-  // opcode = 3;
-  __asm__("mov r0, 0x4AB\n"
-          "mov r1, 0x4BC\n"
-          "mov r2, 0x4CD\n"
-          "mov r3, 0x4EF\n"
-          "mov r4, 0x411\n"
-          "mov r10, 0x488\n"
-          "mov r11, 0x499\n");
-  __asm__("svc 0");
-  while (1) {};
+  __trap(YIELD_TASK, 0);
+  // while (1) {};
 }
 
 void main_loop(void)
 {
   while (1)
   {
+    // __trap(YIELD_TASK, 0);
 
   }
 }
@@ -63,6 +57,7 @@ int main_init(void)
 {
   init_scheduler();
   create_task(&idle);
+  create_task(&user_loop);
   run_scheduler();
   // create_task(&user_loop);
   // create_task(&enable_device_interrupts);

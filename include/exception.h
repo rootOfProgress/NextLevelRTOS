@@ -10,7 +10,7 @@
 
 typedef enum {
     RUN_THREAD_MODE = 0,
-    ALLOC,
+    YIELD_TASK,
     DEVICE_REQUEST,
     RESET
 } TrapType_t;
