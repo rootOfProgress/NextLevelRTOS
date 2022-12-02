@@ -34,13 +34,33 @@ void enable_device_interrupts()
 
 void idle()
 {
-  __trap(YIELD_TASK, 0);
+  while (1)
+  {
+
+  __asm__ volatile(
+    "mov r0, \#1\n\t"
+    "svc 0\n\t"
+  );
+  }
+  // __trap(YIELD_TASK, 0);
+  // __asm__ volatile(
+  //   "mov r0, \#1 \n"\
+  //   "svc 0\n"\
+  // );
   // while (1);
 }
 
 void user_loop(void)
 {
-  __trap(YIELD_TASK, 0);
+  while (1)
+  {
+
+  __asm__ volatile(
+    "mov r0, \#1\n\t"
+    "svc 0\n\t"
+  );
+  }
+  // __trap(YIELD_TASK, 0);
   // while (1) {};
 }
 

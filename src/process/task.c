@@ -6,9 +6,10 @@
 
 void create_task(void (*task_function)())
 {
-    unsigned int* address = allocate(sizeof(CpuRegister_t) + 512);
+    unsigned int* address = allocate(sizeof(CpuRegister_t) + 1024);
     // @todo
-    CpuRegister_t* cpu_register =  (CpuRegister_t*) ((unsigned int) address + (unsigned int) 512 - sizeof(CpuRegister_t));
+    CpuRegister_t* cpu_register =  (CpuRegister_t*) ((unsigned int) address + (unsigned int) 1024 - sizeof(CpuRegister_t));
+    // CpuRegister_t* cpu_register =  (CpuRegister_t*) ((unsigned int*) 0x20001000);
 
     if (!cpu_register)
     {
@@ -39,8 +40,8 @@ void create_task(void (*task_function)())
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
     tcb->pid = task_queue->size;
     tcb->sp = &cpu_register->r4;
-    tcb->memory_lower_bound = address;
-    tcb->memory_upper_bound = (address + 512 / 4);
+    tcb->memory_lower_bound = (unsigned int)address;
+    tcb->memory_upper_bound = ((unsigned int)address + 1024);
     tcb->task_state = READY;
 
     insert_scheduled_task(tcb);

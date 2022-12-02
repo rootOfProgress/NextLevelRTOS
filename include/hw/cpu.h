@@ -7,7 +7,7 @@ typedef enum {
     Icsr = 0xE000ED04
 } Scb_t;
 
-typedef struct CpuRegister {
+typedef struct __attribute__((__packed__)) CpuRegister {
     unsigned int r4;
     unsigned int r5;
     unsigned int r6;

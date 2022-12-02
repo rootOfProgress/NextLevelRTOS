@@ -7,25 +7,16 @@
 
 extern void __trap(TrapType_t, unsigned int);
 
-static Queue_t* task_queue = NULL;
-static Node_t* currently_running = NULL;
+extern Queue_t* task_queue;
+extern Node_t* currently_running;
 static void (*switch_task)() = NULL;
 
-Tcb_t* next_task(void);
 
 // @todo: inline?
 void policy_round_robin(void);
-static void inline policy_fifo(void)
-{   
-    Tcb_t *tcb_of_next = NULL;
-    // return head only
-    if ((tcb_of_next = next_task()) == NULL)
-    {
-        // activate idle task which forces sleep.
-    }
-    return;
-}
 
+
+void next_task(void);
 void init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);

@@ -6,27 +6,32 @@
 #include "process/scheduler.h"
 
 
-void SVCall(TrapType_t type, unsigned int arg)
+void SVCall(TrapType_t type)
 {
-  __asm__("TST lr, \#4\n");
-  __asm__("ITTEE EQ\n");
-  __asm__("moveq r2, \#0\n");
-  __asm__("nop\n");
-  // __asm__("nop\n");
-  __asm__("MRSNE r2,psp\n");
-  __asm__("stmdbne r2!, {r4-r11}");
-  // __asm__("MSRNE psp, r2");
+  __asm__ volatile("TST lr, \#4\n");
+  __asm__ volatile("ITTTE NE\n");
+  __asm__ volatile("mrsne r2,psp\n");
+  __asm__ volatile("stmdbne r2!, {r4-r11}");
+  __asm__ volatile("msrne psp, r2");
+  __asm__ volatile("nop");
 
-  unsigned int r2;
-  __asm__("mov %0, r2" : "=r"(r2));
-  if (r2 != 0)
-    ((Tcb_t*) currently_running->data)->sp = r2;
-  // unsigned int old_sp;
-  // __asm__("mov r0, %0" : "=r"(sp1));
+  // __asm__("TST lr, \#4\n");
+  // __asm__("ITTEE EQ\n");
+  // __asm__("moveq r2, \#0\n");
+  // __asm__("nop\n");
+  // // __asm__("nop\n");
+  // __asm__("MRSNE r2,psp\n");
+  // __asm__("stmdbne r2!, {r4-r11}");
+  // // __asm__("MSRNE psp, r2");
+
+  // unsigned int r0;
+  // __asm__("mov %0, r2" : "=r"(r0));
+  // if (r2 != 0)
+  //   ((Tcb_t*) currently_running->data)->sp = r2;
 
   
 
-  switch (type)
+  switch (type /* (TrapType_t) r0 */)
   {
   case RUN_THREAD_MODE:
     __asm__("mov lr, 0xFFFFFFFD");
