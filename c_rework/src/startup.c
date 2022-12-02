@@ -9,12 +9,12 @@ extern void uart_isr_handler(void);
 extern void SVCall(unsigned int, unsigned int);
 extern void PendSV(void);
 
-extern uint32_t _sidata;
-extern uint32_t _sdata;
+extern unsigned int _sidata;
+extern unsigned int _sdata;
 extern unsigned int _edata;
-extern uint32_t _sbss;
-extern uint32_t _ebss;
-extern uint32_t stack_top;
+extern unsigned int _sbss;
+extern unsigned int _ebss;
+extern unsigned int stack_top;
 
 void reset_handler(void)
 {
@@ -88,5 +88,6 @@ uint32_t *isr_vectors[] =
     (uint32_t *) 0,
     (uint32_t *) 0,
     (uint32_t *) 0,
-    (uint32_t *) uart_isr_handler,
+    (uint32_t *) 0,
+    // (uint32_t *) uart_isr_handler,
 };

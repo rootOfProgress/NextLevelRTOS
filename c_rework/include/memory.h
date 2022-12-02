@@ -1,6 +1,8 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+
+
 #define FOURBYTE 0x04
 
 typedef struct MemoryResult {

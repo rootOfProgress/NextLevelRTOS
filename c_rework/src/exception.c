@@ -20,7 +20,7 @@ void SVCall(TrapType_t type, unsigned int arg)
   unsigned int r2;
   __asm__("mov %0, r2" : "=r"(r2));
   if (r2 != 0)
-    ((Tcb_t*) currently_running->data)->sp = r2;
+    ((Tcb_t*) currently_running->data)->sp = (unsigned int*) r2;
   // unsigned int old_sp;
   // __asm__("mov r0, %0" : "=r"(sp1));
 

@@ -15,6 +15,7 @@ typedef struct Queue {
     Node_t* tail;
 } Queue_t;
 
+void queue_selfcheck(void);
 Queue_t* new_queue(void);
 void enqueue_element(Queue_t*, void*);
 Node_t* get_head_element(Queue_t*);
