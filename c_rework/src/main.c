@@ -5,7 +5,7 @@
 #include "types.h"
 #include "memory.h"
 #include "test.h"
-
+#define EnablePrivilegedMode() __asm("SVC #0xF")
 // void enable_exti0_cpu_irq()
 // {
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
@@ -63,20 +63,21 @@ void do_selfcheck_main()
 
 int main_init(void)
 {
-  #ifdef SELF_CHECK
-    do_selfcheck_main();
-  #endif
-  init_scheduler();
-  create_task(&idle);
-  create_task(&loop);
-  run_scheduler();
+ // __asm__ volatile("bkpt");
+  //#ifdef SELF_CHECK
+  //  do_selfcheck_main();
+  //#endif
+  //init_scheduler();
+  //create_task(&idle);
+  //create_task(&loop);
+  //run_scheduler();
   // create_task(&user_loop);
   // create_task(&enable_device_interrupts);
   // enable_exti0_cpu_irq();
   // enable_usart_cpu_irq();
   // setup_nvic_controller();
   // init_uart();
-
+  EnablePrivilegedMode();
 
   // run_init_process();
   __asm__("ldr r0, =main_loop\n"
