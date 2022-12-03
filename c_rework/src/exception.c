@@ -95,7 +95,9 @@ void __attribute__((optimize("O2"))) SVCall()
     break;
   case YIELD_TASK:
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
-
+    break;
+  case 2:
+    remove_current_task();
     break;
   default:
     break;

@@ -9,7 +9,7 @@ extern void __trap(TrapType_t, unsigned int);
 
 extern Queue_t* task_queue;
 extern Node_t* currently_running;
-// static void (*switch_task)() = NULL;
+extern void (*switch_task)();
 
 void next_task(void);
 
@@ -25,10 +25,12 @@ void policy_round_robin(void);
 //     }
 //     return;
 // }
+void remove_current_task(void);
 void do_selfcheck_scheduler(void);
 void init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);
 void run_scheduler(void);
+void load_task(void);
 
 #endif

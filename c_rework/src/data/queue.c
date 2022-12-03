@@ -72,12 +72,24 @@ Queue_t* new_queue(void)
 
 
 // @ todo: does not work yet
-void dequeue_element(Queue_t* queue, Node_t* node)
+void dequeue_element(Queue_t* queue, Node_t* currently_running)
 {
-    node->prev->next = node->next;
-    node->prev = NULL;
-    node->next = NULL;
+    if (currently_running == queue->head)
+    {
+        queue->head = currently_running->next;
+        queue->head->prev = queue->tail;
+        queue->tail->next = queue->head;
 
+    } else if (currently_running == queue->tail)
+    {
+        queue->tail = currently_running->prev;
+        queue->tail->next = queue->head;
+        queue->head->prev = queue->tail;
+
+    } else {
+        currently_running->prev->next = currently_running->next;
+        currently_running->next->prev = currently_running->prev;
+    }
     // @todo needs tests
     //deallocate((void*) node);
     queue->size--;

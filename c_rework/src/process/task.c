@@ -96,5 +96,5 @@ void create_task(void (*task_function)())
     tcb->memory_upper_bound = ((unsigned int)address + 1024);
     tcb->task_state = READY;
 
-    insert_scheduled_task(tcb);
+    insert_scheduled_task((Tcb_t*) tcb);
 }
