@@ -40,7 +40,7 @@ void idle()
     // svc(1);
   // };
 }
-void hans(void)
+static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) hans(void)
 {
   // __trap(YIELD_TASK, 0);
   while (1) {
@@ -48,7 +48,7 @@ void hans(void)
   };
 }
 
-void fritz(void)
+static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) fritz(void)
 {
   // __trap(YIELD_TASK, 0);
   while (1) {
@@ -56,7 +56,7 @@ void fritz(void)
   };
 }
 
-void wurst(void)
+static void __attribute__((__noipa__))  __attribute__((optimize("O2"))) wurst(void)
 {
   // __trap(YIELD_TASK, 0);
   while (1) {

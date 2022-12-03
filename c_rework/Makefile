@@ -6,7 +6,7 @@ LINK = link.ld
 #-mapcs-frame -funwind-tables 
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -g -nostartfiles -Wall -Wextra -static -nostdlib  \
+	 -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 
 SRC=$(shell find $('./src') -name '*.c')
 OBJ=$(shell find $('./build') -name '*.o')
@@ -27,7 +27,7 @@ compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
 link: $(OBJ)
-	$(CC) -T $(LINK) -mtpcs-frame -funwind-tables -L./ -lfoo $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
+	$(CC) -T $(LINK)  -ffunction-sections -L./ -lfoo $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
 #//-o ./build/
 # build:
 # mkdir -p $@
