@@ -94,27 +94,8 @@ void __attribute__((optimize("O2"))) SVCall()
     __asm__("msr psp, r0"); // move r0 value to psp
     break;
   case YIELD_TASK:
-    unsigned int old_sp;
-    unsigned int new_sp;
-    
-    __asm__("mrs r2, psp");
-    __asm__("mov %0, r2" : "=r"(old_sp));
-    ((Tcb_t*) currently_running->data)->sp = old_sp;
-    next_task();
-    __asm__("mov lr, 0xFFFFFFFD");
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 
-    // __asm__ volatile ("pop {r4,lr}");
-
-    // currently_running = currently_running->next;
-    new_sp = ((Tcb_t*) currently_running->data)->sp;
-
-    __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (new_sp));
-    __asm (
-      "TST lr, #4\n"
-      "ITT NE\n"
-      "LDMFDNE r2!, {r4-r11}\n"
-      "MSRNE PSP, r2\n"
-    ) ;
     break;
   default:
     break;

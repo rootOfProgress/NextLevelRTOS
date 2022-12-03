@@ -51,30 +51,27 @@ void run_scheduler(void)
 void PendSV(void)
 {
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVClear;
-    // policy_round_robin();
-
-    // switch_task();
-    unsigned int sp1 = (unsigned int) ((Tcb_t*)currently_running->data)->sp;
-    // if ((currently_running->data = next_task()) == NULL)
-    // {
-    //     // activate idle task which forces sleep.
-    // }
-__asm__ volatile ("MOV R0, %[input_i]"
-    :  
-    : [input_i] "r" (sp1)
-      );
-
-
-    // __asm__ volatile("mov r0, %[input]" : [input] "r"(sp1) : "r0"\);
-    __asm__ volatile("ldmfd r0!, {r4-r11}");
-    __asm__ volatile("msr psp, r0");
-    __asm__ volatile("mov lr, \#0xfffffffd");
-    __asm__ volatile("bx lr");
+    unsigned int old_sp;
+    unsigned int new_sp;
     
-    // __asm__("mrs r0, msp");
-    // __asm__("sub r0, #-5*4");
-    // __asm__("msr msp, r0");
-    // __asm__("pop {lr}");
+    __asm__("mrs r2, psp");
+    __asm__("mov %0, r2" : "=r"(old_sp));
+    ((Tcb_t*) currently_running->data)->sp = old_sp;
+    next_task();
+    __asm__("mov lr, 0xFFFFFFFD");
+
+    // __asm__ volatile ("pop {r4,lr}");
+
+    // currently_running = currently_running->next;
+    new_sp = ((Tcb_t*) currently_running->data)->sp;
+
+    __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (new_sp));
+    __asm (
+      "TST lr, #4\n"
+      "ITT NE\n"
+      "LDMFDNE r2!, {r4-r11}\n"
+      "MSRNE PSP, r2\n"
+    ) ;
 }
 
 void remove_scheduled_task(void)
