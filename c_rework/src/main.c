@@ -37,11 +37,26 @@ void idle()
 {
   // __trap(YIELD_TASK, 0);
   // while (1) {
-    svc(1);
+    // svc(1);
   // };
 }
+void hans(void)
+{
+  // __trap(YIELD_TASK, 0);
+  while (1) {
+    svc(1);
+  };
+}
 
-void loop(void)
+void fritz(void)
+{
+  // __trap(YIELD_TASK, 0);
+  while (1) {
+    svc(1);
+  };
+}
+
+void wurst(void)
 {
   // __trap(YIELD_TASK, 0);
   while (1) {
@@ -75,8 +90,16 @@ int main_init(void)
     do_selfcheck_svc();
   #endif
   init_scheduler();
-  create_task(&idle);
-  create_task(&loop);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  create_task(&hans);
+  create_task(&fritz);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  create_task(&wurst);
   run_scheduler();
   // create_task(&user_loop);
   // create_task(&enable_device_interrupts);

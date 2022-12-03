@@ -88,6 +88,11 @@ void PendSV(void)
 
 void remove_current_task(void)
 {
+    while (1)
+    {
+        /* code */
+    }
+    
     dequeue_element(task_queue, currently_running);
 }
 
