@@ -95,8 +95,10 @@ void remove_scheduled_task(void)
 
 void next_task(void)
 {
+    policy_round_robin();
     while (1)//for (unsigned int j = 0; j < task_queue->size; j++)
     {
+        policy_round_robin();
         currently_running = currently_running->next;
         Tcb_t* n = (Tcb_t*) currently_running->data;
         if (n->task_state == READY)
