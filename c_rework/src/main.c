@@ -35,18 +35,23 @@
 
 void idle()
 {
-  __trap(YIELD_TASK, 0);
-  while (1) {};
+  // __trap(YIELD_TASK, 0);
+  while (1) {
+    svc(1);
+  };
 }
 
 void loop(void)
 {
-  __trap(YIELD_TASK, 0);
-  while (1) {};
+  // __trap(YIELD_TASK, 0);
+  while (1) {
+    svc(1);
+  };
 }
 
 void main_loop(void)
 {
+  // svc(0);
   while (1)
   {
     // __trap(YIELD_TASK, 0);
@@ -59,18 +64,20 @@ void do_selfcheck_main()
   queue_selfcheck();
   do_selfcheck_task();
   do_selfcheck_scheduler();
+  do_selfcheck_svc();
 }
 
 int main_init(void)
 {
  // __asm__ volatile("bkpt");
   #ifdef SELF_CHECK
-   do_selfcheck_main();
+    do_selfcheck_main();
+    do_selfcheck_svc();
   #endif
-  //init_scheduler();
-  //create_task(&idle);
-  //create_task(&loop);
-  //run_scheduler();
+  init_scheduler();
+  create_task(&idle);
+  create_task(&loop);
+  run_scheduler();
   // create_task(&user_loop);
   // create_task(&enable_device_interrupts);
   // enable_exti0_cpu_irq();
@@ -80,8 +87,9 @@ int main_init(void)
   // EnablePrivilegedMode();
 
   // run_init_process();
-  __asm__("ldr r0, =main_loop\n"
-          "mov pc,r0");
+  main_loop();
+  // __asm__("ldr r0, =main_loop\n"
+  //         "mov pc,r0");
   // idle();
   return 0;
 }

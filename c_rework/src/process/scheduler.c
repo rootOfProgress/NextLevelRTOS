@@ -38,12 +38,13 @@ void run_scheduler(void)
         return;
 
     currently_running = (Node_t*) get_head_element(task_queue);
-    Tcb_t* t = currently_running->data;
-    if ((currently_running->data = next_task()) == NULL)
-    {
-        // activate idle task which forces sleep.
-    }
-    __trap(RUN_THREAD_MODE, (unsigned int) t->sp);
+    // Tcb_t* t = currently_running->data;
+    // if ((currently_running->data = next_task()) == NULL)
+    // {
+    //     // activate idle task which forces sleep.
+    // }
+    svc(0);
+    // __trap(RUN_THREAD_MODE, (unsigned int) t->sp);
 }
 
 

@@ -18,7 +18,12 @@ extern unsigned int stack_top;
 
 void reset_handler(void)
 {
-    init_allocator( (unsigned int) &_ebss);
+    unsigned int max = (unsigned int) &_ebss;
+    if ((unsigned int) &_edata > max)
+        max = (unsigned int) &_edata;
+    if ((unsigned int) &_sidata > max)
+        max = (unsigned int) &_sidata; 
+    init_allocator( max );
     main_init();
 }
 
