@@ -7,8 +7,9 @@ set print asm-demangle on
 
 # set backtrace limit to not have infinite backtrace loops
 set backtrace limit 32
-break exception.c:110
-#break main.c:77
+break exception.c:67
+break main.c:40
+break main.c:48
 # start the process but immediately halt the processor
 set print pretty on
 

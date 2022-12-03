@@ -103,10 +103,10 @@ void __attribute__((optimize("O2"))) SVCall()
     __asm__("mov %0, r2" : "=r"(old_sp));
     ((Tcb_t*) currently_running->data)->sp = old_sp;
     // unwind stack manually
-    next_task();
+    // next_task();
       // __asm__("pop {r4, lr}");
 
-    // currently_running = currently_running->next;
+    currently_running = currently_running->next;
     new_sp = ((Tcb_t*) currently_running->data)->sp;
 
     __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (new_sp));
@@ -124,40 +124,6 @@ void __attribute__((optimize("O2"))) SVCall()
     "MRSNE r2, PSP\n"
     "LDMFDNE r2!, {r4-r11}\n"
     "MSRNE PSP, r2\n"
-    "BX LR\n"
+    //"BX LR\n"
   ) ;
-
-  // __asm__("TST lr, \#4\n");
-  // __asm__("ITTEE EQ\n");
-  // __asm__("moveq r2, \#0\n");
-  // __asm__("nop\n");
-  // // __asm__("nop\n");
-  // __asm__("MRSNE r2,psp\n");
-  // __asm__("stmdbne r2!, {r4-r11}");
-  // // __asm__("MSRNE psp, r2");
-
-  // unsigned int r2;
-  // __asm__("mov %0, r2" : "=r"(r2));
-  // if (r2 != 0)
-  //   ((Tcb_t*) currently_running->data)->sp = (unsigned int*) r2;
-  // // unsigned int old_sp;
-  // // __asm__("mov r0, %0" : "=r"(sp1));
-
-  
-
-  // switch (type)
-  // {
-  // case RUN_THREAD_MODE:
-  //   __asm__("mov lr, 0xFFFFFFFD");
-  //   __asm__("ldmia.w  r1!, {r4, r5, r6, r7, r8, r9, sl, fp}");
-  //   __asm__("msr psp, r1"); // move r0 value to psp
-  //   __asm__("bx lr");
-  //   break;
-  // case YIELD_TASK:
-  //   *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
-  //   break;
-  // default:
-  //   break;
-  // }
-
 }

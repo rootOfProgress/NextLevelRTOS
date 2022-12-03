@@ -6,7 +6,7 @@ LINK = link.ld
 #-mapcs-frame -funwind-tables 
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -nostartfiles -Wall -Wextra -static -nostdlib  \
+	 -g -nostartfiles -Wall -Wextra -static -nostdlib  \
 
 SRC=$(shell find $('./src') -name '*.c')
 OBJ=$(shell find $('./build') -name '*.o')
