@@ -69,6 +69,7 @@ void init_allocator(unsigned int start_os_section) {
     // todo
     for (int index = 0; index < 30; index += 1)
     {
+        unsigned int foo = *(MEM_TABLE_START + index);
         *(MEM_TABLE_START + index) = 0x0000FFFE;
     }
     #ifdef SELF_CHECK

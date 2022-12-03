@@ -64,9 +64,9 @@ void do_selfcheck_main()
 int main_init(void)
 {
  // __asm__ volatile("bkpt");
-  //#ifdef SELF_CHECK
-  //  do_selfcheck_main();
-  //#endif
+  #ifdef SELF_CHECK
+   do_selfcheck_main();
+  #endif
   //init_scheduler();
   //create_task(&idle);
   //create_task(&loop);
@@ -77,7 +77,7 @@ int main_init(void)
   // enable_usart_cpu_irq();
   // setup_nvic_controller();
   // init_uart();
-  EnablePrivilegedMode();
+  // EnablePrivilegedMode();
 
   // run_init_process();
   __asm__("ldr r0, =main_loop\n"
