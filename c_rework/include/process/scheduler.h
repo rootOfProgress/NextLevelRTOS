@@ -11,7 +11,7 @@ extern Queue_t* task_queue;
 extern Node_t* currently_running;
 // static void (*switch_task)() = NULL;
 
-Tcb_t* next_task(void);
+void next_task(void);
 
 // @todo: inline?
 void policy_round_robin(void);

@@ -102,7 +102,11 @@ void __attribute__((optimize("O2"))) SVCall()
     __asm__("mrs r2, psp");
     __asm__("mov %0, r2" : "=r"(old_sp));
     ((Tcb_t*) currently_running->data)->sp = old_sp;
-    currently_running = currently_running->next;
+    // unwind stack manually
+    next_task();
+      // __asm__("pop {r4, lr}");
+
+    // currently_running = currently_running->next;
     new_sp = ((Tcb_t*) currently_running->data)->sp;
 
     __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (new_sp));

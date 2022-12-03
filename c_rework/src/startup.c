@@ -2,7 +2,7 @@
 #include "../include/reg.h"
 #include "memory.h"
 #include "../include/exception.h"
-
+void reset_handler(void);
 extern void main_init(void);
 extern void hostIfISR(void);
 extern void uart_isr_handler(void);

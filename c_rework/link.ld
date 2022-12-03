@@ -1,3 +1,4 @@
+EXTERN(reset_handler)
 ENTRY(reset_handler)
 
 MEMORY
@@ -35,4 +36,6 @@ SECTIONS
 	} >RAM
 
 	stack_top = ORIGIN(RAM) + LENGTH(RAM);
+  _sidata = LOADADDR(.data);
+
 }

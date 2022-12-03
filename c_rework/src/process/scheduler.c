@@ -24,10 +24,10 @@ void insert_scheduled_task(Tcb_t* tcb)
 void policy_round_robin(void)
 {   
     // Tcb_t *tcb_of_next = NULL;
-    if ((currently_running->data = next_task()) == NULL)
-    {
-        // activate idle task which forces sleep.
-    }
+    // if ((currently_running->data = next_task()) == NULL)
+    // {
+    //     // activate idle task which forces sleep.
+    // }
     return;
 }
 
@@ -55,10 +55,10 @@ void PendSV(void)
 
     // switch_task();
     unsigned int sp1 = (unsigned int) ((Tcb_t*)currently_running->data)->sp;
-    if ((currently_running->data = next_task()) == NULL)
-    {
-        // activate idle task which forces sleep.
-    }
+    // if ((currently_running->data = next_task()) == NULL)
+    // {
+    //     // activate idle task which forces sleep.
+    // }
 __asm__ volatile ("MOV R0, %[input_i]"
     :  
     : [input_i] "r" (sp1)
@@ -93,14 +93,14 @@ void remove_scheduled_task(void)
     // }
 }
 
-Tcb_t* next_task(void)
+void next_task(void)
 {
-    for (unsigned int j = 0; j < task_queue->size; j++)
+    while (1)//for (unsigned int j = 0; j < task_queue->size; j++)
     {
         currently_running = currently_running->next;
         Tcb_t* n = (Tcb_t*) currently_running->data;
         if (n->task_state == READY)
-            return n;
+            return;
     }
     return NULL;
 }
