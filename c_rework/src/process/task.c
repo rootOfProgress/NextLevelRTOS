@@ -83,8 +83,16 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
 void create_task(void (*task_function)())
 {
-    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + 1024);
-    CpuRegister_t *cpu_register = prepare_cpu_register(address, 1024, task_function);
+    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + 512);
+    if (address == 0)
+    {
+        while (1)
+        {
+            /* code */
+        }
+        
+    }
+    CpuRegister_t *cpu_register = prepare_cpu_register(address, 512, task_function);
 
     // todo: useful values here
 
@@ -93,7 +101,7 @@ void create_task(void (*task_function)())
     tcb->pid = task_queue->size;
     tcb->sp = &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
-    tcb->memory_upper_bound = ((unsigned int)address + 1024);
+    tcb->memory_upper_bound = ((unsigned int)address + 512);
     tcb->task_state = READY;
 
     insert_scheduled_task((Tcb_t*) tcb);

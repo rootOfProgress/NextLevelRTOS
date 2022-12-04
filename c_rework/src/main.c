@@ -60,6 +60,7 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O2"))) wurst(vo
 {
   // __trap(YIELD_TASK, 0);
   while (1) {
+    // create_task(&idle);
     svc(1);
   };
 }
@@ -90,10 +91,22 @@ int main_init(void)
     do_selfcheck_svc();
   #endif
   init_scheduler();
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);  
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);
   // create_task(&idle);
   // create_task(&idle);
-  // create_task(&idle);
-  // create_task(&idle);
+  create_task(&idle);  
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);
+  create_task(&idle);
   create_task(&hans);
   create_task(&fritz);
   // create_task(&idle);

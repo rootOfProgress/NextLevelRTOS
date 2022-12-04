@@ -64,10 +64,10 @@ void init_allocator(unsigned int start_os_section) {
         start_os_section += 1;
     }
     MEM_TABLE_START = (unsigned int*) start_os_section;
-    USEABLE_MEM_START= MEM_TABLE_START + 30;
+    USEABLE_MEM_START= MEM_TABLE_START + 80;
 
     // todo
-    for (int index = 0; index < 30; index += 1)
+    for (int index = 0; index < 80; index += 1)
     {
         unsigned int foo = *(MEM_TABLE_START + index);
         *(MEM_TABLE_START + index) = 0x0000FFFE;
@@ -105,7 +105,7 @@ unsigned int* allocate(unsigned int size) {
      *
      *
      **/
-    for (unsigned int index = 0; index < 30; index++)
+    for (unsigned int index = 0; index < 80; index++)
     {
         // 47 possible allocs @todo WRONG COUNT!!
         unsigned int meta_of_data_chunk = *(MEM_TABLE_START + index);
