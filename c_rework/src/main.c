@@ -75,6 +75,7 @@ void main_loop(void)
   }
 }
 
+#ifdef SELF_CHECK
 void do_selfcheck_main()
 {
   queue_selfcheck();
@@ -82,6 +83,7 @@ void do_selfcheck_main()
   do_selfcheck_scheduler();
   do_selfcheck_svc();
 }
+#endif
 
 int main_init(void)
 {
@@ -90,24 +92,26 @@ int main_init(void)
     do_selfcheck_main();
     do_selfcheck_svc();
   #endif
+  *((unsigned int*) 0xE000ED9C) = 0xFFFFFFE0;
+  
   init_scheduler();
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);  
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);
   // create_task(&idle);
   // create_task(&idle);
-  create_task(&idle);  
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&idle);
-  create_task(&hans);
+  // create_task(&idle);
+  // create_task(&idle);  
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  // // create_task(&idle);
+  // // create_task(&idle);
+  // create_task(&idle);  
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&idle);
+  // create_task(&hans);
   create_task(&fritz);
   // create_task(&idle);
   // create_task(&idle);

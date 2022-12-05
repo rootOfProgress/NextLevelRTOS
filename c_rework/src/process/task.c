@@ -4,11 +4,9 @@
 #include "process/scheduler.h"
 #include "process/task.h"
 
-void do_selfcheck_cpureg(void)
-{
+#define BUFFER 256
 
-}
-
+#ifdef SELF_CHECK
 void do_selfcheck_task(void)
 {
     unsigned int test_a = 1;
@@ -47,8 +45,8 @@ void do_selfcheck_task(void)
     int end = (unsigned int) address + buffer_size + sizeof(CpuRegister_t);
 
     int diff = (buffer_size + address + sizeof(CpuRegister_t)) - (unsigned int) &cpu_register->r0;
-
 }
+#endif
 
 CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_size, void (*task_function)())
 {
@@ -83,7 +81,7 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
 void create_task(void (*task_function)())
 {
-    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + 512);
+    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + BUFFER);
     if (address == 0)
     {
         while (1)
@@ -92,7 +90,7 @@ void create_task(void (*task_function)())
         }
         
     }
-    CpuRegister_t *cpu_register = prepare_cpu_register(address, 512, task_function);
+    CpuRegister_t *cpu_register = prepare_cpu_register(address, BUFFER, task_function);
 
     // todo: useful values here
 
@@ -101,7 +99,7 @@ void create_task(void (*task_function)())
     tcb->pid = task_queue->size;
     tcb->sp = &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
-    tcb->memory_upper_bound = ((unsigned int)address + 512);
+    tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
     tcb->task_state = READY;
 
     insert_scheduled_task((Tcb_t*) tcb);
