@@ -32,7 +32,17 @@ void nmi_handler(void)
     while (1);
 }
 
+void memfault_handler(void)
+{
+    while (1);
+}
+
 void hardfault_handler(void)
+{
+    while (1);
+}
+
+void bar_handler(void)
 {
     while (1);
 }
@@ -44,39 +54,39 @@ uint32_t *isr_vectors[] =
     (uint32_t *) reset_handler,
     (uint32_t *) nmi_handler,
     (uint32_t *) hardfault_handler,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
+    (uint32_t *) memfault_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
     (uint32_t *) SVCall,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
     (uint32_t *) PendSV,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
-    (uint32_t *) 0,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
     (uint32_t *) 0,
     (uint32_t *) 0,
     (uint32_t *) 0,

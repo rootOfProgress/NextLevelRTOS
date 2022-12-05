@@ -56,12 +56,18 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) fritz(voi
   };
 }
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O2"))) wurst(void)
+int __attribute__((__noipa__))  __attribute__((optimize("O0"))) dofoo(int n)
+{
+  return dofoo(n + 1);
+}
+
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) wurst(void)
 {
   // __trap(YIELD_TASK, 0);
   while (1) {
+    dofoo(0);
     // create_task(&idle);
-    svc(1);
+    // svc(1);
   };
 }
 
@@ -92,8 +98,12 @@ int main_init(void)
     do_selfcheck_main();
     do_selfcheck_svc();
   #endif
-  *((unsigned int*) 0xE000ED9C) = 0xFFFFFFE0;
-  
+  // __asm (
+  //   "mov r0, #1\n"
+  //   "msr control,r0\n"
+  // );
+  //  unsigned int volatile ctrl;
+  // __asm__("mrs %0, control" : "=r"(ctrl));
   init_scheduler();
   // create_task(&idle);
   // create_task(&idle);
@@ -112,7 +122,7 @@ int main_init(void)
   // create_task(&idle);
   // create_task(&idle);
   // create_task(&hans);
-  create_task(&fritz);
+  // create_task(&fritz);
   // create_task(&idle);
   // create_task(&idle);
   // create_task(&idle);
