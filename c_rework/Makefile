@@ -3,9 +3,10 @@ AS := arm-none-eabi-as
 INC = -Iinclude
 LINK = link.ld
 
-CFLAGS = -fno-common -O0 \
+#-mapcs-frame -funwind-tables 
+CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -g -nostartfiles -Wall -Wextra \
+	 -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 
 SRC=$(shell find $('./src') -name '*.c')
 OBJ=$(shell find $('./build') -name '*.o')
@@ -26,7 +27,7 @@ compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
 link: $(OBJ)
-	$(CC) -T $(LINK) $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
+	$(CC) -T $(LINK)  -ffunction-sections -L./  $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
 #//-o ./build/
 # build:
 # mkdir -p $@

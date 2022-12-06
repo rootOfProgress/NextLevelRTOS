@@ -1,34 +1,81 @@
 #include "memory.h"
 #include "lang.h"
-
+#include "test.h"
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
+#ifdef SELF_CHECK
+
+void do_selfcheck_memory()
+{
+    unsigned int test_a = 1;
+    unsigned int test_b = 1;
+    unsigned int test_c = 1;
+    unsigned int test_d = 1;
+    unsigned int test_e = 1;
+    unsigned int test_f = 1;
+    unsigned int test_g = 1;
+    unsigned int test_h = 1;
+    unsigned int test_i = 1;
+    unsigned int test_j = 1;
+    unsigned int test_k = 1;
+
+    // test_a: check init
+    for (int index = 0; index < 30; index += 1)
+    {
+        if (*(MEM_TABLE_START + index) != 0x0000FFFE)
+            test_a = 0;
+    }
+
+    // test_b: check alloc 4
+    unsigned int mem_1 = (unsigned int) allocate(4);
+    if (mem_1 != (unsigned int) USEABLE_MEM_START)
+        test_b = 0;
+
+    // test_c: check alloc 8
+    unsigned int mem_2 = (unsigned int) allocate(8);
+    if (mem_2 != mem_1 + 4)
+        test_c = 0;
+
+    // test_d: check alloc 9
+    unsigned int mem_3 = (unsigned int) allocate(9);
+    if (mem_3 != mem_1 + 12)
+        test_d = 0;
+
+    // test_e: check alloc 9
+    unsigned int mem_4 = (unsigned int) allocate(999999);
+    if (mem_4 != 0)
+        test_e = 0;
+
+    // test_e: check alloc 9
+    unsigned int mem_5 = (unsigned int) allocate(2);
+    if (mem_5 != mem_1 + 24)
+        test_f = 0;
+
+    // restore all
+    for (int index = 0; index < 30; index += 1)
+    {
+        *(MEM_TABLE_START + index) = 0x0000FFFE;
+    }
 
 
-//     static mut _sbss: u8;
-//     static mut _ebss: u8;
-
-//     static mut _sdata: u8;
-//     static mut _edata: u8;
-//     static _sidata: u8;
-// }
-
-// extern "C" {
-//     fn write_memory(value: u32, adress: u32);
-//     fn read_memory(adress: u32) -> u32;
-// }
-
+}
+#endif
 void init_allocator(unsigned int start_os_section) {
     while (start_os_section % 4 != 0) {
         start_os_section += 1;
     }
     MEM_TABLE_START = (unsigned int*) start_os_section;
-    USEABLE_MEM_START= MEM_TABLE_START + 30;
+    USEABLE_MEM_START= MEM_TABLE_START + 80;
+
     // todo
-    for (int index = 0; index < 30; index += 1)
+    for (int index = 0; index < 80; index += 1)
     {
+        unsigned int foo = *(MEM_TABLE_START + index);
         *(MEM_TABLE_START + index) = 0x0000FFFE;
     }
+    #ifdef SELF_CHECK
+        do_selfcheck_memory();
+    #endif
 }
 
 void deallocate(void* address) {
@@ -59,7 +106,7 @@ unsigned int* allocate(unsigned int size) {
      *
      *
      **/
-    for (unsigned int index = 0; index < 30; index++)
+    for (unsigned int index = 0; index < 80; index++)
     {
         // 47 possible allocs @todo WRONG COUNT!!
         unsigned int meta_of_data_chunk = *(MEM_TABLE_START + index);
