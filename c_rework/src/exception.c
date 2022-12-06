@@ -58,7 +58,7 @@ void __attribute__((optimize("O2"))) SVCall()
 
   switch (svc_number)
   {
-  case RUN_THREAD_MODE:
+  case EXC_RETURN_THREAD:
     unsigned int sp1 = (unsigned int) ((Tcb_t*)currently_running->data)->sp;
     __asm__ volatile ("MOV R0, %[input_i]"
       :  

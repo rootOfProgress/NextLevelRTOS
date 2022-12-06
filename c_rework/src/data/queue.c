@@ -72,7 +72,7 @@ Queue_t* new_queue(void)
 }
 
 
-// @ todo: does not work yet
+// @ todo: does not work yet?
 void dequeue_element(Queue_t* queue, Node_t* currently_running)
 {
     if (currently_running == queue->head)

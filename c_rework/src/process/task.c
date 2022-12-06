@@ -58,7 +58,6 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
         // error
     }
 
-    // CpuRegister_t* cpu_register = (CpuRegister_t*) (process_memory + sizeof(CpuRegister_t) + 512 - sizeof(CpuRegister_t));
     cpu_register->r4 = 0x4;
     cpu_register->r5 = 0x5;
     cpu_register->r6 = 0x6;
@@ -87,35 +86,29 @@ void create_task(void (*task_function)())
     {
         while (1)
         {
-            /* code */
+            // @todo err handling
         }
         
     }
     CpuRegister_t *cpu_register = prepare_cpu_register(address, BUFFER, task_function);
 
-    // todo: useful values here
-
-    // unsigned int *tcb_memory = allocate(sizeof(Tcb_t));
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
     tcb->pid = task_queue->size;
     tcb->sp = &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
     tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
     tcb->task_state = READY;
+//@leave it
+//     volatile unsigned int *shcsr = (void *)0xE000ED24;
+//     *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
 
-      // Let's set MEMFAULTENA so MemManage faults get tripped
-  // (otherwise we will immediately get a HardFault)
-    volatile unsigned int *shcsr = (void *)0xE000ED24;
-    *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
+//    *((unsigned int*) 0xE000ED98) = *((unsigned int*) 0xE000ED98) | 0x3; // 
+//    *((unsigned int*) 0xE000ED9C) = 0x20000200;//((unsigned int) address + 16) & ~16; // rbar
 
-   *((unsigned int*) 0xE000ED98) = *((unsigned int*) 0xE000ED98) | 0x3; // 
-   *((unsigned int*) 0xE000ED9C) = 0x20000200;//((unsigned int) address + 16) & ~16; // rbar
+//     volatile unsigned int *mpu_rasr = (void *)0xE000EDA0;
 
-  volatile unsigned int *mpu_rasr = (void *)0xE000EDA0;
-
-
-  *mpu_rasr = (0b000 << 24) | (0b000110 << 16) | (4 << 1) | 0x1;
-  volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
-  *mpu_ctrl = 0x5;
-  insert_scheduled_task((Tcb_t*) tcb);
+//     *mpu_rasr = (0b000 << 24) | (0b000110 << 16) | (4 << 1) | 0x1;
+//     volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
+//     *mpu_ctrl = 0x5;
+    insert_scheduled_task((Tcb_t*) tcb);
 }
