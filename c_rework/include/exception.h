@@ -12,7 +12,12 @@
                                  : "r6")
 
 typedef enum {
-    EXC_RETURN_THREAD = 0,
+    RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
+    RET_MSP_THREAD_NOFP = 0xFFFFFFF9,
+} ExcReturn_t;
+
+typedef enum {
+    EXEC_PSP_TASK = 0,
     YIELD_TASK,
     RESET
 } TrapType_t;

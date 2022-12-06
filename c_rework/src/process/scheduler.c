@@ -48,7 +48,7 @@ void run_scheduler(void)
         return;
 
     currently_running = (Node_t*) get_head_element(task_queue);
-    svc(EXC_RETURN_THREAD);
+    svc(EXEC_PSP_TASK);
 }
 
 
@@ -80,5 +80,5 @@ void remove_scheduled_task(void)
     currently_running = NULL;
     currently_running = (Node_t*) get_head_element(task_queue);
 
-    svc(EXC_RETURN_THREAD);
+    svc(EXEC_PSP_TASK);
 }
