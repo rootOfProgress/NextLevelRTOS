@@ -12,6 +12,12 @@ typedef struct MemoryResult {
 
 void deallocate(void*);
 void init_allocator(unsigned int);
+void swap(char*);
+
+static inline void os_memcpy(char* dst, char data)
+{
+    *dst = data;
+}
 
 unsigned int* allocate(unsigned int);
 #endif

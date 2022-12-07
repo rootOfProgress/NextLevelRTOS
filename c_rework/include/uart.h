@@ -21,11 +21,6 @@ extern char buffer[];
 uint32_t pow_base_16(uint32_t);
 uint32_t hex2int(char);
 
-typedef struct {
-    unsigned int task_size;
-    unsigned int start_adress;
-} TaskInformation_t;
-
 typedef enum {
     RX_READY = 0x0,
     PREPARE_TASK_TRANSFER = 0x1,

@@ -8,13 +8,18 @@ CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 
-SRC=$(shell find $('./src') -name '*.c')
-OBJ=$(shell find $('./build') -name '*.o')
+# SRC=$(shell find $('./src') -name '*.c')
+# OBJ:=$(shell find $('./build/') -name '*.o')
+SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
+OBJ:=$(wildcard ./build/*.o)
+
 SRC_AS=$(shell find $('./src') -name '*.s')
 TARGET = firmware
 all: $(TARGET)
 
-$(TARGET): clean compile_c move_objects compile_as link
+$(TARGET): compile_c move_objects compile_as link
+
+link1: link
 # $(TARGET): compile_as
 
 move_objects:
@@ -26,11 +31,9 @@ compile_c: $(SRC)
 compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
-link: $(OBJ)
-	$(CC) -T $(LINK)  -ffunction-sections -L./  $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
-#//-o ./build/
-# build:
-# mkdir -p $@
+link: $(wildcard ./build/*.o)
+	echo $^
+	$(CC) -T $(LINK)  -ffunction-sections $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
 
 clean:
 	rm -f ./build/*

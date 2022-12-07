@@ -1,6 +1,7 @@
-#include "../include/uart.h"
-#include "../include/lang.h"
-#include "../include/memory.h"
+#include "uart.h"
+#include "lang.h"
+#include "memory.h"
+#include "process/task.h"
 
 
 char buffer[16];
@@ -9,6 +10,8 @@ volatile unsigned int byte_in_id;
 unsigned int index = 0;
 
 unsigned int flush = 0xAA; 
+
+char *p;
 
 UartStates_t state;
 TaskInformation_t *tInfo = NULL;
@@ -143,17 +146,27 @@ void __attribute__((optimize("O0"))) uart_isr_handler(void)
         break;
     case PREPARE_TASK_TRANSFER:
         buffer[index++] = (*((unsigned int*) USART1_DR));
-        if (index == 16)
+        if (index == 8)
         {
-         unsigned int t0 = *((unsigned int*) buffer);
-         unsigned int t1 = *(((unsigned int*) buffer) + 1);
-        state = TRANSFER_TASK_BYTES;
+            tInfo = (TaskInformation_t*) allocate(sizeof(TaskInformation_t));
+            swap(buffer);
+            tInfo->task_size = *((unsigned int*) buffer); 
+            tInfo->start_adress = (char*) allocate(tInfo->task_size); 
+            state = TRANSFER_TASK_BYTES;
+            index = 0;
+            p = tInfo->start_adress;
         }
         break;
     case TRANSFER_TASK_BYTES:
-        unsigned int foo =  (*((unsigned int*) USART1_DR));
-        if (foo >= 234)
-            return;
+        if (index++ <= tInfo->task_size)
+            os_memcpy(p++, *((char*) USART1_DR));
+
+        if (index == tInfo->task_size)
+        {
+            deallocate(tInfo);
+            state = RX_READY;
+        }
+
     default:
         break;
     }

@@ -60,6 +60,40 @@ void do_selfcheck_memory()
 
 }
 #endif
+
+void swap(char* buffer)
+{
+    // char* p = (char*) buffer;
+    char tmp;
+
+    // swap 1 - 4
+    tmp = *buffer;
+    *buffer = *(buffer+3);
+    *(buffer+3) = tmp;
+
+    // swap 2 - 3
+    tmp = *(buffer+1);
+    *(buffer+1) = *(buffer+2);
+    *(buffer+2) = tmp;
+}
+
+
+void swap_endianess(char* buffer)
+{
+    // char* p = (char*) buffer;
+    char tmp;
+
+    // swap 1 - 4
+    tmp = *buffer;
+    *buffer = *(buffer+1);
+    *(buffer+1) = tmp;
+
+    // swap 2 - 3
+    tmp = *(buffer+2);
+    *(buffer+2) = *(buffer+3);
+    *(buffer+3) = tmp;
+}
+
 void init_allocator(unsigned int start_os_section) {
     while (start_os_section % 4 != 0) {
         start_os_section += 1;
@@ -79,15 +113,16 @@ void init_allocator(unsigned int start_os_section) {
 }
 
 void deallocate(void* address) {
-    unsigned int address_offset = (unsigned int) address - *USEABLE_MEM_START;
-    for (unsigned int index = 0; index < 30; index++)
-    {
-        unsigned int alloc_entry = *(MEM_TABLE_START + index);
-        if ((alloc_entry >> 16) == address_offset) {
-            *(MEM_TABLE_START + index) = alloc_entry & ~1;
-            return;
-        }
-    }
+    return;
+    // unsigned int address_offset = (unsigned int) address - *USEABLE_MEM_START;
+    // for (unsigned int index = 0; index < 30; index++)
+    // {
+    //     unsigned int alloc_entry = *(MEM_TABLE_START + index);
+    //     if ((alloc_entry >> 16) == address_offset) {
+    //         *(MEM_TABLE_START + index) = alloc_entry & ~1;
+    //         return;
+    //     }
+    // }
 }
 
 unsigned int* allocate(unsigned int size) {
