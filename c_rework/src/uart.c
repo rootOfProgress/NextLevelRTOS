@@ -109,30 +109,6 @@ void init_uart()
 
 void __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
-        //    } else */ if rx_data as char == 'f' {
-        //     task_target = 0x20001000;
-        //     // flush memory
-        //     for i in (0x0..0x60).step_by(0x4) {
-        //         volatile_store((task_target + i) as *mut u32, 0x0);
-        //     }
-        //     task_target = 0x20001000;
-        //     task_byte = 0;
-        //     task_word = 0;
-        //     return;
-        //             if rcv_state == RCV_STATE::TASK {
-        //     // task_buffer[task_byte as usize] = rx_data;
-        //     // task_byte += 1;
-        //     // // 2 3 0 1
-        //     task_word |= (rx_data as u32) << task_byte * 8;
-        //     if task_byte == 3 {
-        //         volatile_store(task_target as *mut u32, task_word);
-        //         task_target += 0x4;
-        //         task_byte = 0;
-        //         task_word = 0;
-        //     } else {
-        //         task_byte += 1;
-        //     }
-
     switch (state)
     {
     case RX_READY:
@@ -158,13 +134,13 @@ void __attribute__((optimize("O0"))) uart_isr_handler(void)
         }
         break;
     case TRANSFER_TASK_BYTES:
-        if (index++ <= tInfo->task_size)
-            os_memcpy(p++, *((char*) USART1_DR));
+        // if (index++ <= tInfo->task_size)
+        os_memcpy(p++, *((char*) USART1_DR));
 
-        if (index == tInfo->task_size)
+        if (++index == tInfo->task_size)
         {
             deallocate(tInfo);
-            create_task((void (*)()) tInfo->start_adress);
+            create_task((void (*)()) tInfo->start_adress, (unsigned int) tInfo->start_adress);
             state = RX_READY;
         }
         break;

@@ -103,8 +103,8 @@ int main_init(void)
     do_selfcheck_svc();
   #endif
   init_scheduler();
-  create_task(&hans);
-  create_task(&wurst);
+  create_task(&hans, 0);
+  create_task(&wurst, 0);
   init_uart();
   enable_usart_cpu_irq();
   run_scheduler();

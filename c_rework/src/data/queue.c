@@ -75,6 +75,7 @@ Queue_t* new_queue(void)
 // @ todo: does not work yet?
 void dequeue_element(Queue_t* queue, Node_t* currently_running)
 {
+    Node_t* q = currently_running;
     if (currently_running == queue->head)
     {
         queue->head = currently_running->next;
@@ -91,8 +92,8 @@ void dequeue_element(Queue_t* queue, Node_t* currently_running)
         currently_running->prev->next = currently_running->next;
         currently_running->next->prev = currently_running->prev;
     }
-    // @todo needs tests
-    //deallocate((void*) node);
+    // @todo untested!!
+    deallocate((unsigned int*) q);
     queue->size--;
 }
 

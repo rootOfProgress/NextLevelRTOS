@@ -78,7 +78,7 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 }
 
 
-void create_task(void (*task_function)())
+void create_task(void (*task_function)(), unsigned int ram_location)
 {
 
     unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + BUFFER);
@@ -97,6 +97,7 @@ void create_task(void (*task_function)())
     tcb->sp = &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
     tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
+    tcb->code_section = ram_location;
     tcb->task_state = READY;
 //@leave it
 //     volatile unsigned int *shcsr = (void *)0xE000ED24;

@@ -113,16 +113,16 @@ void init_allocator(unsigned int start_os_section) {
 }
 
 void deallocate(void* address) {
-    return;
-    // unsigned int address_offset = (unsigned int) address - *USEABLE_MEM_START;
-    // for (unsigned int index = 0; index < 30; index++)
-    // {
-    //     unsigned int alloc_entry = *(MEM_TABLE_START + index);
-    //     if ((alloc_entry >> 16) == address_offset) {
-    //         *(MEM_TABLE_START + index) = alloc_entry & ~1;
-    //         return;
-    //     }
-    // }
+    // return;
+    unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
+    for (unsigned int index = 0; index < 80; index++)
+    {
+        unsigned int alloc_entry = *(MEM_TABLE_START + index);
+        if ((alloc_entry >> 16) == address_offset) {
+            *(MEM_TABLE_START + index) = alloc_entry & ~1;
+            return;
+        }
+    }
 }
 
 unsigned int* allocate(unsigned int size) {

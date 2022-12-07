@@ -1,5 +1,6 @@
 #include "process/scheduler.h"
 #include "hw/cpu.h"
+#include "memory.h"
 
 Queue_t* task_queue = NULL;
 Node_t* currently_running = NULL;
@@ -76,7 +77,13 @@ void PendSV(void)
 
 void remove_scheduled_task(void)
 {
+    Tcb_t* t = (Tcb_t*) currently_running->data;
+    deallocate(t->memory_lower_bound);
+    if (t->code_section != 0)
+        deallocate(t->code_section);
+
     dequeue_element(task_queue, currently_running);
+    
     currently_running = NULL;
     currently_running = (Node_t*) get_head_element(task_queue);
 
