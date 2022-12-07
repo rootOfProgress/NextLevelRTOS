@@ -164,25 +164,12 @@ void __attribute__((optimize("O0"))) uart_isr_handler(void)
         if (index == tInfo->task_size)
         {
             deallocate(tInfo);
+            create_task((void (*)()) tInfo->start_adress);
             state = RX_READY;
         }
-
+        break;
     default:
         break;
     }
-
-    // buffer[byte_in_id++] = (*((unsigned int*) USART1_DR));
-    // if (byte_in_id == 4)
-    // {
-    //     for (int i = 0; i < 4; i++)
-    //         in_buffer <<= i | ((unsigned int) buffer[i]);
-    //     // in_buffer = (unsigned int) *buffer;
-    // }
-    // byte_in_id++;
-    // while (1)
-    // {
-    //     /* code */
-    // }
-    
 }
 
