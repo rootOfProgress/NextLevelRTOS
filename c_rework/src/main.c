@@ -3,6 +3,7 @@
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "types.h"
+#include "uart.h"
 #include "memory.h"
 #include "test.h"
 #define EnablePrivilegedMode() __asm("SVC #0xF")
@@ -11,22 +12,22 @@
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
 // }
 
-// void enable_usart_cpu_irq()
-// {
-//   WRITE_REGISTER(0xE000E104, 0x1 << 5);
-// }
+void enable_usart_cpu_irq()
+{
+  *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 0x1 << 5;
+}
 
-// void setup_nvic_controller()
-// {
-//   // mask exti0 on line 6
-//   WRITE_REGISTER(0x40013C0C, 0x1 << 6);
+void setup_nvic_controller()
+{
+  // mask exti0 on line 6
+  *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
 
-//   // line 6 triggers on rising edge
-//   WRITE_REGISTER(0x40013C08, 0x1 << 6);
+  // line 6 triggers on rising edge
+  *((unsigned int*) 0x40013C08) = *((unsigned int*) 0x40013C08) << 6;
 
-//   // line 6 triggers on falling edge
-//   WRITE_REGISTER(0x40013C0C, 0x1 << 6);
-// }
+  // line 6 triggers on falling edge
+  *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
+}
 
 // void enable_device_interrupts()
 // {
@@ -104,6 +105,8 @@ int main_init(void)
   init_scheduler();
   create_task(&hans);
   create_task(&wurst);
+  init_uart();
+  enable_usart_cpu_irq();
   run_scheduler();
   
   __asm__("ldr r0, =main_loop\n"
