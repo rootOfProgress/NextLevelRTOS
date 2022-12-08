@@ -86,7 +86,7 @@ void main_loop(void)
   }
 }
 
-#ifdef SELF_CHECK
+#ifdef FOOSELF_CHECK
 void do_selfcheck_main()
 {
   queue_selfcheck();
@@ -99,8 +99,8 @@ void do_selfcheck_main()
 int main_init(void)
 {
   #ifdef SELF_CHECK
-    do_selfcheck_main();
-    do_selfcheck_svc();
+    // do_selfcheck_main();
+    // do_selfcheck_svc();
   #endif
   init_scheduler();
   create_task(&hans, 0);

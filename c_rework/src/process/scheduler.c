@@ -81,6 +81,7 @@ void remove_scheduled_task(void)
     deallocate(t->memory_lower_bound);
     if (t->code_section != 0)
         deallocate(t->code_section);
+    deallocate(t);
 
     dequeue_element(task_queue, currently_running);
     

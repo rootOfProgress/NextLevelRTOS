@@ -3,9 +3,11 @@
 #include "test.h"
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
+static unsigned int allocs = 0;
+static unsigned int deallocs = 0;
 #ifdef SELF_CHECK
 
-void do_selfcheck_memory()
+void __attribute__((optimize("O0"))) do_selfcheck_memory()
 {
     unsigned int test_a = 1;
     unsigned int test_b = 1;
@@ -18,6 +20,9 @@ void do_selfcheck_memory()
     unsigned int test_i = 1;
     unsigned int test_j = 1;
     unsigned int test_k = 1;
+    unsigned int test_l = 1;
+    unsigned int test_m = 1;
+    unsigned int test_n = 1;
 
     // test_a: check init
     for (int index = 0; index < 30; index += 1)
@@ -50,6 +55,20 @@ void do_selfcheck_memory()
     unsigned int mem_5 = (unsigned int) allocate(2);
     if (mem_5 != mem_1 + 24)
         test_f = 0;
+
+    // deallocate(mem_1);
+    deallocate(mem_2);
+    deallocate(mem_3);
+    deallocate(mem_4);
+    deallocate(mem_5);
+    unsigned int mem_5_new = (unsigned int) allocate(2);
+    if (mem_5 != mem_5_new)
+        test_g = 0;
+    unsigned int mem_4_new = (unsigned int) allocate(999999);
+    if (mem_4 != mem_4_new)
+        test_h = 0;
+
+    
 
     // restore all
     for (int index = 0; index < 30; index += 1)
@@ -112,17 +131,18 @@ void init_allocator(unsigned int start_os_section) {
     #endif
 }
 
-void deallocate(void* address) {
-    return;
-    // unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
-    // for (unsigned int index = 0; index < 80; index++)
-    // {
-    //     unsigned int alloc_entry = *(MEM_TABLE_START + index);
-    //     if ((alloc_entry >> 16) == address_offset) {
-    //         *(MEM_TABLE_START + index) = alloc_entry & ~1;
-    //         return;
-    //     }
-    // }
+void  deallocate(void* address) {
+    // return;
+    unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
+    for (unsigned int index = 0; index < 80; index++)
+    {
+        unsigned int alloc_entry = *(MEM_TABLE_START + index);
+        if ((alloc_entry >> 16) == address_offset) {
+            deallocs++;
+            *(MEM_TABLE_START + index) = alloc_entry & ~1;
+            return;
+        }
+    }
 }
 
 unsigned int* allocate(unsigned int size) {
@@ -144,30 +164,35 @@ unsigned int* allocate(unsigned int size) {
     for (unsigned int index = 0; index < 80; index++)
     {
         // 47 possible allocs @todo WRONG COUNT!!
-        unsigned int meta_of_data_chunk = *(MEM_TABLE_START + index);
+        unsigned int memory_entry = *(MEM_TABLE_START + index);
 
         // check if occupied
-        if ((meta_of_data_chunk & 1) == 1) {
+        if ((memory_entry & 1) == 1) {
             // get size and add to offset
-            next_useable_chunk += (meta_of_data_chunk & 0xFFFE) >> 1;
+            next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
             continue;
         }
 
-        // check if size fits
-        if (((meta_of_data_chunk & 0xFFFE) >> 1) >= requested_size) {
-            // update offsetadress, size, mark as occupied
-            meta_of_data_chunk = (next_useable_chunk << 16) | (requested_size << 1) | 1;
+        if ((memory_entry & 1) == 0) {
+            // check if chunk was already in use: Offset is not 0 
+            if ((((memory_entry >> 16) != 0) && ((memory_entry & 0xFFFE) >> 1) == requested_size))
+            {
+                *(MEM_TABLE_START + index) = memory_entry | 1;
+                allocs++;
+                return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
+            } 
+            // check if size fits on new chunk
+            if (((memory_entry & 0xFFFE) >> 1) >= requested_size)
+            {
+                // update offsetadress, size, mark as occupied
+                memory_entry = (next_useable_chunk << 16) | (requested_size << 1) | 1;
 
-            // write back changes
-            *(MEM_TABLE_START + index) = meta_of_data_chunk;
-
-            unsigned int *start_address = (unsigned int*) ((meta_of_data_chunk >> 16) + (unsigned int) USEABLE_MEM_START);
-
-            // MemoryResult_t* memory_result = (MemoryResult_t*) start_address; 
-            // memory_result->start_address = start_address;
-            // memory_result->end_address = start_address + size;
-    
-            return start_address;
+                // write back changes
+                *(MEM_TABLE_START + index) = memory_entry;
+                allocs++;
+                return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
+            }
+            next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
         }
     }
     return NULL;
