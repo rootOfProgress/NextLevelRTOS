@@ -3,8 +3,10 @@
 #include "test.h"
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
-static unsigned int allocs = 0;
-static unsigned int deallocs = 0;
+const NUM_OF_SLOTS = 60;
+
+MemoryStatistic_t *mstat = NULL;
+
 #ifdef SELF_CHECK
 
 void __attribute__((optimize("O0"))) do_selfcheck_memory()
@@ -118,32 +120,43 @@ void init_allocator(unsigned int start_os_section) {
         start_os_section += 1;
     }
     MEM_TABLE_START = (unsigned int*) start_os_section;
-    USEABLE_MEM_START= MEM_TABLE_START + 80;
+    USEABLE_MEM_START= MEM_TABLE_START + NUM_OF_SLOTS;
 
     // todo
-    for (int index = 0; index < 80; index += 1)
+    for (int index = 0; index < NUM_OF_SLOTS; index += 1)
     {
         // unsigned int foo = *(MEM_TABLE_START + index);
         *(MEM_TABLE_START + index) = 0x0000FFFE;
     }
+
+    mstat = (MemoryStatistic_t*) allocate(sizeof(MemoryStatistic_t));
+    mstat->num_of_allocs = 0;
+    mstat->num_of_deallocs = 0;
+    mstat->num_of_fractial_allocs = 0;
     #ifdef SELF_CHECK
         do_selfcheck_memory();
     #endif
 }
 
-void  deallocate(void* address) {
+void  deallocate(unsigned int* address) {
     // return;
     unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
-    for (unsigned int index = 0; index < 80; index++)
+    for (unsigned int index = 0; index < NUM_OF_SLOTS; index++)
     {
         unsigned int alloc_entry = *(MEM_TABLE_START + index);
         if ((alloc_entry >> 16) == address_offset) {
-            deallocs++;
+            mstat->num_of_deallocs++;
             *(MEM_TABLE_START + index) = alloc_entry & ~1;
             return;
         }
     }
 }
+
+unsigned int* allocateR(unsigned int size, unsigned int left_bound, unsigned int right_bound)
+{
+
+}
+
 
 unsigned int* allocate(unsigned int size) {
     unsigned int requested_size = size;
@@ -161,7 +174,7 @@ unsigned int* allocate(unsigned int size) {
      *
      *
      **/
-    for (unsigned int index = 0; index < 80; index++)
+    for (unsigned int index = 0; index < NUM_OF_SLOTS; index++)
     {
         // 47 possible allocs @todo WRONG COUNT!!
         unsigned int memory_entry = *(MEM_TABLE_START + index);
@@ -173,27 +186,40 @@ unsigned int* allocate(unsigned int size) {
             continue;
         }
 
-        if ((memory_entry & 1) == 0) {
+        // if ((memory_entry & 1) == 0) {
             // check if chunk was already in use: Offset is not 0 
-            if ((((memory_entry >> 16) != 0) && ((memory_entry & 0xFFFE) >> 1) == requested_size))
-            {
-                *(MEM_TABLE_START + index) = memory_entry | 1;
-                allocs++;
-                return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
-            } 
-            // check if size fits on new chunk
-            if (((memory_entry & 0xFFFE) >> 1) >= requested_size)
-            {
-                // update offsetadress, size, mark as occupied
-                memory_entry = (next_useable_chunk << 16) | (requested_size << 1) | 1;
+        if ((((memory_entry >> 16) != 0) && ((memory_entry & 0xFFFE) >> 1) == requested_size))
+        {
+            unsigned int old_size = (memory_entry & 0xFFFE) >> 1;
+            memory_entry &= ~0xFFFF;
+            unsigned int remaining = old_size - requested_size;
 
-                // write back changes
-                *(MEM_TABLE_START + index) = memory_entry;
-                allocs++;
-                return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
+            // untested!
+            if (remaining > 0)
+            {
+                unsigned int j = index;
+                while (*(MEM_TABLE_START + j++) != 0x0000FFFE) {};
+                *(MEM_TABLE_START + j) = ((memory_entry >> 16) + requested_size) | remaining << 1 | 0; 
+                mstat->num_of_fractial_allocs++;
             }
-            next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
+
+            *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;
+            mstat->num_of_allocs++;
+            return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
+        } 
+        // check if size fits on new chunk
+        if (((memory_entry & 0xFFFE) >> 1) >= requested_size)
+        {
+            // update offsetadress, size, mark as occupied
+            memory_entry = (next_useable_chunk << 16) | (requested_size << 1) | 1;
+
+            // write back changes
+            *(MEM_TABLE_START + index) = memory_entry;
+            mstat->num_of_allocs++;
+            return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         }
+        next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
+       // }
     }
     return NULL;
 }

@@ -146,7 +146,7 @@ void __attribute__((optimize("O0"))) uart_isr_handler(void)
 
         if (++bufferIndex == tInfo->task_size)
         {
-            deallocate(tInfo);
+            deallocate((unsigned int*) tInfo);
             create_task((void (*)()) tInfo->start_adress, (unsigned int) tInfo->start_adress);
             state = RX_READY;
             bufferIndex = 0;

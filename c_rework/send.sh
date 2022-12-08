@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in {0..150}
+for i in {0..50}
 do
    echo "go.."
    dd if=./data of=/tmp/s9.in iflag=direct,skip_bytes
