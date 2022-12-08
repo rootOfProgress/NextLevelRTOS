@@ -4,7 +4,7 @@ MEMORY
 {
   /* see page 59 at reference manual */
   /* flash area starts @0800000 */
-  FLASH (rx) : ORIGIN = 0x2000045b, LENGTH = 512
+  FLASH (rx) : ORIGIN = 0x20000463, LENGTH = 512
 
   SRAM (rwx) : ORIGIN = 0x200000FF, LENGTH = 39745
 }

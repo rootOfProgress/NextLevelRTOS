@@ -7,7 +7,7 @@
 char buffer[16];
 unsigned int in_buffer = 0;
 volatile unsigned int byte_in_id;
-unsigned int index = 0;
+unsigned int bufferIndex = 0;
 
 unsigned int flush = 0xAA; 
 
@@ -23,7 +23,7 @@ void init_uart()
     *((unsigned int*) USART1_CR) = *((unsigned int*) USART1_CR) | 0x1 << UE | 0x1 << RXNEIE | 0x1 << RE | 0x1 << TE;
     byte_in_id = 4;
     state = RX_READY;
-    index = 0;
+    bufferIndex = 0;
 
 }
 
@@ -33,15 +33,15 @@ void init_uart()
 //     while (!((READ_REGISTER(USART1_SR) & 0x80) != 0));
 // }
 
-// void print(char *str)
-// {
-//     while (*str)
-//     {
-//         WRITE_REGISTER(USART1_DR,(*str));
-//         while (!((READ_REGISTER(USART1_SR) & 0x80) != 0));
-//         str++;
-//     }
-// }
+void print(char *str)
+{
+    while (*str)
+    {
+        *((unsigned int*) USART1_DR) = *str;
+        while (!((*((unsigned int*) USART1_SR)) & 0x80) != 0);
+        str++;
+    }
+}
 
 // void send_nil()
 // {
@@ -119,29 +119,37 @@ void __attribute__((optimize("O0"))) uart_isr_handler(void)
             in_buffer = 0;
             byte_in_id = 4;
         }
+        if (byte_in_id == 0)
+        {
+            in_buffer = 0;
+            byte_in_id = 4;
+        }
         break;
     case PREPARE_TASK_TRANSFER:
-        buffer[index++] = (*((unsigned int*) USART1_DR));
-        if (index == 8)
+        buffer[bufferIndex++] = (*((unsigned int*) USART1_DR));
+        if (bufferIndex == 8)
         {
             tInfo = (TaskInformation_t*) allocate(sizeof(TaskInformation_t));
             swap(buffer);
             tInfo->task_size = *((unsigned int*) buffer); 
             tInfo->start_adress = (char*) allocate(tInfo->task_size); 
             state = TRANSFER_TASK_BYTES;
-            index = 0;
+            bufferIndex = 0;
             p = tInfo->start_adress;
+
+            print("hallo");
         }
         break;
     case TRANSFER_TASK_BYTES:
-        // if (index++ <= tInfo->task_size)
+        // if (bufferIndex++ <= tInfo->task_size)
         os_memcpy(p++, *((char*) USART1_DR));
 
-        if (++index == tInfo->task_size)
+        if (++bufferIndex == tInfo->task_size)
         {
             deallocate(tInfo);
             create_task((void (*)()) tInfo->start_adress, (unsigned int) tInfo->start_adress);
             state = RX_READY;
+            bufferIndex = 0;
         }
         break;
     default:
