@@ -4,10 +4,7 @@
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O2"))) main(void)
 {
-    *((unsigned int*) 0x20002000) = 0x12345678;
-
-    while(1){ 
-        svc(1);
-    };
-    // return 1;
+    typedef int func(void);
+    func* f = (func*)0x080001a8;
+    f();
 }
