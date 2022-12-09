@@ -1,6 +1,8 @@
 #include "memory.h"
 #include "lang.h"
 #include "test.h"
+#include "process/scheduler.h"
+
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
 const NUM_OF_SLOTS = 60;
@@ -133,6 +135,7 @@ void init_allocator(unsigned int start_os_section) {
     mstat->num_of_allocs = 0;
     mstat->num_of_deallocs = 0;
     mstat->num_of_fractial_allocs = 0;
+    mstat->os_data_end = (unsigned int) USEABLE_MEM_START;
     #ifdef SELF_CHECK
         do_selfcheck_memory();
     #endif
@@ -150,6 +153,25 @@ void  deallocate(unsigned int* address) {
             return;
         }
     }
+}
+
+void update_statistic(void)
+{
+    mstat->total_byte_alloced = 0;
+    // count alloced spaces
+    for (int index = 0; index < NUM_OF_SLOTS; index += 1)
+    {
+        unsigned int entry = *(MEM_TABLE_START + index);
+        if ((entry & 1) == 1)
+            mstat->total_byte_alloced += (entry & 0xFFFE) >> 1;
+    }    
+    Node_t* q = task_queue->head;
+    do
+    {
+            Tcb_t* t = q->data;
+            mstat->total_byte_used = t->memory_upper_bound - t->sp;
+    } while (q != task_queue->head);
+    
 }
 
 unsigned int* allocateR(unsigned int size, unsigned int left_bound, unsigned int right_bound)

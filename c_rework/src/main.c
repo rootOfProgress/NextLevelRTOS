@@ -41,6 +41,16 @@ void idle()
     // svc(1);
   // };
 }
+
+static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) stat(void)
+{
+  // __trap(YIELD_TASK, 0);
+  while (1) {
+    update_statistic();
+    svc(1);
+  };
+}
+
 static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) hans(void)
 {
   // __trap(YIELD_TASK, 0);
@@ -104,6 +114,7 @@ int main_init(void)
   #endif
   init_scheduler();
   create_task(&hans, 0);
+  create_task(&stat, 0);
   create_task(&wurst, 0);
   init_uart();
   enable_usart_cpu_irq();
