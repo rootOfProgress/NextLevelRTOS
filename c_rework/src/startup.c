@@ -42,6 +42,11 @@ void hardfault_handler(void)
     while (1);
 }
 
+void usage_fault(void)
+{
+    while (1);
+}
+
 void bar_handler(void)
 {
     while (1);
@@ -56,7 +61,7 @@ uint32_t *isr_vectors[] =
     (uint32_t *) hardfault_handler,
     (uint32_t *) memfault_handler,
     (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
+    (uint32_t *) usage_fault,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,

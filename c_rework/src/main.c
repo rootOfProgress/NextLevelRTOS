@@ -86,7 +86,7 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) wurst(vo
   };
 }
 
-void main_loop(void)
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
 {
   // svc(0);
   while (1)
