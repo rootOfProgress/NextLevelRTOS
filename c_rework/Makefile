@@ -31,7 +31,7 @@ compile_c: $(SRC)
 compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
-link: $(wildcard ./build/*.o)
+link: $(wildcard ./build/*.o) $(wildcard ./legacy/*.o)
 	echo $^
 	$(CC) -T $(LINK)  -ffunction-sections $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
 
