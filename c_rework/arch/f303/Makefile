@@ -1,9 +1,6 @@
 CC := arm-none-eabi-gcc
-# AS := arm-none-eabi-as
 INC = -Iinclude
-# LINK = link.ld
 
-#-mapcs-frame -funwind-tables 
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
@@ -14,13 +11,10 @@ OBJ:=$(wildcard ./build/*.o)
 TARGET = devices
 all: $(TARGET)
 
-$(TARGET): compile_c move_objects move_objects_to_main
-
-link1: link
-# $(TARGET): compile_as
+$(TARGET): clean compile_c move_objects move_objects_to_main
 
 move_objects_to_main:
-	mv ./build/*.o ../../build
+	cp ./build/*.o ../../build
 
 move_objects:
 	mv ./*.o ./build

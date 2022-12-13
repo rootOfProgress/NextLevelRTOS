@@ -15,25 +15,35 @@ OBJ:=$(wildcard ./build/*.o)
 
 SRC_AS=$(shell find $('./src') -name '*.s')
 TARGET = firmware
+# ARCH = $()
 all: $(TARGET)
 
-$(TARGET): compile_c move_objects compile_as link
 
-link1: link
-# $(TARGET): compile_as
+
+$(TARGET): clean compile_c compile_as $(ARCH) link
+
+# # make_arch:
+# ifneq ($(ARCH),)
+# 	make -C arch/$(ARCH)
+# else
+# 	echo "No Device Selected, Building Standalone Kernel"
+# endif
+
+$(ARCH):
+	make -C arch/$(ARCH)
 
 move_objects:
 	mv *.o ./build
 
 compile_c: $(SRC)
-	$(CC) $(CFLAGS) $(INC) $^ -c 
+	$(CC) $(CFLAGS) $(INC) -c $^ 
+	mv *.o ./build
 
 compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
-link: $(wildcard ./build/*.o) $(wildcard ./legacy/*.o)
-	echo $^
-	$(CC) -T $(LINK) -L ./libfoo.a -ffunction-sections $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
+link: 
+	make -C ./build ARCH=$(ARCH)
 
 clean:
-	rm -f ./build/*
+	rm -f ./build/*.o $(TARGET)

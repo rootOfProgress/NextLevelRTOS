@@ -174,12 +174,6 @@ void update_statistic(void)
     
 }
 
-unsigned int* allocateR(unsigned int size, unsigned int left_bound, unsigned int right_bound)
-{
-
-}
-
-
 unsigned int* allocate(unsigned int size) {
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;

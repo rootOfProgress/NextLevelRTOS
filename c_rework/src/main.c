@@ -2,13 +2,14 @@
 #include "exception.h"
 #include "process/scheduler.h"
 #include "process/task.h"
+#include "devices/gpio.h"
 #include "types.h"
 #include "uart.h"
 #include "memory.h"
 #include "test.h"
 #define EnablePrivilegedMode() __asm("SVC #0xF")
 
-void init_uart_gpio();
+
 // void enable_exti0_cpu_irq()
 // {
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
@@ -114,7 +115,16 @@ int main_init(void)
     // do_selfcheck_main();
     // do_selfcheck_svc();
   #endif
-  init_uart_gpio();
+  GpioActions_t *t = (GpioActions_t*) allocate(sizeof(GpioActions_t));
+  t->gpio_object = (GpioObject_t*) allocate(sizeof(GpioObject_t));
+  
+  t->gpio_object->number = 3;
+  t->gpio_object->port = "A";
+  init_gpio(t);
+  toggle_output_pin(t);
+
+
+
   init_scheduler();
   create_task(&hans, 0);
   create_task(&stat, 0);
@@ -122,6 +132,7 @@ int main_init(void)
   init_uart();
   enable_usart_cpu_irq();
   run_scheduler();
+
   
   __asm__("ldr r0, =main_loop\n"
           "mov pc,r0");
