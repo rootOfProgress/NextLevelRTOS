@@ -7,6 +7,8 @@
 #include "memory.h"
 #include "test.h"
 #define EnablePrivilegedMode() __asm("SVC #0xF")
+
+void init_uart_gpio();
 // void enable_exti0_cpu_irq()
 // {
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
@@ -112,6 +114,7 @@ int main_init(void)
     // do_selfcheck_main();
     // do_selfcheck_svc();
   #endif
+  init_uart_gpio();
   init_scheduler();
   create_task(&hans, 0);
   create_task(&stat, 0);

@@ -33,7 +33,7 @@ compile_as: $(SRC_AS)
 
 link: $(wildcard ./build/*.o) $(wildcard ./legacy/*.o)
 	echo $^
-	$(CC) -T $(LINK)  -ffunction-sections $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
+	$(CC) -T $(LINK) -L ./libfoo.a -ffunction-sections $^ -o ./build/$(TARGET) -nostdlib -nostartfiles
 
 clean:
 	rm -f ./build/*
