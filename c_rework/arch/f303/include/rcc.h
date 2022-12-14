@@ -1,9 +1,22 @@
 #ifndef RCC_H
 #define RCC_H
 
-const unsigned int BASE_ADRESS = 0x40021000;
+extern unsigned int RCC_BASE_ADRESS;
 
-typedef struct RCC {
+extern unsigned int SYSCFGEN;
+extern unsigned int GPIOPAEN;
+extern unsigned int GPIOPBEN;
+extern unsigned int GPIOPCEN;
+extern unsigned int GPIOPEEN;
+extern unsigned int USART1EN;
+extern unsigned int TIM2EN;
+extern unsigned int TIM3EN;
+extern unsigned int TIM4EN;
+extern unsigned int TIM6EN;
+extern unsigned int TIM15EN;
+extern unsigned int I2C1EN;
+
+typedef struct Rcc {
     unsigned int* cr;
     unsigned int* cfgr;
     unsigned int* cir;

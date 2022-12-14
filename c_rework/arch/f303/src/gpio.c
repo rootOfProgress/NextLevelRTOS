@@ -3,7 +3,8 @@
 
 void init_gpio(GpioActions_t* gpio_actions)
 {
-    Rcc_t* rcc_regs = (Rcc_t*) BASE_ADRESS;
+    Rcc_t* rcc_regs = (Rcc_t*) RCC_BASE_ADRESS;
+
     switch (gpio_actions->gpio_object->port)
     {
     case 'A':
