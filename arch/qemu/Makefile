@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 INC = -Iinclude
 
-CFLAGS = -O2  \
+CFLAGS = -O3  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 

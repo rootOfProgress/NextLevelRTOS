@@ -1,10 +1,7 @@
 #include "uart.h"
 #include "rcc.h"
 
-unsigned int UE = 0;
-unsigned int RE = 2;
-unsigned int TE = 3;
-unsigned int RXNEIE = 5;
+
 
 void init_uart(void)
 {

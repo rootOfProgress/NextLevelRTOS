@@ -155,7 +155,7 @@ void  deallocate(unsigned int* address) {
     }
 }
 
-void update_statistic(void)
+void __attribute__ ((cold)) update_statistic(void)
 {
     mstat->total_byte_alloced = 0;
     // count alloced spaces

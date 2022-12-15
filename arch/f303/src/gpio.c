@@ -1,5 +1,7 @@
 #include "gpio.h"
 #include "rcc.h"
+#include "lang.h"
+
 
 void init_gpio(GpioActions_t* gpio_actions)
 {
@@ -8,17 +10,20 @@ void init_gpio(GpioActions_t* gpio_actions)
     switch (gpio_actions->gpio_object->port)
     {
     case 'A':
-        *(rcc_regs->ahbenr) = *(rcc_regs->ahbenr) | 17;
-        gpio_actions->gpio_object->base_adress = GPIO_A_BASE;
+        WRITE_REGISTER(rcc_regs->ahbenr, READ_REGISTER(rcc_regs->ahbenr) | 17);
+        gpio_actions->gpio_object->base_adress = (unsigned int*) GPIO_A_BASE;
         break;
     case 'B':
-        *(rcc_regs->ahbenr) = *(rcc_regs->ahbenr) | 18;
+        WRITE_REGISTER(rcc_regs->ahbenr, READ_REGISTER(rcc_regs->ahbenr) | 18);
+        gpio_actions->gpio_object->base_adress = (unsigned int*) GPIO_B_BASE;
         break;   
     case 'C':
-        *(rcc_regs->ahbenr) = *(rcc_regs->ahbenr) | 19;
+        WRITE_REGISTER(rcc_regs->ahbenr, READ_REGISTER(rcc_regs->ahbenr) | 19);
+        gpio_actions->gpio_object->base_adress = (unsigned int*) GPIO_C_BASE;
         break;  
     case 'D':
-        *(rcc_regs->ahbenr) = *(rcc_regs->ahbenr) | 20;
+        WRITE_REGISTER(rcc_regs->ahbenr, READ_REGISTER(rcc_regs->ahbenr) | 20);
+        gpio_actions->gpio_object->base_adress = (unsigned int*) GPIO_D_BASE;
         break;  
     default:
         break;
@@ -29,14 +34,23 @@ void init_gpio(GpioActions_t* gpio_actions)
 
 void toggle_output_pin(GpioObject_t* t)
 {
+    Gpio_t* gpio_regs;
     switch (t->port)
     {
     case 'A':
-        Gpio_t* gpio_regs = (Gpio_t*) GPIO_A_BASE;
-        *gpio_regs->odr = *gpio_regs->odr & ~(1 << t->port);
+        gpio_regs = (Gpio_t*) ((unsigned int*) GPIO_A_BASE);
         break;
-    
+    case 'B':
+        gpio_regs = (Gpio_t*) ((unsigned int*) GPIO_B_BASE);
+        break;   
+    case 'C':
+        gpio_regs = (Gpio_t*) ((unsigned int*) GPIO_C_BASE);
+        break;  
+    case 'D':
+        gpio_regs = (Gpio_t*) ((unsigned int*) GPIO_D_BASE);
+        break; 
     default:
-        break;
+        return;
     }
+    WRITE_REGISTER(gpio_regs->odr, READ_REGISTER(gpio_regs->odr) & ~(1 << t->port));
 }

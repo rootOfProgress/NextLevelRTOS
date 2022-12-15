@@ -7,9 +7,10 @@
 
 unsigned int read_data_register(void);
 // extern void __attribute__((interrupt)) __attribute__ ((always_inline)) uart_isr_handler(void);
-void init_uart(void);
 void init_isr(void);
-
+extern void init_uart(void);
+extern void print(char*,unsigned int);
+extern void print_char(char c);
 #define magic 0x123456
 
 typedef enum {

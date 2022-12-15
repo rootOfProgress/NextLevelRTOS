@@ -50,6 +50,8 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         break;
     case TRANSFER_TASK_BYTES:
         os_memcpy(p++, read_data_register());
+        print("foobar", 6);
+        print((char*) &tInfo->start_adress, sizeof(unsigned int));
         if (++bufferIndex == tInfo->task_size)
         {
             deallocate((unsigned int*) tInfo);

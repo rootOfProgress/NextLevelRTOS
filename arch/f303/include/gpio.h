@@ -2,7 +2,10 @@
 #define GPIO_H
 #include "baseadresses.h"
 
-const unsigned int* GPIO_A_BASE = (unsigned int*) 0x48000000;
+#define GPIO_A_BASE 0x48000000
+#define GPIO_B_BASE 0x48000400
+#define GPIO_C_BASE 0x48000800
+#define GPIO_D_BASE 0x48001000
 
 typedef struct Gpio {
     unsigned int* moder;

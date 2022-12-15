@@ -28,23 +28,22 @@ void setup_nvic_controller()
 }
 
 
-static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) stat(void)
+static void __attribute__((__noipa__)) stat(void)
 {
-  // __trap(YIELD_TASK, 0);
   while (1) {
     update_statistic();
     SV_YIELD_TASK;
   };
 }
 
-static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) hans(void)
+static void __attribute__((__noipa__)) hans(void)
 {
   while (1) {
     SV_YIELD_TASK;
   };
 }
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) wurst(void)
+static void __attribute__((__noipa__)) wurst(void)
 {
   while (1) {
     SV_YIELD_TASK;
@@ -77,6 +76,7 @@ int main_init(void)
     // do_selfcheck_main();
     // do_selfcheck_svc();
   #endif
+  print("hello\n\r",7);
   // GpioActions_t *t = (GpioActions_t*) allocate(sizeof(GpioActions_t));
   // t->gpio_object = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   

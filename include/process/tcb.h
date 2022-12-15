@@ -7,7 +7,6 @@ typedef enum {
     FINISHED
 } TaskState_t;
 
-
 typedef struct Tcb {
     unsigned int pid;
     unsigned int sp;

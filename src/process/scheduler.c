@@ -20,7 +20,7 @@ void insert_scheduled_task(Tcb_t* tcb)
 }
 
 
-void policy_round_robin(void)
+void __attribute__ ((hot)) policy_round_robin(void)
 {   
     if (!currently_running)
     {
@@ -55,13 +55,12 @@ void run_scheduler(void)
 }
 
 
-void PendSV(void)
+void __attribute__ ((hot)) PendSV(void)
 {
-    // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVClear;
-    __asm__("mrs %0, psp" : "=r"(((Tcb_t*) currently_running->data)->sp));
+    __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) currently_running->data)->sp));
     switch_task();
-    __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
-    __asm (
+    __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
+    __asm volatile (
       "LDMFD r2!, {r4-r11}\n"
       "MSR PSP, r2\n"
     );
