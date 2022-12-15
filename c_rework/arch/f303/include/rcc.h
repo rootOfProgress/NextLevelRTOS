@@ -30,6 +30,6 @@ typedef struct Rcc {
     unsigned int* ahbrstr;
     unsigned int* cfgr2;
     unsigned int* cfgr3;
-} Rcc_t;
+} RccRegisterMap_t;
 
 #endif
