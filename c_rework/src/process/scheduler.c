@@ -57,25 +57,16 @@ void run_scheduler(void)
 
 void PendSV(void)
 {
-    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVClear;
-    unsigned int old_sp;
-    unsigned int new_sp;
-    
-    __asm__("mrs r2, psp");
-    __asm__("mov %0, r2" : "=r"(old_sp));
-    ((Tcb_t*) currently_running->data)->sp = old_sp;
+    // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVClear;
+    __asm__("mrs %0, psp" : "=r"(((Tcb_t*) currently_running->data)->sp));
     switch_task();
-    __asm__("mov lr, 0xFFFFFFFD");
-    new_sp = ((Tcb_t*) currently_running->data)->sp;
-
-    __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (new_sp));
+    __asm__ volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm (
-      "TST lr, #4\n"
-      "ITT NE\n"
-      "LDMFDNE r2!, {r4-r11}\n"
-      "MSRNE PSP, r2\n"
-    ) ;
+      "LDMFD r2!, {r4-r11}\n"
+      "MSR PSP, r2\n"
+    );
 }
+
 
 void remove_scheduled_task(void)
 {
@@ -86,9 +77,7 @@ void remove_scheduled_task(void)
     deallocate(t);
 
     dequeue_element(task_queue, currently_running);
-    
-    currently_running = NULL;
-    currently_running = (Node_t*) get_head_element(task_queue);
+    switch_task();
 
     svc(EXEC_PSP_TASK);
 }

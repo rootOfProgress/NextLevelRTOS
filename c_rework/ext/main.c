@@ -4,9 +4,5 @@
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O2"))) main(void)
 {
-    while (1)
-    {
-        /* code */
-    }
-    
+    *((unsigned int*) 0x20002000) = 0xabcd1234;    
 }

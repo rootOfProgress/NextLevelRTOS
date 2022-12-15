@@ -39,7 +39,7 @@ void SVC_Handler(void)
 {
 
 }
-void __attribute__((optimize("O2"))) SVCall()
+void /* __attribute__((optimize("O2"))) */ SVCall()
 {
   __asm (
     "TST lr, #4\n"
