@@ -19,7 +19,6 @@ move_objects_to_main:
 move_objects:
 	mv ./*.o ./build
 
-
 compile_c: $(SRC)
 	$(CC) $(CFLAGS) $(INC) $^ -c 
 
