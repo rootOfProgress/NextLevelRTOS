@@ -3,12 +3,14 @@
 #include "memory.h"
 
 Queue_t* task_queue = NULL;
+Queue_t* low_priority_tasks = NULL;
 Node_t* currently_running = NULL;
 void (*switch_task)();
 
 void init_scheduler(void)
 {
     task_queue = new_queue();
+    low_priority_tasks = new_queue();
     switch_task = policy_round_robin;
 }
 
