@@ -11,6 +11,12 @@
                                 " SVC \#0"::[immediate] "I" (code) \
                                  : "r6")
 
+#define SV_EXEC_PSP_TASK __asm volatile ("mov r6, 0\n" \
+                                  "svc 0\n")
+
+#define SV_YIELD_TASK __asm volatile ("mov r6, 1\n" \
+                                  "svc 0\n")
+
 typedef enum {
     RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
     RET_MSP_THREAD_NOFP = 0xFFFFFFF9,

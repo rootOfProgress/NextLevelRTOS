@@ -94,7 +94,7 @@ void create_task(void (*task_function)(), unsigned int ram_location)
 
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
     tcb->pid = task_queue->size;
-    tcb->sp = &cpu_register->r4;
+    tcb->sp = (unsigned int) &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
     tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
     tcb->code_section = ram_location;

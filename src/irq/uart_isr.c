@@ -16,7 +16,7 @@ void init_isr(void)
     bufferIndex = 0;
 }
 
-void __attribute__((interrupt)) __attribute__ ((always_inline)) uart_isr_handler(void)
+void __attribute__((interrupt)) uart_isr_handler(void)
 {
     switch (state)
     {

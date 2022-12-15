@@ -15,11 +15,6 @@
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
 // }
 
-void enable_usart_cpu_irq()
-{
-  *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 0x1 << 5;
-}
-
 void setup_nvic_controller()
 {
   // mask exti0 on line 6
@@ -32,60 +27,27 @@ void setup_nvic_controller()
   *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
 }
 
-// void enable_device_interrupts()
-// {
-//   WRITE_REGISTER(0xFFFC8040, READ_REGISTER(0xFFFC8040) | (0x3 << 8));;
-// }
-
-void idle()
-{
-  // __trap(YIELD_TASK, 0);
-  // while (1) {
-    // svc(1);
-  // };
-}
 
 static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) stat(void)
 {
   // __trap(YIELD_TASK, 0);
   while (1) {
     update_statistic();
-    svc(1);
+    SV_YIELD_TASK;
   };
 }
 
 static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) hans(void)
 {
-  // __trap(YIELD_TASK, 0);
   while (1) {
-    svc(1);
+    SV_YIELD_TASK;
   };
-}
-
-static void __attribute__((__noipa__)) __attribute__((optimize("O2"))) fritz(void)
-{
-  // __trap(YIELD_TASK, 0);
-  while (1) {
-    svc(1);
-  };
-}
-
-int __attribute__((__noipa__))  __attribute__((optimize("O0"))) dofoo(int n)
-{
-  while (1)
-  {
-    /* code */
-  }
-  
-  // return dofoo(n + 1);
 }
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) wurst(void)
 {
-  // __trap(YIELD_TASK, 0);
   while (1) {
-    // create_task(&idle);
-    svc(1);
+    SV_YIELD_TASK;
   };
 }
 
@@ -131,7 +93,6 @@ int main_init(void)
   create_task(&wurst, 0);
   init_isr();
   init_uart();
-  enable_usart_cpu_irq();
   run_scheduler();
 
   

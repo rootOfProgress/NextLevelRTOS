@@ -2,6 +2,8 @@
 
 void init_uart(void){
     *((unsigned int*) USART1_CR) = *((unsigned int*) USART1_CR) | 0x1 << UE | 0x1 << RXNEIE | 0x1 << RE | 0x1 << TE;
+    *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 0x1 << 5;
+
 }
 
 unsigned int read_data_register(void)

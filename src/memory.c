@@ -5,7 +5,7 @@
 
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
-const NUM_OF_SLOTS = 60;
+const unsigned int NUM_OF_SLOTS = 60;
 
 MemoryStatistic_t *mstat = NULL;
 
@@ -125,7 +125,7 @@ void init_allocator(unsigned int start_os_section) {
     USEABLE_MEM_START= MEM_TABLE_START + NUM_OF_SLOTS;
 
     // todo
-    for (int index = 0; index < NUM_OF_SLOTS; index += 1)
+    for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)
     {
         // unsigned int foo = *(MEM_TABLE_START + index);
         *(MEM_TABLE_START + index) = 0x0000FFFE;
@@ -159,7 +159,7 @@ void update_statistic(void)
 {
     mstat->total_byte_alloced = 0;
     // count alloced spaces
-    for (int index = 0; index < NUM_OF_SLOTS; index += 1)
+    for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)
     {
         unsigned int entry = *(MEM_TABLE_START + index);
         if ((entry & 1) == 1)

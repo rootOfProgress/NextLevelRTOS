@@ -51,7 +51,7 @@ void run_scheduler(void)
         return;
 
     currently_running = (Node_t*) get_head_element(task_queue);
-    svc(EXEC_PSP_TASK);
+    SV_EXEC_PSP_TASK;
 }
 
 
@@ -71,13 +71,13 @@ void PendSV(void)
 void remove_scheduled_task(void)
 {
     Tcb_t* t = (Tcb_t*) currently_running->data;
-    deallocate(t->memory_lower_bound);
+    deallocate((unsigned int*) t->memory_lower_bound);
     if (t->code_section != 0)
-        deallocate(t->code_section);
-    deallocate(t);
+        deallocate((unsigned int*) t->code_section);
+    deallocate((unsigned int*) t);
 
     dequeue_element(task_queue, currently_running);
     switch_task();
 
-    svc(EXEC_PSP_TASK);
+    SV_EXEC_PSP_TASK;
 }
