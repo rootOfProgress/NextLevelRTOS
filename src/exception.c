@@ -35,10 +35,6 @@ void do_selfcheck_svc()
 }
 #endif
 
-void SVC_Handler(void)
-{
-
-}
 void __attribute__ ((hot)) SVCall()
 {
   __asm (
@@ -69,6 +65,15 @@ void __attribute__ ((hot)) SVCall()
     __asm__("msr psp, r0"); // move r0 value to psp
     break;
   case YIELD_TASK:
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    break;
+  case YIELD_TASK_BLOCK:
+    ((Tcb_t*)currently_running->data)->task_state = WAITING;
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    break;
+  // needs args
+  case PRINT:
+    wakeup_pid(0);
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   default:

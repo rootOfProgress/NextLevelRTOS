@@ -19,6 +19,7 @@ void init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);
 void run_scheduler(void);
+void wakeup_pid(unsigned int);
 void load_task(void);
 
 #endif

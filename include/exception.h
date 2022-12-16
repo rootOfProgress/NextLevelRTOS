@@ -11,11 +11,19 @@
                                 " SVC \#0"::[immediate] "I" (code) \
                                  : "r6")
 
+
 #define SV_EXEC_PSP_TASK __asm volatile ("mov r6, 0\n" \
                                   "svc 0\n")
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 1\n" \
                                   "svc 0\n")
+
+#define SV_YIELD_TASK_BLOCK __asm volatile ("mov r6, 2\n" \
+                                  "svc 0\n")
+
+#define SV_PRINT __asm volatile ("mov r6, 3\n" \
+                                  "svc 0\n")
+
 
 typedef enum {
     RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
@@ -25,6 +33,8 @@ typedef enum {
 typedef enum {
     EXEC_PSP_TASK = 0,
     YIELD_TASK,
+    YIELD_TASK_BLOCK,
+    PRINT,
     RESET
 } TrapType_t;
 
