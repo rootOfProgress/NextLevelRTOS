@@ -32,6 +32,7 @@
     "type_traits": "c",
     "utility": "c",
     "variant": "c",
-    "system_error": "c"
+    "system_error": "c",
+    "lang.h": "c"
   }
 }

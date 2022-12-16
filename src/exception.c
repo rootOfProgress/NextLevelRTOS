@@ -35,8 +35,19 @@ void do_selfcheck_svc()
 }
 #endif
 
+void __attribute__((__noipa__))  __attribute__((optimize("O0")))  SysTick()
+{
+  while (1)
+  {
+    /* code */
+  }
+  
+
+}
+
 void __attribute__ ((hot)) SVCall()
 {
+  disable_systick();
   __asm (
     "TST lr, #4\n"
     "ITTT NE\n"
@@ -74,11 +85,10 @@ void __attribute__ ((hot)) SVCall()
   // needs args
   case PRINT:
     wakeup_pid(0);
-    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   default:
     break;
   }
-
-
+  enable_systick();
 }

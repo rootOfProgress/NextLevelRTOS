@@ -11,6 +11,29 @@ extern Queue_t* task_queue;
 extern Node_t* currently_running;
 extern void (*switch_task)();
 
+static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
+{
+    Node_t *q = currently_running;
+    while (1)
+    {
+        if (((Tcb_t*)q->data)->pid == pid)
+        {
+            ((Tcb_t*)q->data)->task_state = READY;
+            return;
+        }
+        q = q->next;
+    }
+    
+    for (unsigned int j = 0; j < task_queue->size; j++)
+    {
+        currently_running = currently_running->next;
+        Tcb_t* n = (Tcb_t*) currently_running->data;
+        if (n->task_state == READY)
+            return;
+    }
+
+}
+
 void next_task(void);
 void policy_round_robin(void);
 void remove_current_task(void);

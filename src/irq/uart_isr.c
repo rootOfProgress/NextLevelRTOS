@@ -18,7 +18,7 @@ void init_transfer_handler(void)
     transfer_list = (List_t*) new_list();
 }
 
-void setup_transfer(char* address, unsigned int length)
+void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length)
 {
     if (transfer_list->size > 10)
         return;
@@ -30,8 +30,9 @@ void setup_transfer(char* address, unsigned int length)
     t->length = length;
     push(transfer_list, (void*) t);
 
-    if (transfer_list->size == 0)
-        SV_PRINT;
+    // @buggy
+    // if (transfer_list->size > 5)
+        // SV_PRINT
 }
 
 void __attribute__((optimize("O0"))) transfer_handler(void)
@@ -51,7 +52,8 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         }
         else
         {
-            SV_YIELD_TASK_BLOCK;
+            // transfer_list->size = -1;
+            // SV_YIELD_TASK_BLOCK;
         }
         SV_YIELD_TASK;
     }
