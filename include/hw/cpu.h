@@ -32,7 +32,7 @@ typedef enum {
     PendSVSet = 28,
 } Icsr_t;
 
-#define SCB 0xE000ED00
+// #define SCB 0xE000ED00
 #define STK 0xE000E010
 
 #define CTRL 0x00
@@ -41,10 +41,10 @@ typedef enum {
 #define CALIB 0x0C
 
 typedef struct Systick {
-    unsigned int ctrl;
-    unsigned int load;
-    unsigned int val;
-    unsigned int calib;
+    unsigned int* ctrl;
+    unsigned int* load;
+    unsigned int* val;
+    unsigned int* calib;
 } SystickRegisters_t;
 
 static inline __attribute__((always_inline)) void enable_systick(void)

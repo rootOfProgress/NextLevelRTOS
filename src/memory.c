@@ -2,6 +2,7 @@
 #include "lang.h"
 #include "test.h"
 #include "process/scheduler.h"
+#include "devices/uart.h"
 
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
@@ -172,7 +173,7 @@ void __attribute__ ((cold)) update_statistic(void)
             Tcb_t* t = q->data;
             mstat->total_byte_used = t->memory_upper_bound - t->sp;
     } while (q != task_queue->head);
-    
+    setup_transfer((char*) mstat, sizeof(MemoryStatistic_t));
 }
 
 unsigned int* allocate(unsigned int size) {
