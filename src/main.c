@@ -30,6 +30,7 @@ void setup_nvic_controller()
 
 static void __attribute__((__noipa__)) stat(void)
 {
+  SV_ALLOC(sizeof(unsigned int));
   while (1) {
     update_statistic();
     SV_YIELD_TASK;

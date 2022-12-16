@@ -4,6 +4,7 @@
 // #include "uart.h"
 #include "hw/cpu.h"
 #include "process/task.h"
+#include "memory.h"
 #include "test.h"
 #include "process/scheduler.h"
 
@@ -48,7 +49,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
 // void __attribute__((__noipa__)) __attribute__((optimize("O2"))) SVCall()
 {
-  disable_systick();
+  // disable_systick();
   __asm (
     "TST lr, #4\n"
     "ITTT NE\n"
@@ -86,8 +87,9 @@ void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
     break;
   // needs args
   case ALLOCATE:
-    TaskInformation_t* t;
-    __asm__("mov %0, r8" : "=r"(t));
+    unsigned int size;
+    __asm__("mov %0, r8" : "=r"(size));
+    unsigned int address = allocate_process(size, ((Tcb_t*)currently_running->data)->memory_lower_bound);
     // __asm volatile("mov %0, r8" : "=r"(svc_number));
     // wakeup_pid(0);
     
@@ -96,5 +98,5 @@ void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
   default:
     break;
   }
-  enable_systick();
+  // enable_systick();
 }

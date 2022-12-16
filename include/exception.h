@@ -25,6 +25,11 @@
                                   "svc 0\n")
 
 
+#define SV_ALLOC(code) asm volatile ("mov r6, 4\n"\
+                                "mov r8, %[immediate]\n" \
+                                " SVC \#0"::[immediate] "I" (code) \
+                                 : "r8")
+
 typedef enum {
     RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
     RET_MSP_THREAD_NOFP = 0xFFFFFFF9,
