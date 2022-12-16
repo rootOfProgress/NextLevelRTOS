@@ -5,6 +5,7 @@
 
 Queue_t* task_queue = NULL;
 Queue_t* low_priority_tasks = NULL;
+Queue_t* waiting_tasks = NULL;
 Node_t* currently_running = NULL;
 void (*switch_task)();
 
@@ -12,6 +13,7 @@ void init_scheduler(void)
 {
     task_queue = new_queue();
     low_priority_tasks = new_queue();
+    waiting_tasks = new_queue();
     switch_task = policy_round_robin;
 }
 
@@ -66,31 +68,6 @@ void __attribute__ ((hot)) PendSV(void)
       "MSR PSP, r2\n"
     );
 }
-
-
-// void wakeup_pid(unsigned int pid)
-// {
-//     Node_t *q = currently_running;
-//     while (1)
-//     {
-//         if (((Tcb_t*)q->data)->pid == pid)
-//         {
-//             ((Tcb_t*)q->data)->task_state = READY;
-//             return;
-//         }
-//         q = q->next;
-//     }
-    
-//     for (unsigned int j = 0; j < task_queue->size; j++)
-//     {
-//         currently_running = currently_running->next;
-//         Tcb_t* n = (Tcb_t*) currently_running->data;
-//         if (n->task_state == READY)
-//             return;
-//     }
-
-// }
-
 void remove_scheduled_task(void)
 {
     Tcb_t* t = (Tcb_t*) currently_running->data;

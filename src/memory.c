@@ -173,7 +173,8 @@ void __attribute__ ((cold)) update_statistic(void)
             Tcb_t* t = q->data;
             mstat->total_byte_used = t->memory_upper_bound - t->sp;
     } while (q != task_queue->head);
-    setup_transfer((char*) mstat, sizeof(MemoryStatistic_t));
+    // setup_transfer((char*) mstat, sizeof(MemoryStatistic_t));
+
 }
 
 unsigned int* allocate(unsigned int size) {
