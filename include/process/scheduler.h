@@ -9,6 +9,7 @@ extern void __trap(TrapType_t, unsigned int);
 
 extern Queue_t* task_queue;
 extern Node_t* currently_running;
+extern Queue_t* waiting_tasks;
 extern void (*switch_task)();
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
@@ -31,7 +32,12 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
         if (n->task_state == READY)
             return;
     }
+}
 
+static inline __attribute__((always_inline)) void move_to_waiting(void)
+{
+    Node_t* old_element = dequeue_element(task_queue, currently_running);
+    enqueue_node(waiting_tasks, old_element);    
 }
 
 void next_task(void);
@@ -43,6 +49,7 @@ void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);
 void run_scheduler(void);
 void wakeup_pid(unsigned int);
+void move_to_waiting(void);
 void load_task(void);
 
 #endif

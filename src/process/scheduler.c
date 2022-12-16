@@ -68,15 +68,34 @@ void __attribute__ ((hot)) PendSV(void)
       "MSR PSP, r2\n"
     );
 }
+
+// void move_to_waiting(void)
+// {
+//     Node_t* old_element = dequeue_element(task_queue, currently_running);
+//     enqueue_node(waiting_tasks, old_element);
+// }
+
 void remove_scheduled_task(void)
 {
     Tcb_t* t = (Tcb_t*) currently_running->data;
-    deallocate((unsigned int*) t->memory_lower_bound);
-    if (t->code_section != 0)
-        deallocate((unsigned int*) t->code_section);
-    deallocate((unsigned int*) t);
+    if (!deallocate((unsigned int*) t->memory_lower_bound))
+        invoke_panic(MEMORY_DEALLOC_FAILED);
 
-    dequeue_element(task_queue, currently_running);
+
+    if (t->code_section != 0)
+    {
+        if (!deallocate((unsigned int*) t->code_section))
+            invoke_panic(MEMORY_DEALLOC_FAILED);
+    }
+    
+    if (!deallocate((unsigned int*) t))
+        invoke_panic(MEMORY_DEALLOC_FAILED);
+
+    Node_t* old_element = dequeue_element(task_queue, currently_running);
+
+    if (!deallocate((unsigned int*) old_element))
+        invoke_panic(MEMORY_DEALLOC_FAILED);
+
     switch_task();
 
     SV_EXEC_PSP_TASK;

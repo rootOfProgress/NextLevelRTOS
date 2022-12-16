@@ -118,6 +118,15 @@ void swap_endianess(char* buffer)
     *(buffer+3) = tmp;
 }
 
+void init_process_allocator(unsigned int* memtable_start)
+{
+    for (unsigned int index = 0; index < 10; index += 1)
+    {
+        // unsigned int foo = *(MEM_TABLE_START + index);
+        *(memtable_start + index) = 0x0000FFFE;
+    }    
+}
+
 void init_allocator(unsigned int start_os_section) {
     while (start_os_section % 4 != 0) {
         start_os_section += 1;

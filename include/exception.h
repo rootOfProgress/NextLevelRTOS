@@ -35,6 +35,7 @@ typedef enum {
     YIELD_TASK,
     YIELD_TASK_BLOCK,
     PRINT,
+    ALLOCATE,
     RESET
 } TrapType_t;
 

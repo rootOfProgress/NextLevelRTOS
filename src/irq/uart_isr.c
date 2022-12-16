@@ -2,6 +2,7 @@
 #include "data/list.h"
 #include "memory.h"
 #include "exception.h"
+#include "process/scheduler.h"
 #include "panic.h"
 
 UartStates_t state;
@@ -52,6 +53,8 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         }
         else
         {
+            // move_to_waiting();
+         
             // transfer_list->size = -1;
             // SV_YIELD_TASK_BLOCK;
         }

@@ -35,7 +35,7 @@ void do_selfcheck_svc()
 }
 #endif
 
-void __attribute__((__noipa__))  __attribute__((optimize("O0")))  SysTick()
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 {
   while (1)
   {
@@ -45,7 +45,8 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0")))  SysTick()
 
 }
 
-void __attribute__ ((hot)) SVCall()
+void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
+// void __attribute__((__noipa__)) __attribute__((optimize("O2"))) SVCall()
 {
   disable_systick();
   __asm (
@@ -79,12 +80,17 @@ void __attribute__ ((hot)) SVCall()
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   case YIELD_TASK_BLOCK:
+    // move_to_waiting();
     ((Tcb_t*)currently_running->data)->task_state = WAITING;
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   // needs args
-  case PRINT:
-    wakeup_pid(0);
+  case ALLOCATE:
+    TaskInformation_t* t;
+    __asm__("mov %0, r8" : "=r"(t));
+    // __asm volatile("mov %0, r8" : "=r"(svc_number));
+    // wakeup_pid(0);
+    
     // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   default:
