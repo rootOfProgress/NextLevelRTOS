@@ -1,6 +1,7 @@
 #include "process/scheduler.h"
 #include "hw/cpu.h"
 #include "memory.h"
+#include "panic.h"
 
 Queue_t* task_queue = NULL;
 Queue_t* low_priority_tasks = NULL;
@@ -48,7 +49,7 @@ void run_scheduler(void)
 {
     // get task
     if (!task_queue)
-        return;
+        invoke_panic(SCHEDULER_NOT_INITIALIZED);
 
     currently_running = (Node_t*) get_head_element(task_queue);
     SV_EXEC_PSP_TASK;

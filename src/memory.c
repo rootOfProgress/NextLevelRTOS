@@ -141,7 +141,7 @@ void init_allocator(unsigned int start_os_section) {
     #endif
 }
 
-void  deallocate(unsigned int* address) {
+unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
     // return;
     unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index++)
@@ -150,9 +150,10 @@ void  deallocate(unsigned int* address) {
         if ((alloc_entry >> 16) == address_offset) {
             mstat->num_of_deallocs++;
             *(MEM_TABLE_START + index) = alloc_entry & ~1;
-            return;
+            return 1;
         }
     }
+    return 0;
 }
 
 void __attribute__ ((cold)) update_statistic(void)

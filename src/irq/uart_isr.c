@@ -1,13 +1,60 @@
 #include "devices/uart.h"
-
+#include "data/list.h"
+#include "memory.h"
+#include "exception.h"
+#include "panic.h"
 
 UartStates_t state;
 TaskInformation_t *tInfo = NULL;
+List_t *transfer_list = NULL;
 unsigned int in_buffer = 0;
 unsigned int byte_in_id;
 unsigned int bufferIndex;
 char buffer[16];
 char *p;
+
+void init_transfer_handler(void)
+{
+    transfer_list = (List_t*) new_list();
+}
+
+void setup_transfer(char* address, unsigned int length)
+{
+    if (transfer_list->size > 10)
+        return;
+    TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
+    if (!t)
+        invoke_panic(OUT_OF_MEMORY);
+    
+    t->start_adress = address;
+    t->length = length;
+    push(transfer_list, (void*) t);
+}
+
+void __attribute__((optimize("O0"))) transfer_handler(void)
+{
+    SingleLinkedNode_t* node;
+    init_transfer_handler();
+    while (1)
+    {
+        if ((node = pop(transfer_list))/*  != NULL */)
+        {
+            TransferInfo_t* transfer = (TransferInfo_t*) node->data;
+            print(transfer->start_adress, transfer->length);
+            if (deallocate((unsigned int*) transfer) == 0)
+                invoke_panic(MEMORY_DEALLOC_FAILED);
+            if (deallocate((unsigned int*) node) == 0)
+                invoke_panic(MEMORY_DEALLOC_FAILED);
+            // do transfer
+        }
+        else
+        {
+            // block self
+        }
+        SV_YIELD_TASK;
+    }
+    
+}
 
 void init_isr(void)
 {
@@ -40,9 +87,14 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         if (bufferIndex == 8)
         {
             tInfo = (TaskInformation_t*) allocate(sizeof(TaskInformation_t));
+            if (!tInfo)
+                invoke_panic(OUT_OF_MEMORY);
             swap(buffer);
             tInfo->task_size = *((unsigned int*) buffer); 
             tInfo->start_adress = (char*) allocate(tInfo->task_size); 
+            
+            if (!tInfo->start_adress)
+                invoke_panic(OUT_OF_MEMORY);
             state = TRANSFER_TASK_BYTES;
             bufferIndex = 0;
             p = tInfo->start_adress;
@@ -50,8 +102,8 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         break;
     case TRANSFER_TASK_BYTES:
         os_memcpy(p++, read_data_register());
-        print("foobar", 6);
-        print((char*) &tInfo->start_adress, sizeof(unsigned int));
+        // setup_transfer(&"foobar", 6);
+        setup_transfer("foobar!\n\r", 9);
         if (++bufferIndex == tInfo->task_size)
         {
             deallocate((unsigned int*) tInfo);

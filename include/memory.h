@@ -23,7 +23,7 @@ typedef struct MemoryStatistic {
 unsigned int* allocate(unsigned int);
 unsigned int* allocateR(unsigned int,unsigned int,unsigned int);
 void update_statistic(void);
-void deallocate(unsigned int*);
+unsigned int deallocate(unsigned int*);
 void init_allocator(unsigned int);
 void swap(char*);
 

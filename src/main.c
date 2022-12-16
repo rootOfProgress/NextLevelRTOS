@@ -76,7 +76,6 @@ int main_init(void)
     // do_selfcheck_main();
     // do_selfcheck_svc();
   #endif
-  print("hello\n\r",7);
   // GpioActions_t *t = (GpioActions_t*) allocate(sizeof(GpioActions_t));
   // t->gpio_object = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   
@@ -88,6 +87,7 @@ int main_init(void)
 
 
   init_scheduler();
+  create_task(&transfer_handler, 0);
   create_task(&hans, 0);
   create_task(&stat, 0);
   create_task(&wurst, 0);

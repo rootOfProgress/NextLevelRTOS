@@ -10,8 +10,19 @@ unsigned int read_data_register(void);
 void init_isr(void);
 extern void init_uart(void);
 extern void print(char*,unsigned int);
+void setup_transfer(char*, unsigned int);
 extern void print_char(char c);
+
+void init_transfer_handler(void);
+void transfer_handler(void);
+
+
 #define magic 0x123456
+
+typedef struct transfer {
+    void* start_adress;
+    unsigned int length;
+} TransferInfo_t;
 
 typedef enum {
     RX_READY = 0x0,

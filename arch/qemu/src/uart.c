@@ -22,7 +22,7 @@ void print(char* src, unsigned int length)
 {
     for (unsigned int i = 0; i < length; i++)
     {
-        WRITE_REGISTER(USART1_DR,(*src));
+        WRITE_REGISTER(USART1_DR,*src);
         while (!((READ_REGISTER(USART1_SR) & 0x80) != 0));
         src++;
     }
