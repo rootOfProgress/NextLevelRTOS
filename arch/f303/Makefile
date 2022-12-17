@@ -17,7 +17,6 @@ move_objects_to_main:
 	cp ./build/*.o ../../build
 
 move_objects:
-	mkdir ./build
 	mv ./*.o ./build
 
 

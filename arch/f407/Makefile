@@ -17,7 +17,6 @@ move_objects_to_main:
 	mv ./build/*.o ../../build
 
 move_objects:
-	mkdir ./build
 	mv ./*.o ./build
 
 compile_c: $(SRC)
