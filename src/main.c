@@ -85,7 +85,7 @@ int main_init(void)
   // init_gpio(t);
   // toggle_output_pin(t);
 
-
+  SV_ALLOC(4);
   //init_systick(1000);
   init_scheduler();
   create_task(&transfer_handler, 0);
