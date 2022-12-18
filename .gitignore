@@ -1,2 +1,3 @@
 build/
-virt/qemu-system-arm
+!build/Makefile
+virt/
