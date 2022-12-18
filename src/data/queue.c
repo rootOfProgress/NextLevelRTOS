@@ -1,6 +1,7 @@
 #include "data/queue.h"
 #include "memory.h"
 #include "lang.h"
+#include "panic.h"
 
 #ifdef SELF_CHECK
 void queue_selfcheck(void)
@@ -61,9 +62,7 @@ Queue_t* new_queue(void)
 {
     Queue_t* queue = (Queue_t*) allocate(sizeof(Queue_t));
     if (queue == NULL)
-    {
-        // error
-    }
+        invoke_panic(OUT_OF_MEMORY);
     queue->size = 0;
     queue->head = NULL;
     queue->tail = NULL;
@@ -73,7 +72,7 @@ Queue_t* new_queue(void)
 
 
 // @ todo: does not work yet?
-void dequeue_element(Queue_t* queue, Node_t* currently_running)
+Node_t* dequeue_element(Queue_t* queue, Node_t* currently_running)
 {
     Node_t* q = currently_running;
     if (currently_running == queue->head)
@@ -93,8 +92,11 @@ void dequeue_element(Queue_t* queue, Node_t* currently_running)
         currently_running->next->prev = currently_running->prev;
     }
     // @todo untested!!
-    deallocate((unsigned int*) q);
+    // deallocate((unsigned int*) q);
     queue->size--;
+    q->next = NULL;
+    q->prev = NULL;
+    return q;
 }
 
 Node_t* get_head_element(Queue_t* queue)
@@ -102,13 +104,37 @@ Node_t* get_head_element(Queue_t* queue)
     return queue->head;
 }
 
+void enqueue_node(Queue_t* queue, Node_t* new_node)
+{
+    if (!new_node)
+        invoke_panic(ACCESS_ON_NULL);
+
+    if (queue->size == 0)
+    {
+        new_node->next = new_node;
+        new_node->prev = new_node;
+        queue->tail = new_node;
+        queue->head = new_node;
+    }
+    else
+    {
+        // @todo: update head nodes prev to tail!
+        new_node->prev = queue->tail;
+        new_node->next = queue->head;
+        queue->tail->next = new_node;
+        queue->tail = new_node;
+        queue->head->prev = queue->tail;
+    }
+    queue->size++;
+}
+
 void enqueue_element(Queue_t* queue, void* data)
 {
     Node_t* new_node = (Node_t*) allocate(sizeof(Node_t));
+
     if (new_node == NULL)
-    {
-        // error
-    }
+        invoke_panic(OUT_OF_MEMORY);
+        
     new_node->next = NULL;
     new_node->data = data;
 

@@ -4,6 +4,7 @@
 // #include "uart.h"
 #include "hw/cpu.h"
 #include "process/task.h"
+#include "memory.h"
 #include "test.h"
 #include "process/scheduler.h"
 
@@ -35,12 +36,20 @@ void do_selfcheck_svc()
 }
 #endif
 
-void SVC_Handler(void)
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 {
+  while (1)
+  {
+    /* code */
+  }
+  
 
 }
-void __attribute__ ((hot)) SVCall()
+
+void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
+// void __attribute__((__noipa__)) __attribute__((optimize("O2"))) SVCall()
 {
+  // disable_systick();
   __asm (
     "TST lr, #4\n"
     "ITTT NE\n"
@@ -71,9 +80,23 @@ void __attribute__ ((hot)) SVCall()
   case YIELD_TASK:
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
+  case YIELD_TASK_BLOCK:
+    // move_to_waiting();
+    ((Tcb_t*)currently_running->data)->task_state = WAITING;
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    break;
+  // needs args
+  case ALLOCATE:
+    unsigned int size;
+    __asm__("mov %0, r8" : "=r"(size));
+    unsigned int address = allocate_process(size, ((Tcb_t*)currently_running->data)->memory_lower_bound);
+    // __asm volatile("mov %0, r8" : "=r"(svc_number));
+    // wakeup_pid(0);
+    
+    // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    break;
   default:
     break;
   }
-
-
+  // enable_systick();
 }

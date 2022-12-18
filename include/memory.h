@@ -25,6 +25,7 @@ unsigned int* allocateR(unsigned int,unsigned int,unsigned int);
 void update_statistic(void);
 unsigned int deallocate(unsigned int*);
 void init_allocator(unsigned int);
+void init_process_allocator(unsigned int*);
 void swap(char*);
 
 static inline void os_memcpy(char* dst, char data)

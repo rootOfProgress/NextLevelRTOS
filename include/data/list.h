@@ -9,7 +9,7 @@ typedef struct SingleNode {
 } SingleLinkedNode_t;
 
 typedef struct List {
-    unsigned int size;
+    int size;
     SingleLinkedNode_t* head;
 } List_t;
 

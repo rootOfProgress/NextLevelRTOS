@@ -2,6 +2,7 @@
 #include "data/list.h"
 #include "memory.h"
 #include "exception.h"
+#include "process/scheduler.h"
 #include "panic.h"
 
 UartStates_t state;
@@ -18,7 +19,7 @@ void init_transfer_handler(void)
     transfer_list = (List_t*) new_list();
 }
 
-void setup_transfer(char* address, unsigned int length)
+void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length)
 {
     if (transfer_list->size > 10)
         return;
@@ -29,6 +30,10 @@ void setup_transfer(char* address, unsigned int length)
     t->start_adress = address;
     t->length = length;
     push(transfer_list, (void*) t);
+
+    // @buggy
+    // if (transfer_list->size > 5)
+        // SV_PRINT
 }
 
 void __attribute__((optimize("O0"))) transfer_handler(void)
@@ -37,7 +42,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
     init_transfer_handler();
     while (1)
     {
-        if ((node = pop(transfer_list))/*  != NULL */)
+        if ((node = pop(transfer_list)))
         {
             TransferInfo_t* transfer = (TransferInfo_t*) node->data;
             print(transfer->start_adress, transfer->length);
@@ -45,11 +50,13 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
                 invoke_panic(MEMORY_DEALLOC_FAILED);
             if (deallocate((unsigned int*) node) == 0)
                 invoke_panic(MEMORY_DEALLOC_FAILED);
-            // do transfer
         }
         else
         {
-            // block self
+            // move_to_waiting();
+         
+            // transfer_list->size = -1;
+            // SV_YIELD_TASK_BLOCK;
         }
         SV_YIELD_TASK;
     }
