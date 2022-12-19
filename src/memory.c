@@ -298,7 +298,8 @@ unsigned int* allocate(unsigned int size) {
             }
 
             *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;
-            mstat->num_of_allocs++;
+            //  @todo: crashes if mstat uninit! 
+            // mstat->num_of_allocs++;
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         } 
         // check if size fits on new chunk
@@ -309,7 +310,8 @@ unsigned int* allocate(unsigned int size) {
 
             // write back changes
             *(MEM_TABLE_START + index) = memory_entry;
-            mstat->num_of_allocs++;
+            //  @todo: crashes if mstat uninit! 
+            // mstat->num_of_allocs++;
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         }
         next_useable_chunk += (memory_entry & 0xFFFE) >> 1;

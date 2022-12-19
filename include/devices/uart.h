@@ -4,11 +4,12 @@
 #include "lang.h"
 #include "memory.h"
 #include "process/task.h"
+#include "gpio.h"
 
 unsigned int read_data_register(void);
 // extern void __attribute__((interrupt)) __attribute__ ((always_inline)) uart_isr_handler(void);
 void init_isr(void);
-extern void init_uart(void);
+extern void init_uart(GpioObject_t*);
 extern void print(char*,unsigned int);
 void setup_transfer(char*, unsigned int);
 extern void print_char(char c);

@@ -1,6 +1,6 @@
 #ifndef UART_H
 #define UART_H
-
+#include "gpio.h"
 #define USART1_BASEADRESS 0x40013800
 #define UE 0
 #define RE 2
@@ -21,8 +21,8 @@ typedef struct UartRegisterMap {
     unsigned int* tdr;
 } UartRegisterMap_t;
 
-void init_uart(void);
-void print(char *);
+void init_uart(GpioObject_t*);
+void print(char *, unsigned int);
 unsigned int read_data_register(void);
 
 #endif

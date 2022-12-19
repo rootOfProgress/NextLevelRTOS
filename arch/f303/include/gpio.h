@@ -7,6 +7,11 @@
 #define GPIO_C_BASE 0x48000800
 #define GPIO_D_BASE 0x48001000
 
+#define INPUT 0b00
+#define GENERALPURPOSEOUTPUT 0b01
+#define ALTERNATE 0b10
+#define ANALOG 0b11
+
 typedef struct Gpio {
     unsigned int* moder;
     unsigned int* otyper;
@@ -19,7 +24,7 @@ typedef struct Gpio {
     unsigned int* afrl;
     unsigned int* afrh;
     unsigned int* brr;
-} Gpio_t;
+} GpioRegisters_t;
 
 typedef enum OutputTypes {
     PushPull,
@@ -53,16 +58,19 @@ typedef enum OutputState {
 
 typedef struct GpioObject {
     char port;
-    unsigned int number;
+    unsigned int pin;
     unsigned int *base_adress;
 } GpioObject_t;
 
 typedef struct GpioActions {
-    void (*toggle)(GpioObject_t*);
     GpioObject_t *gpio_object;
 } GpioActions_t;
 
+void set_otyper(GpioObject_t*, OutputTypes_t);
+void set_moder(GpioObject_t*, ModerTypes_t);
+GpioRegisters_t* get_registers(GpioObject_t*);
+void into_af(GpioObject_t*, unsigned int);
 void toggle_output_pin(GpioObject_t*);
-void init_gpio(GpioActions_t*);
+void init_gpio(GpioObject_t*);
 
 #endif

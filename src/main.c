@@ -84,7 +84,7 @@ int main_init(void)
     // do_selfcheck_svc();
   #endif
   // GpioActions_t *t = (GpioActions_t*) allocate(sizeof(GpioActions_t));
-  // t->gpio_object = (GpioObject_t*) allocate(sizeof(GpioObject_t));
+  GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   
   // t->gpio_object->number = 3;
   // t->gpio_object->port = "A";
@@ -100,7 +100,7 @@ int main_init(void)
   create_task(&stat, 0);
   create_task(&wurst, 0);
   init_isr();
-  init_uart();
+  init_uart(t);
   run_scheduler();
 
   
