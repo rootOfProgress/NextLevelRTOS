@@ -117,7 +117,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
     case TRANSFER_TASK_BYTES:
         os_memcpy(p++, read_data_register());
         // setup_transfer(&"foobar", 6);
-        setup_transfer("foobar!\n\r", 9);
+        // setup_transfer("foobar!\n\r", 9);
         if (++bufferIndex == tInfo->task_size)
         {
             deallocate((unsigned int*) tInfo);

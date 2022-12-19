@@ -16,7 +16,7 @@ TARGET = external
 
 all: $(TARGET)
 
-$(TARGET): clean compile_c compile_as link convert_elf
+$(TARGET): clean compile_c link convert_elf
 
 move_objects:
 	mv *.o $(OUTDIR)

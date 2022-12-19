@@ -30,6 +30,7 @@ void setup_nvic_controller()
 
 static void __attribute__((__noipa__)) stat(void)
 {
+  SV_PRINT;
   while (1) {
     update_statistic();
     SV_YIELD_TASK;
@@ -38,9 +39,11 @@ static void __attribute__((__noipa__)) stat(void)
 
 static void __attribute__((__noipa__)) hans(void)
 {
-    // SV_PRINT;
+  // TransferInfo_t t = {.length = 3, .start_adress = &"hallo"};
+  //   // SV_PRINT;
+  //   char *s = "hi";
+  //   foo(&s,3);
   while (1) {
-    SV_PRINT;
     SV_YIELD_TASK;
   };
 }
