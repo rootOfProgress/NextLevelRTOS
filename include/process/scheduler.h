@@ -25,13 +25,13 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
         q = q->next;
     }
     
-    for (unsigned int j = 0; j < task_queue->size; j++)
-    {
-        currently_running = currently_running->next;
-        Tcb_t* n = (Tcb_t*) currently_running->data;
-        if (n->task_state == READY)
-            return;
-    }
+    // for (unsigned int j = 0; j < task_queue->size; j++)
+    // {
+    //     currently_running = currently_running->next;
+    //     Tcb_t* n = (Tcb_t*) currently_running->data;
+    //     if (n->task_state == READY)
+    //         return;
+    // }
 }
 
 static inline __attribute__((always_inline)) void move_to_waiting(void)
@@ -39,6 +39,7 @@ static inline __attribute__((always_inline)) void move_to_waiting(void)
     Node_t* old_element = dequeue_element(task_queue, currently_running);
     enqueue_node(waiting_tasks, old_element);    
 }
+
 
 void next_task(void);
 void policy_round_robin(void);
@@ -49,7 +50,8 @@ void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);
 void run_scheduler(void);
 void wakeup_pid(unsigned int);
-void move_to_waiting(void);
+void block_current_task(void);
+void unblock_task(unsigned int);
 void load_task(void);
 
 #endif

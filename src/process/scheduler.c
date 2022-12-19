@@ -46,6 +46,16 @@ void load_task(void)
     currently_running = (Node_t*) get_head_element(task_queue);
 }
 
+void unblock_task(unsigned int pid)
+{
+    
+}
+
+
+void block_current_task(void)
+{
+    ((Tcb_t*) (currently_running->data))->task_state = WAITING;
+}
 
 void run_scheduler(void)
 {

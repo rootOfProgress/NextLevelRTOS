@@ -23,7 +23,14 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
 {
     if (transfer_list->size > 10)
         return;
+
+    if (transfer_list->size == 0)
+        wakeup_pid(0);
+        //unblock_task(0);
+
+
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
+    
     if (!t)
         invoke_panic(OUT_OF_MEMORY);
     
@@ -53,7 +60,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         }
         else
         {
-            // move_to_waiting();
+            block_current_task();
          
             // transfer_list->size = -1;
             // SV_YIELD_TASK_BLOCK;
