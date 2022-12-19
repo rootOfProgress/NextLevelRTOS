@@ -19,9 +19,17 @@
                                   "svc 0\n")
 
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
+                                  "mov r9, r0\n"\
                                   "svc 0\n")
                                   
                                   
+__attribute__((used)) void print_foo(volatile unsigned int* transfer_info);
+
+//static inline __attribute__((used)) __attribute__((always_inline)) void print_foo(volatile unsigned int* transfer_info)
+//{
+//    SV_PRINT;  
+//}
+
 
 typedef enum {
     RET_PSP_THREAD_NOFP = 0xFFFFFFFD,

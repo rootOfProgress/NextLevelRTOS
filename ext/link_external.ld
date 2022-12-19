@@ -4,9 +4,7 @@ MEMORY
 {
   /* see page 59 at reference manual */
   /* flash area starts @0800000 */
-  FLASH (rx) : ORIGIN = 0x20000597, LENGTH = 512
-
-  SRAM (rwx) : ORIGIN = 0x200000FF, LENGTH = 39745
+  RAM (rx) : ORIGIN = 0x2000232F, LENGTH = 512
 }
 
 /* The Entry section expects the symbol name of the first executable 
@@ -20,14 +18,14 @@ SECTIONS
   {
     KEEP(*(.main))
     *(.text .text.*);
-  } > FLASH
+  } > RAM
   /* static variables or string literals need .bss .data and .rodata sections */
 
   /* .rodata is read only data; it is where global constants are placed. */
   .rodata :
   {
     *(.rodata .rodata.*);
-  } > FLASH
+  } > RAM
 
   /* .bss is where uninitialized global variables are placed. */
   .bss :
@@ -35,7 +33,7 @@ SECTIONS
     _sbss = .;
     *(.bss .bss.*);
     _ebss = .;
-  } > SRAM
+  } > RAM
 
   /* .data is where global variables that are initialized at compile time are placed. */
   .data : AT(ADDR(.rodata) + SIZEOF(.rodata))
@@ -43,9 +41,7 @@ SECTIONS
     _sdata = .;
     *(.data .data.*);
     _edata = .;
-  } > SRAM
-
-  _sidata = LOADADDR(.data);
+  } > RAM
 
   /DISCARD/ :
   {

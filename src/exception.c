@@ -47,9 +47,17 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 
 }
 
-void foobar()
+__attribute__((used))  void print_foo(volatile unsigned int* transfer_info)
 {
-  setup_transfer("hallo!!", 7);
+  SV_PRINT;
+}
+
+void __attribute__((optimize("O0"))) foobar()
+{
+  volatile TransferInfo_t volatile* t;
+  __asm__("mov %0, r0" : "=r"(t));
+  
+  setup_transfer((char*) t->start_adress, t->length);
 }
 
 // void __attribute__ ((hot)) SVCall()

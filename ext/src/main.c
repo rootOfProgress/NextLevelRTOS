@@ -3,15 +3,23 @@
 
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
                                   "svc 0\n")
+typedef struct transfer {
+    void* start_adress;
+    unsigned int length;
+} TransferInfo_t;
+
+__attribute__((used)) __attribute__((optimize("O0"))) void print_foo(volatile unsigned int* transfer_info)
+{
+  SV_PRINT;
+}
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O2"))) main(void)
 {
-        SV_PRINT;
+    volatile TransferInfo_t t = {.length = 9, .start_adress = &"task!:)\n\r"};
+    print_foo((unsigned int*) &t);
+
     while (1)
     {
         SV_YIELD_TASK;
-        /* code */
     }
-    
-    //*((unsigned int*) 0x20002000) = 0xabcd1234;    
 }
