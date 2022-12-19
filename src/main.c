@@ -30,7 +30,6 @@ void setup_nvic_controller()
 
 static void __attribute__((__noipa__)) stat(void)
 {
-  SV_ALLOC(sizeof(unsigned int));
   while (1) {
     update_statistic();
     SV_YIELD_TASK;
@@ -39,7 +38,9 @@ static void __attribute__((__noipa__)) stat(void)
 
 static void __attribute__((__noipa__)) hans(void)
 {
+    // SV_PRINT;
   while (1) {
+    SV_PRINT;
     SV_YIELD_TASK;
   };
 }
@@ -54,6 +55,7 @@ static void __attribute__((__noipa__)) wurst(void)
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
 {
   // svc(0);
+
   while (1)
   {
     // __trap(YIELD_TASK, 0);
@@ -85,8 +87,9 @@ int main_init(void)
   // init_gpio(t);
   // toggle_output_pin(t);
 
-  SV_ALLOC(4);
+
   //init_systick(1000);
+  //YIELD_TASK_BLOCK;
   init_scheduler();
   create_task(&transfer_handler, 0);
   create_task(&hans, 0);

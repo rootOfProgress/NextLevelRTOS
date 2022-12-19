@@ -6,11 +6,12 @@
 #include "process/task.h"
 #include "memory.h"
 #include "test.h"
+#include "devices/uart.h"
 #include "process/scheduler.h"
 
 // svc_code = 0;
 unsigned int svc_code = 0; 
-unsigned int svc_number = 0;
+volatile unsigned int svc_number = 0;
 
 #ifdef SELF_CHECK
 
@@ -46,8 +47,13 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 
 }
 
-void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
-// void __attribute__((__noipa__)) __attribute__((optimize("O2"))) SVCall()
+void foobar()
+{
+  setup_transfer("hallo!!", 7);
+}
+
+// void __attribute__ ((hot)) SVCall()
+volatile void __attribute__((optimize("O3"))) SVCall()
 {
   // disable_systick();
   __asm (
@@ -59,11 +65,7 @@ void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
   ) ;
   __asm__("mov %0, r6" : "=r"(svc_number));
 
-  #ifdef SELF_CHECK
-    svc_code = svc_number;
-    return;
-    // do_selfcheck_memory();
-  #endif
+  
 
   switch (svc_number)
   {
@@ -73,30 +75,27 @@ void __attribute__((__noipa__)) __attribute__ ((hot)) SVCall()
       :  
       : [input_i] "r" (sp1)
         );
-    __asm__("mov lr, 0xFFFFFFFD");
     __asm__("ldmia.w  r0!, {r4, r5, r6, r7, r8, r9, sl, fp}");
     __asm__("msr psp, r0"); // move r0 value to psp
+    __asm("mov r1, 0xFFFFFFFD");
+    __asm("str r1, [sp, #4]");
     break;
+  case PRINT_MSG:
+    foobar();
   case YIELD_TASK:
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
-    break;
-  case YIELD_TASK_BLOCK:
     // move_to_waiting();
-    ((Tcb_t*)currently_running->data)->task_state = WAITING;
-    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
-    break;
-  // needs args
-  case ALLOCATE:
-    unsigned int size;
-    __asm__("mov %0, r8" : "=r"(size));
-    unsigned int address = allocate_process(size, ((Tcb_t*)currently_running->data)->memory_lower_bound);
-    // __asm volatile("mov %0, r8" : "=r"(svc_number));
-    // wakeup_pid(0);
-    
+    // ((Tcb_t*)currently_running->data)->task_state = WAITING;
     // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
+  // // needs args
+  // case 4:
+  //   unsigned int size;
+  //   __asm__("mov %0, r8" : "=r"(size));
+  //   foobar();
+  //   break;
   default:
+    __builtin_unreachable();
     break;
   }
-  // enable_systick();
 }
