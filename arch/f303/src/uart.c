@@ -10,12 +10,13 @@ void init_uart(GpioObject_t *obj)
     // GpioObject_t obj;
     // GpioObject_t *o_ptr = &obj;
     
-
+    // __asm("bkpt");
     // tx
     obj->pin = 9;
     obj->port = 'A';
-    init_gpio(obj);
-    set_moder(obj, AlternateFunctionMode);
+    init_gpio(obj); //passt
+
+    set_moder(obj, AlternateFunctionMode);//passt
     into_af(obj, 7);
     set_otyper(obj, PushPull);
 
@@ -28,14 +29,14 @@ void init_uart(GpioObject_t *obj)
 
 
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE_ADRESS;
-    *rcc_regs->apb2enr = (*rcc_regs->apb2enr) | 1 << USART1EN;
+    WRITE_REGISTER(&rcc_regs->apb2enr, READ_REGISTER(&rcc_regs->apb2enr) | 1 << USART1EN);
 
     UartRegisterMap_t* uart_regs = (UartRegisterMap_t*) USART1_BASEADRESS;
     unsigned int baudrate_divisor = 8000000 / 9600;
 
-    *uart_regs->brr = baudrate_divisor;
-    *uart_regs->cr1 =  *uart_regs->cr1 | (1 << TE | 1 << RE | 1 << RXNEIE | 1 << UE);
-    *uart_regs->cr1 =  *uart_regs->cr1 | UE;
+    WRITE_REGISTER(&uart_regs->brr,baudrate_divisor);
+    WRITE_REGISTER(&uart_regs->cr1, READ_REGISTER(&uart_regs->cr1) | (1 << TE | 1 << RE | 1 << RXNEIE | 1 << UE));
+    WRITE_REGISTER(&uart_regs->cr1, READ_REGISTER(&uart_regs->cr1) | UE);
 
 
     *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 1 << 5;
@@ -43,15 +44,15 @@ void init_uart(GpioObject_t *obj)
 
 unsigned int read_data_register(void)
 {
-    return *((char*) (((UartRegisterMap_t*) USART1_BASEADRESS)->rdr));
+    return *((unsigned int*) 0x40013824);
 }
 
 void print(char* src, unsigned int length)
 {
     for (unsigned int i = 0; i < length; i++)
     {
-        WRITE_REGISTER(((UartRegisterMap_t*) USART1_BASEADRESS)->tdr,*src);
-        while (!(( READ_REGISTER(((UartRegisterMap_t*) USART1_BASEADRESS)->isr) & 0x80) != 0));
+        WRITE_REGISTER(&((UartRegisterMap_t*) USART1_BASEADRESS)->tdr,*src);
+        while (!(( READ_REGISTER(&((UartRegisterMap_t*) USART1_BASEADRESS)->isr) & 0x80) != 0));
         src++;
     }
 }

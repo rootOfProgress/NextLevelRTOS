@@ -15,3 +15,9 @@ dd if=./prepare of=/tmp/s9.in iflag=direct,skip_bytes
 sleep 1
 dd if=./task of=/tmp/s9.in iflag=direct,skip_bytes
 sleep 2
+#dd if=./data of=/dev/ttyUSB0 iflag=direct,skip_bytes
+#sleep 1
+#dd if=./prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes
+#sleep 1
+#dd if=./task of=/dev/ttyUSB0 iflag=direct,skip_bytes
+#sleep 2

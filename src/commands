@@ -3,3 +3,8 @@ p *((Tcb_t*)currently_running->data)
 p *((Queue_t*) task_queue)
 break scheduler.c:58
 delete breakpoints
+monitor reset halt
+break gpio.c:85
+break uart.c:36
+break uart_isr.c:80
+break exception.c:60
