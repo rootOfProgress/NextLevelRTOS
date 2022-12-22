@@ -7,6 +7,7 @@
 
 UartStates_t state;
 TaskInformation_t *tInfo = NULL;
+
 List_t *transfer_list = NULL;
 unsigned int in_buffer = 0;
 unsigned int byte_in_id;

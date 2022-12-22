@@ -23,9 +23,9 @@
 #dd if=./task of=/tmp/s9.out iflag=direct,skip_bytes
 #done
 
-while [ 1 ]
-do
-printf "\\x01\\x12\\x34\\x56" >> /dev/ttyUSB0 
-dd if=./prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes
-dd if=./task of=/dev/ttyUSB0 iflag=direct,skip_bytes
-done
+#while [ 1 ]
+#do
+ printf "\\x01\\x12\\x34\\x56" >> /dev/ttyUSB0 
+ dd if=./prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes
+ dd if=./task of=/dev/ttyUSB0 iflag=direct,skip_bytes
+#done
