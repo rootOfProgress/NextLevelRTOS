@@ -37,10 +37,6 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
     t->start_adress = address;
     t->length = length;
     push(transfer_list, (void*) t);
-
-    // @buggy
-    // if (transfer_list->size > 5)
-        // SV_PRINT
 }
 
 void __attribute__((optimize("O0"))) transfer_handler(void)

@@ -94,8 +94,8 @@ Node_t* dequeue_element(Queue_t* queue, Node_t* currently_running)
     // @todo untested!!
     // deallocate((unsigned int*) q);
     queue->size--;
-    q->next = NULL;
-    q->prev = NULL;
+    // q->next = NULL;
+    // q->prev = NULL;
     return q;
 }
 

@@ -16,13 +16,13 @@ __attribute__((used)) __attribute__((optimize("O0"))) void print_foo(volatile un
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     volatile TransferInfo_t t;
-    char *s = "asfdfkjlv";
-    t.length = 9;
+    char *s = "ABC\n\r";
+    t.length = 5;
     t.start_adress = s; 
     print_foo((unsigned int*) &t);
 
-    while (1)
-    {
-        SV_YIELD_TASK;
-    }
+    // while (1)
+    // {
+    //     SV_YIELD_TASK;
+    // }
 }

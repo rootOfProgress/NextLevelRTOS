@@ -8,3 +8,4 @@ break gpio.c:85
 break uart.c:36
 break uart_isr.c:80
 break exception.c:60
+printf "\\x01\\x12\\x34\\x56" >> /dev/ttyUSB0 
