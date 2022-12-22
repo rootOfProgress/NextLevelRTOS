@@ -4,7 +4,7 @@ MEMORY
 {
   /* see page 59 at reference manual */
   /* flash area starts @0800000 */
-  RAM (rx) : ORIGIN = 0x2000232F, LENGTH = 512
+  RAM (rx) : ORIGIN = 0x20002337, LENGTH = 512
 }
 
 /* The Entry section expects the symbol name of the first executable 

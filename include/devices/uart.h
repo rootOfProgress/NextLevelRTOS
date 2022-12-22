@@ -29,6 +29,7 @@ typedef enum {
     RX_READY = 0x0,
     PREPARE_TASK_TRANSFER = 0x1,
     TRANSFER_TASK_BYTES = 0x2,
+    UNKNOWN = 0x3,
 } UartStates_t;
 
 #endif

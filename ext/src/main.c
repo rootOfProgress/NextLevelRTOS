@@ -13,13 +13,12 @@ __attribute__((used)) __attribute__((optimize("O0"))) void print_foo(volatile un
   SV_PRINT;
 }
 
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O2"))) main(void)
+void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
-    // volatile TransferInfo_t t = {.length = 9, .start_adress = &"task!:)\n\r"};
     volatile TransferInfo_t t;
-    char *s = "hi\n\r";
+    char *s = "asfdfkjlv";
     t.length = 9;
-    t.start_adress = &s; 
+    t.start_adress = s; 
     print_foo((unsigned int*) &t);
 
     while (1)

@@ -35,5 +35,6 @@ convert_elf:
 	$(OBJCP) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)_binary -O binary
 	cat zeros >> $(OUTDIR)/$(TARGET)_binary
 	cp $(OUTDIR)/$(TARGET)_binary ../task
+	truncate --size=512 ../task   
 clean:
 	rm -f $(OUTDIR)/*.o $(TARGET)

@@ -75,6 +75,8 @@ void init_isr(void)
     byte_in_id = 4;
     state = RX_READY;
     bufferIndex = 0;
+    for (unsigned int i = 0; i < 16; i++)
+        buffer[i] = 0;
 }
 
 void __attribute__((interrupt)) uart_isr_handler(void)
@@ -104,13 +106,18 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             if (!tInfo)
                 invoke_panic(OUT_OF_MEMORY);
             swap(buffer);
-            tInfo->task_size = *((unsigned int*) buffer); 
+            tInfo->task_size = 512; 
+            // tInfo->task_size = *((unsigned int*) buffer); 
             tInfo->start_adress = (char*) allocate(tInfo->task_size); 
             
             if (!tInfo->start_adress)
                 invoke_panic(OUT_OF_MEMORY);
             state = TRANSFER_TASK_BYTES;
             bufferIndex = 0;
+
+            for (unsigned int i = 0; i < 16; i++)
+                buffer[i] = 0;
+
             p = tInfo->start_adress;
         }
         break;
