@@ -11,9 +11,9 @@ CFLAGS = -O2  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-all: measure
+all: alter_speed
 
-measure: clean compile_c link convert_elf
+alter_speed: clean compile_c link convert_elf
 
 compile_c: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
@@ -23,7 +23,7 @@ link:
 	make -C $(OUTDIR)
 
 convert_elf:
-	$(OBJCP) $(OUTDIR)/measure $(OUTDIR)/measure_binary -O binary
+	$(OBJCP) $(OUTDIR)/alter_speed $(OUTDIR)/alter_speed_binary -O binary
 
 clean:
-	rm -f $(OUTDIR)/*.o measure
+	rm -f $(OUTDIR)/*.o alter_speed

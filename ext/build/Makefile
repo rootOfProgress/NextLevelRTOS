@@ -7,7 +7,7 @@ CFLAGS = -O2  \
 
 OBJ:=$(wildcard ./*.o)
 
-TARGET = external
+TARGET = measure
 all: link
 
 link: $(OBJ)
