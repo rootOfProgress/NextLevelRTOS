@@ -7,6 +7,8 @@ Queue_t* task_queue = NULL;
 Queue_t* low_priority_tasks = NULL;
 Queue_t* waiting_tasks = NULL;
 Node_t* currently_running = NULL;
+ProcessStats_t* process_stats = NULL;
+
 void (*switch_task)();
 
 void init_scheduler(void)
@@ -14,6 +16,7 @@ void init_scheduler(void)
     task_queue = new_queue();
     low_priority_tasks = new_queue();
     waiting_tasks = new_queue();
+    process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
     switch_task = policy_round_robin;
 }
 
@@ -46,11 +49,10 @@ void load_task(void)
     currently_running = (Node_t*) get_head_element(task_queue);
 }
 
-void unblock_task(unsigned int pid)
+void invalidate_current_task(void)
 {
-    
+    ((Tcb_t*) (currently_running->data))->task_state = DEAD;
 }
-
 
 void block_current_task(void)
 {
@@ -79,12 +81,6 @@ void __attribute__ ((hot)) PendSV(void)
     );
 }
 
-// void move_to_waiting(void)
-// {
-//     Node_t* old_element = dequeue_element(task_queue, currently_running);
-//     enqueue_node(waiting_tasks, old_element);
-// }
-
 void remove_scheduled_task(void)
 {
     Tcb_t* t = (Tcb_t*) currently_running->data;
@@ -105,6 +101,8 @@ void remove_scheduled_task(void)
 
     if (!deallocate((unsigned int*) old_element))
         invoke_panic(MEMORY_DEALLOC_FAILED);
+
+    process_stats->finished_tasks++;
 
     switch_task();
 

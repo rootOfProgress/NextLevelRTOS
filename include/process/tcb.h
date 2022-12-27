@@ -4,7 +4,8 @@
 typedef enum {
     READY = 0,
     WAITING,
-    FINISHED
+    FINISHED,
+    DEAD
 } TaskState_t;
 
 typedef struct Tcb {

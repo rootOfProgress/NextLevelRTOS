@@ -2,6 +2,8 @@
 // #include "../include/reg.h"
 #include "memory.h"
 #include "../include/exception.h"
+#include "process/scheduler.h"
+#include "hw/cpu.h"
 void reset_handler(void);
 extern void main_init(void);
 extern void hostIfISR(void);
@@ -40,7 +42,13 @@ void memfault_handler(void)
 
 void hardfault_handler(void)
 {
-    while (1);
+    process_stats->num_of_hardfaults++;
+
+    // kill malfunctional task
+    // UNTESTED!!
+    invalidate_current_task();
+    switch_task();
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 }
 
 void usage_fault(void)
