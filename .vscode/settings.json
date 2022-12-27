@@ -33,6 +33,11 @@
     "utility": "c",
     "variant": "c",
     "system_error": "c",
-    "lang.h": "c"
+    "lang.h": "c",
+    "forward_list": "c",
+    "unordered_set": "c",
+    "fstream": "c",
+    "valarray": "c",
+    "*.inc": "c"
   }
 }

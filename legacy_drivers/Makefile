@@ -16,25 +16,15 @@ TARGET = external
 
 all: $(TARGET)
 
-$(TARGET): clean compile_c link convert_elf
+$(TARGET): convert_elf
 
-move_objects:
-	mv *.o $(OUTDIR)
-
-compile_c: $(SRC)
-	$(CC) $(CFLAGS) $(INC) -c $^ 
-	mv *.o $(OUTDIR)
-
-compile_as: $(SRC_AS)
-	$(AS) $^ -o ./build/asm.o
-
-link: 
-	make -C $(OUTDIR)
 
 convert_elf:
-	$(OBJCP) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)_binary -O binary
-#cat zeros >> $(OUTDIR)/$(TARGET)_binary
-	cp $(OUTDIR)/$(TARGET)_binary ../task
-#truncate --size=512 ../task   
+	cd runtime && cargo b && cd ..
+	$(OBJCP) runtime/target/thumbv7em-none-eabihf/debug/runtime driver -O binary
+	#cat zeros >> legacy_bin
+	#cp legacy_bin ../driver
+	#truncate --size=512 ../driver
+
 clean:
 	rm -f $(OUTDIR)/*.o $(TARGET)

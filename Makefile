@@ -10,7 +10,7 @@ CFLAGS = -O2  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-SRC_AS=$(shell find $('./src') -name '*.s')
+SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = firmware
 all: $(TARGET)
 

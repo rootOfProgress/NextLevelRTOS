@@ -12,7 +12,9 @@ List_t *transfer_list = NULL;
 unsigned int in_buffer = 0;
 unsigned int byte_in_id;
 unsigned int bufferIndex;
-char buffer[16];
+
+#define BUFFERSIZE 4
+char buffer[BUFFERSIZE];
 char *p;
 
 void init_transfer_handler(void)
@@ -58,11 +60,11 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         else
         {
             block_current_task();
-         
+            SV_YIELD_TASK;
             // transfer_list->size = -1;
             // SV_YIELD_TASK_BLOCK;
         }
-        SV_YIELD_TASK;
+        //SV_YIELD_TASK;
     }
     
 }
@@ -74,6 +76,26 @@ void init_isr(void)
     bufferIndex = 0;
     for (unsigned int i = 0; i < 16; i++)
         buffer[i] = 0;
+}
+
+void send_number(unsigned int number, char converted[])
+{   
+    // unsigned int n = number;
+    int cnt = 8;
+    
+    if (number == 0)
+    {
+        converted[0] = 0 + 0x30;
+    }
+    else
+    {   
+        while (number > 0)
+        {   
+            converted[cnt] = (number % 10) + 0x30;
+            number /= 10;
+            cnt--;
+        }
+    }
 }
 
 void __attribute__((interrupt)) uart_isr_handler(void)
@@ -97,22 +119,26 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         break;
     case PREPARE_TASK_TRANSFER:
         buffer[bufferIndex++] = read_data_register();
-        if (bufferIndex == 8)
+        if (bufferIndex == 4)
         {
             tInfo = (TaskInformation_t*) allocate(sizeof(TaskInformation_t));
             if (!tInfo)
                 invoke_panic(OUT_OF_MEMORY);
+            
             swap(buffer);
-            tInfo->task_size = 512; 
-            // tInfo->task_size = *((unsigned int*) buffer); 
+            tInfo->task_size = (unsigned int) *((unsigned int*) buffer); 
             tInfo->start_adress = (char*) allocate(tInfo->task_size); 
             
             if (!tInfo->start_adress)
                 invoke_panic(OUT_OF_MEMORY);
             state = TRANSFER_TASK_BYTES;
             bufferIndex = 0;
+            char s1[11] = {0,0,0,0,0,0,0,0,0,'\n','\r'};
+            unsigned int start_addr = (unsigned int) tInfo->start_adress;
+            send_number(start_addr, s1);
+            print(s1, 11);
 
-            for (unsigned int i = 0; i < 16; i++)
+            for (unsigned int i = 0; i < BUFFERSIZE; i++)
                 buffer[i] = 0;
 
             p = tInfo->start_adress;

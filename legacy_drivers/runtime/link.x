@@ -1,32 +1,26 @@
 
-/* generall memory info; manual cortex m4 page 30 */
 MEMORY
 {
-  /* see page 59 at reference manual */
-  /* 0x20002d9b flash area starts @0800000 */
-  /*RAM (rx) : ORIGIN = 0x2000232b, LENGTH = 512*/
-  RAM (rx) : ORIGIN = 0x2000232b, LENGTH = 512
+  SRAM (rx) : ORIGIN = 0x2000232b, LENGTH = 204800
 }
 
-/* The Entry section expects the symbol name of the first executable 
-piece of code which will be loaded into the processor. Logically it is
-the first part of the .text section. */
 ENTRY(main);
 
 SECTIONS
 {
   .text :
   {
-    KEEP(*(.main))
+    KEEP(*(.main));
     *(.text .text.*);
-  } > RAM
+  } > SRAM
+
   /* static variables or string literals need .bss .data and .rodata sections */
 
   /* .rodata is read only data; it is where global constants are placed. */
   .rodata :
   {
     *(.rodata .rodata.*);
-  } > RAM
+  } > SRAM
 
   /* .bss is where uninitialized global variables are placed. */
   .bss :
@@ -34,7 +28,7 @@ SECTIONS
     _sbss = .;
     *(.bss .bss.*);
     _ebss = .;
-  } > RAM
+  } > SRAM
 
   /* .data is where global variables that are initialized at compile time are placed. */
   .data : AT(ADDR(.rodata) + SIZEOF(.rodata))
@@ -42,7 +36,9 @@ SECTIONS
     _sdata = .;
     *(.data .data.*);
     _edata = .;
-  } > RAM
+  } > SRAM
+
+  _sidata = LOADADDR(.data);
 
   /DISCARD/ :
   {
