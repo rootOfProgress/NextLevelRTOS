@@ -91,11 +91,7 @@ Node_t* dequeue_element(Queue_t* queue, Node_t* currently_running)
         currently_running->prev->next = currently_running->next;
         currently_running->next->prev = currently_running->prev;
     }
-    // @todo untested!!
-    // deallocate((unsigned int*) q);
     queue->size--;
-    // q->next = NULL;
-    // q->prev = NULL;
     return q;
 }
 

@@ -1,11 +1,11 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
+
 #include "data/queue.h"
 #include "process/tcb.h"
 #include "lang.h"
 #include "exception.h"
 
-// extern void __trap(TrapType_t, unsigned int);
 typedef struct proc_stats {
     unsigned int num_of_hardfaults;
     unsigned int started_tasks;

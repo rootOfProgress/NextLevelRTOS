@@ -7,6 +7,8 @@ typedef struct transfer {
     void* start_adress;
     unsigned int length;
 } TransferInfo_t;
+
+#define BUFFERLENGTH 5
 #define TIM2_BASE 0x40000000
 #define RCC 0x40021000
 
@@ -72,7 +74,7 @@ typedef struct MemoryStatistic {
     unsigned int free_useable;
 } MemoryStatistic_t;
 
-void send_number(unsigned int number, char converted[])
+void num_to_char(unsigned int number, char converted[])
 {   
     // unsigned int n = number;
     int cnt = 8;
@@ -92,15 +94,16 @@ void send_number(unsigned int number, char converted[])
     }
 }
 
-
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+void init_buffer(char *buffer)
 {
-    volatile TransferInfo_t t;
-    char *s = "task up2\n\r";
-    t.length = 9;
-    t.start_adress = s;
-    print_foo((unsigned int*) &t);
+    for (unsigned int i = 0; i < BUFFERLENGTH; i++)
+        *(buffer+i) = '0';
+    buffer[BUFFERLENGTH - 1] = '\n';
+    buffer[BUFFERLENGTH - 2] = '\r';
+}
 
+void init()
+{
     *(unsigned int*) (RCC | 0x1C) = *(unsigned int*) (RCC | 0x1C) | 1;
     reset_timer();
     set_prescaler(1000);
@@ -108,17 +111,19 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     clear_uif();
     clear_udis();
     set_ccr(1000);
+}
+
+
+void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+{
+    volatile TransferInfo_t t;
+    init();
     unsigned int rpm = 0;
     unsigned int previous = 1;
 
-    // char s1[11] = {0,0,0,0,0,0,0,0,0,'\n','\r'};
-    // s1[9] = '\n';
-    // s1[10] = '\r';
-    // send_number(160,s1);
-    t.length = 7;
-    char *msg = "task!\n\r";
-    t.start_adress = msg;
-    print_foo((unsigned int*) &t);
+    t.length = BUFFERLENGTH;
+    char buffer[BUFFERLENGTH];
+    init_buffer(buffer);
 
     while(1){ 
         start();
@@ -128,37 +133,16 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
                         if (((n & 1)) < previous)
                         {
                             rpm++;
-                            // fn();
-                        }/* code */
+                        }
                         previous = n & 1;
-
             }
         stop();
         rpm *= 60;
-        flush();
-        rpm = 0; 
+        num_to_char(rpm, buffer);
+        t.start_adress = &buffer;
         print_foo((unsigned int*) &t);
-        // SV_YIELD_TASK;
-        // __asm__("bkpt");
+        flush();
+        init_buffer(buffer);
+        rpm = 0; 
     };
-    // struct foo {
-    //     unsigned int a;
-    //     unsigned int b;
-    // };
-
-    // unsigned int start = 0x89ab;
-    // unsigned int end = 0xcdef;
-    // struct foo c = {.a=0x1111, .b=0x2222};
-
-    // t.length = 2;
-    // t.start_adress = &start;
-    // print_foo((unsigned int*) &t);
-
-    // t.length = sizeof(MemoryStatistic_t);
-    // t.start_adress = (void*) 0x20000144; 
-    // print_foo((unsigned int*) &t);
-
-    // t.length = 2;
-    // t.start_adress = &end;
-    // print_foo((unsigned int*) &t);
 }

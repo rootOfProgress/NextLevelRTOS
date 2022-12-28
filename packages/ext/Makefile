@@ -4,7 +4,7 @@ OBJCP := arm-none-eabi-objcopy
 INC = -Iinclude
 OUTDIR := ./build
 
-CFLAGS = -O2  \
+CFLAGS = -O0  \
 	 -g -mcpu=cortex-m4 -mthumb \
 	 -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 

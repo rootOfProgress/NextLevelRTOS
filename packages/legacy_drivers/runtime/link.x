@@ -1,7 +1,7 @@
 
 MEMORY
 {
-  SRAM (rx) : ORIGIN = 0x2000232b, LENGTH = 204800
+  SRAM (rx) : ORIGIN = 0x2000233b, LENGTH = 204800
 }
 
 ENTRY(main);

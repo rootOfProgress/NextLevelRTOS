@@ -1,7 +1,6 @@
 #include "exception.h"
 #include "types.h"
 #include "lang.h"
-// #include "uart.h"
 #include "hw/cpu.h"
 #include "process/task.h"
 #include "memory.h"
@@ -9,7 +8,6 @@
 #include "devices/uart.h"
 #include "process/scheduler.h"
 
-// svc_code = 0;
 unsigned int svc_code = 0; 
 volatile unsigned int svc_number = 0;
 
@@ -73,8 +71,6 @@ volatile void __attribute__((optimize("O3"))) SVCall()
   ) ;
   __asm__("mov %0, r6" : "=r"(svc_number));
 
-  
-
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
@@ -84,7 +80,7 @@ volatile void __attribute__((optimize("O3"))) SVCall()
       : [input_i] "r" (sp1)
         );
     __asm__("ldmia.w  r0!, {r4, r5, r6, r7, r8, r9, sl, fp}");
-    __asm__("msr psp, r0"); // move r0 value to psp
+    __asm__("msr psp, r0");
     __asm("mov r1, 0xFFFFFFFD");
     __asm("str r1, [sp, #4]");
     break;
@@ -92,16 +88,7 @@ volatile void __attribute__((optimize("O3"))) SVCall()
     foobar();
   case YIELD_TASK:
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
-    // move_to_waiting();
-    // ((Tcb_t*)currently_running->data)->task_state = WAITING;
-    // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
-  // // needs args
-  // case 4:
-  //   unsigned int size;
-  //   __asm__("mov %0, r8" : "=r"(size));
-  //   foobar();
-  //   break;
   default:
     __builtin_unreachable();
     break;

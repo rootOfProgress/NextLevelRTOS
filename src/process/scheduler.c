@@ -25,7 +25,6 @@ void insert_scheduled_task(Tcb_t* tcb)
     enqueue_element(task_queue, (Tcb_t*) tcb);
 }
 
-
 void __attribute__ ((hot)) policy_round_robin(void)
 {   
     if (!currently_running)
@@ -61,7 +60,6 @@ void block_current_task(void)
 
 void run_scheduler(void)
 {
-    // get task
     if (!task_queue)
         invoke_panic(SCHEDULER_NOT_INITIALIZED);
 

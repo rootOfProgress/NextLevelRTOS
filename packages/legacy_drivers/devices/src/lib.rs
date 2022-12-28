@@ -62,6 +62,8 @@ pub unsafe extern "C" fn init_devs ()
 
     I2cDevice::new().init();
 
+    //GpioDevice::new("A", 3).as_input();
+
     // // speed regulation
     init_tim_3();
 
