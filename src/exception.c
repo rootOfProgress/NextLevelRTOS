@@ -55,7 +55,7 @@ void __attribute__((optimize("O0"))) foobar()
   volatile TransferInfo_t volatile* t;
   __asm__("mov %0, r0" : "=r"(t));
   
-  setup_transfer((char*) t->start_adress, t->length);
+  setup_transfer((char*) t->start_adress, t->length, GENERIC);
 }
 
 // void __attribute__ ((hot)) SVCall()

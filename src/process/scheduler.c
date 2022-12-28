@@ -17,6 +17,9 @@ void init_scheduler(void)
     low_priority_tasks = new_queue();
     waiting_tasks = new_queue();
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
+    process_stats->finished_tasks = 0;
+    process_stats->num_of_hardfaults = 0;
+    process_stats->started_tasks = 0;
     switch_task = policy_round_robin;
 }
 

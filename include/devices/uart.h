@@ -7,11 +7,17 @@
 #include "gpio.h"
 
 unsigned int read_data_register(void);
-// extern void __attribute__((interrupt)) __attribute__ ((always_inline)) uart_isr_handler(void);
+typedef enum transfer_types {
+    GENERIC = 0,
+    MEM_ADDRESS,
+    MEM_STAT,
+    SCHEDULER_STAT
+} TransferType_t;
+
 void init_isr(void);
 extern void init_uart(GpioObject_t*);
 extern void print(char*,unsigned int);
-void setup_transfer(char*, unsigned int);
+void setup_transfer(char*, unsigned int, TransferType_t);
 extern void print_char(char c);
 
 void init_transfer_handler(void);
@@ -20,9 +26,12 @@ void transfer_handler(void);
 
 #define magic 0x123456
 
+
+
 typedef struct transfer {
     void* start_adress;
     unsigned int length;
+    TransferType_t type;
 } TransferInfo_t;
 
 typedef enum {

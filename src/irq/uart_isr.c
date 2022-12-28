@@ -14,6 +14,7 @@ unsigned int byte_in_id;
 unsigned int bufferIndex;
 
 #define BUFFERSIZE 4
+#define TX_LENGTH 64
 char buffer[BUFFERSIZE];
 char *p;
 
@@ -22,14 +23,13 @@ void init_transfer_handler(void)
     transfer_list = (List_t*) new_list();
 }
 
-void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length)
+void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length, TransferType_t type)
 {
     if (transfer_list->size > 10)
         return;
 
     if (transfer_list->size == 0)
         wakeup_pid(0);
-        //unblock_task(0);
 
 
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
@@ -39,6 +39,7 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
     
     t->start_adress = address;
     t->length = length;
+    t->type = type;
     push(transfer_list, (void*) t);
 }
 
@@ -50,8 +51,33 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
     {
         if ((node = pop(transfer_list)))
         {
+            unsigned int remaining = TX_LENGTH;
+            char *m;
             TransferInfo_t* transfer = (TransferInfo_t*) node->data;
+            switch (transfer->type)
+            {
+            case GENERIC:
+                break;
+            case MEM_ADDRESS:
+                m = "AAAABBBB";
+                print(m, 8);
+                remaining -= 8;
+                break;
+            case MEM_STAT:
+                m = "BBBBAAAA";
+                print(m, 8);
+                remaining -= 8;
+                break;
+            default:
+                break;
+            }
             print(transfer->start_adress, transfer->length);
+            remaining -= transfer->length;
+
+            char zero = '0';
+            while (remaining-- != 0)
+                print(&zero, 1);
+
             if (deallocate((unsigned int*) transfer) == 0)
                 invoke_panic(MEMORY_DEALLOC_FAILED);
             if (deallocate((unsigned int*) node) == 0)
@@ -131,12 +157,14 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             
             if (!tInfo->start_adress)
                 invoke_panic(OUT_OF_MEMORY);
-            state = TRANSFER_TASK_BYTES;
+            // state = TRANSFER_TASK_BYTES;
+            state = RX_READY;
             bufferIndex = 0;
-            char s1[11] = {0,0,0,0,0,0,0,0,0,'\n','\r'};
+            char s1[9] = {0,0,0,0,0,0,0,0,0};
             unsigned int start_addr = (unsigned int) tInfo->start_adress;
             send_number(start_addr, s1);
-            print(s1, 11);
+            setup_transfer(&s1,9, MEM_ADDRESS);
+            // print(s1, 9);
 
             for (unsigned int i = 0; i < BUFFERSIZE; i++)
                 buffer[i] = 0;
