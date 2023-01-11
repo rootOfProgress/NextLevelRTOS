@@ -7,14 +7,12 @@
 
 UartStates_t state;
 TaskInformation_t *tInfo = NULL;
-
 List_t *transfer_list = NULL;
-unsigned int in_buffer = 0;
+
+unsigned int in_buffer;
 unsigned int byte_in_id;
 unsigned int bufferIndex;
 
-#define BUFFERSIZE 4
-#define TX_LENGTH 64
 char buffer[BUFFERSIZE];
 char *p;
 
@@ -25,11 +23,11 @@ void init_transfer_handler(void)
 
 void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length, TransferType_t type)
 {
-    if (transfer_list->size > 10)
+    if (transfer_list->size > MAX_WAITING_TRANSFERS)
         return;
 
     if (transfer_list->size == 0)
-        wakeup_pid(0);
+        wakeup_pid(TASK_TRANSFER_HANDLER);
 
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
     
@@ -62,13 +60,8 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
                 print(m, 8);
                 remaining -= 8;
                 break;
-            case MEM_STATISTIC:
+            case STATISTIC:
                 m = "BBBBAAAA";
-                print(m, 8);
-                remaining -= 8;
-                break;
-            case SCHED_STATISTIC:
-                m = "CCCCAAAA";
                 print(m, 8);
                 remaining -= 8;
                 break;
@@ -91,12 +84,8 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         {
             block_current_task();
             SV_YIELD_TASK;
-            // transfer_list->size = -1;
-            // SV_YIELD_TASK_BLOCK;
         }
-        //SV_YIELD_TASK;
-    }
-    
+    }    
 }
 
 void init_isr(void)
@@ -104,6 +93,7 @@ void init_isr(void)
     byte_in_id = 4;
     state = RX_READY;
     bufferIndex = 0;
+    in_buffer = 0;
     for (unsigned int i = 0; i < BUFFERSIZE; i++)
         buffer[i] = 0;
 }
@@ -135,7 +125,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
     case RX_READY:
         unsigned int content = read_data_register();
         in_buffer |= content << ((--byte_in_id) * 8);
-        if ((in_buffer & 0xFFFFFF) == magic)
+        if ((in_buffer & 0xFFFFFF) == MAGIC)
         {
             state = in_buffer >> 24;
             in_buffer = 0;
@@ -191,7 +181,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         }
         break;
     case REQUEST_STATISTIC:
-        wakeup_pid(1);
+        wakeup_pid(TASK_STATISTIC);
         state = RX_READY;
         unsigned int dummy = read_data_register();
         break;

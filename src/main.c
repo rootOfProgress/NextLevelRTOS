@@ -34,13 +34,13 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
     block_current_task();
     update_memory_statistic();
     volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
-    uprint((unsigned int*) &t, MEM_STATISTIC);
+    uprint((unsigned int*) &t, STATISTIC);
   };
 }
 
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
-  volatile TransferInfo_t t = {.length = 9, .start_adress = &"hallo:)\n\r"};
+  volatile TransferInfo_t t = {.length = 17, .start_adress = &"Reached idle...\n\r"};
   uprint((unsigned int*) &t, GENERIC);
   while (1) {
     SV_YIELD_TASK;

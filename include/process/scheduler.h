@@ -7,6 +7,9 @@
 #include "memory.h"
 #include "exception.h"
 
+#define TASK_TRANSFER_HANDLER 0
+#define TASK_STATISTIC 1
+
 typedef struct proc_stats {
     unsigned int num_of_hardfaults;
     unsigned int started_tasks;
@@ -40,7 +43,6 @@ static inline __attribute__((always_inline)) void move_to_waiting(void)
     Node_t* old_element = dequeue_element(task_queue, currently_running);
     enqueue_node(waiting_tasks, old_element);    
 }
-
 
 void next_task(void);
 void policy_round_robin(void);

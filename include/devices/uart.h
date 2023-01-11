@@ -6,14 +6,15 @@
 #include "process/task.h"
 #include "gpio.h"
 
-#define magic 0x123456
-#define stat_unlock 0x6789ab
+#define MAGIC 0x123456
+#define BUFFERSIZE 4
+#define TX_LENGTH 64
+#define MAX_WAITING_TRANSFERS 10
 
 typedef enum transfer_types {
     GENERIC = 0,
     MEM_ADDRESS,
-    MEM_STATISTIC,
-    SCHED_STATISTIC
+    STATISTIC
 } TransferType_t;
 
 typedef struct transfer {
