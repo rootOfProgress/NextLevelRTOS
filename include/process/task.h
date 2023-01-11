@@ -2,6 +2,8 @@
 #define TASK_H
 #include "hw/cpu.h"
 
+#define THUMB_STATE 1 << 24
+
 typedef struct {
     unsigned int task_size;
     char* start_adress;

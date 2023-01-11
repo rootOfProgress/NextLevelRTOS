@@ -16,8 +16,8 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
         invoke_panic(OUT_OF_MEMORY);
 
     memset_byte((void*) cpu_register, sizeof(CpuRegister_t), 0);
-    
-    cpu_register->psr = 0x21000000;
+
+    cpu_register->psr = THUMB_STATE;
     // todo
     cpu_register->pc = (unsigned int) task_function;
     cpu_register->lr = (unsigned int) remove_scheduled_task;
