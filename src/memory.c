@@ -44,6 +44,18 @@ void swap_endianess(char* buffer)
     *(buffer+3) = tmp;
 }
 
+void memset_byte(void* dest, unsigned int number_of_bytes, char pattern)
+{
+    char* dest_1 = (char*) dest;
+    for (unsigned int i = 0; i < number_of_bytes; i++)
+    {
+        *dest_1 = pattern;
+        dest_1++;
+    }
+}
+
+
+
 void init_process_allocator(unsigned int* memtable_start)
 {
     for (unsigned int index = 0; index < 10; index += 1)
@@ -54,27 +66,28 @@ void init_process_allocator(unsigned int* memtable_start)
 }
 
 void init_allocator(unsigned int start_os_section) {
-    while (start_os_section % 4 != 0) {
+    while ((start_os_section & 0x3) != 0) {
         start_os_section += 1;
     }
     MEM_TABLE_START = (unsigned int*) start_os_section;
-    USEABLE_MEM_START= MEM_TABLE_START + NUM_OF_SLOTS;
+    USEABLE_MEM_START = MEM_TABLE_START + NUM_OF_SLOTS;
 
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)
     {
         *(MEM_TABLE_START + index) = 0x0000FFFE;
     }
 
-    mstat.num_of_allocs = 0;
-    mstat.num_of_deallocs = 0;
-    mstat.num_of_fractial_allocs = 0;
-    mstat.total_byte_alloced = 0;
-    mstat.total_byte_used = 0;
-    mstat.os_data_end = (unsigned int) USEABLE_MEM_START;
-    mstat.free_useable = 0;
-    mstat.waiting_tasks = 0;
-    mstat.total_scheduled_tasks = 0;
-    mstat.cpu_load = 0;  
+    // mstat.num_of_allocs = 0;
+    // mstat.num_of_deallocs = 0;
+    // mstat.num_of_fractial_allocs = 0;
+    // mstat.total_byte_alloced = 0;
+    // mstat.total_byte_used = 0;
+    // mstat.os_data_end = (unsigned int) USEABLE_MEM_START;
+    // mstat.free_useable = 0;
+    // mstat.waiting_tasks = 0;
+    // mstat.total_scheduled_tasks = 0;
+    // mstat.cpu_load = 0; 
+    memset_byte((void*) &mstat, sizeof(MemoryStatistic_t), 0); 
 }
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {

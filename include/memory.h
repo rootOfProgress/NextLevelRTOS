@@ -30,6 +30,7 @@ void update_memory_statistic(void);
 void init_allocator(unsigned int);
 void init_process_allocator(unsigned int*);
 void swap(char*);
+void memset_byte(void*,unsigned int, char);
 
 extern MemoryStatistic_t mstat;
 
