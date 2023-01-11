@@ -116,7 +116,7 @@ unsigned int* allocate_process(unsigned int size, unsigned int* table_start) {
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
-    while ((requested_size % 4) != 0) {
+    while ((requested_size & 0x3) != 0) {
         requested_size += 1;
     }
 
@@ -182,7 +182,7 @@ unsigned int* allocate(unsigned int size) {
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
-    while ((requested_size % 4) != 0) {
+    while ((requested_size & 0x3) != 0) {
         requested_size += 1;
     }
 
