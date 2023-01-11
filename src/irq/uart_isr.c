@@ -31,7 +31,6 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
     if (transfer_list->size == 0)
         wakeup_pid(0);
 
-
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
     
     if (!t)
@@ -63,8 +62,13 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
                 print(m, 8);
                 remaining -= 8;
                 break;
-            case MEM_STAT:
+            case MEM_STATISTIC:
                 m = "BBBBAAAA";
+                print(m, 8);
+                remaining -= 8;
+                break;
+            case SCHED_STATISTIC:
+                m = "CCCCAAAA";
                 print(m, 8);
                 remaining -= 8;
                 break;
@@ -100,7 +104,7 @@ void init_isr(void)
     byte_in_id = 4;
     state = RX_READY;
     bufferIndex = 0;
-    for (unsigned int i = 0; i < 16; i++)
+    for (unsigned int i = 0; i < BUFFERSIZE; i++)
         buffer[i] = 0;
 }
 
@@ -157,14 +161,18 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             
             if (!tInfo->start_adress)
                 invoke_panic(OUT_OF_MEMORY);
+
+            // done because of pyserial testing to receive mem adress everytime!
             // state = TRANSFER_TASK_BYTES;
             state = RX_READY;
+
             bufferIndex = 0;
             char s1[9] = {0,0,0,0,0,0,0,0,0};
             unsigned int start_addr = (unsigned int) tInfo->start_adress;
             send_number(start_addr, s1);
-            setup_transfer(&s1,9, MEM_ADDRESS);
-            // print(s1, 9);
+
+            // @todo: maybe wrong! replaced &s1 by s1
+            setup_transfer(s1, 9, MEM_ADDRESS);
 
             for (unsigned int i = 0; i < BUFFERSIZE; i++)
                 buffer[i] = 0;
@@ -174,8 +182,6 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         break;
     case TRANSFER_TASK_BYTES:
         os_memcpy(p++, read_data_register());
-        // setup_transfer(&"foobar", 6);
-        // setup_transfer("foobar!\n\r", 9);
         if (++bufferIndex == tInfo->task_size)
         {
             deallocate((unsigned int*) tInfo);
@@ -184,6 +190,21 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             bufferIndex = 0;
         }
         break;
+    case REQUEST_STATISTIC:
+        wakeup_pid(1);
+        state = RX_READY;
+        unsigned int dummy = read_data_register();
+        break;
+    case ALTER_SPEED:
+        buffer[bufferIndex++] = read_data_register();
+        if (bufferIndex == 4)
+        {
+            volatile unsigned int pwm_speed = (buffer[1] - 0x30) * 100 + (buffer[2] - 0x30) * 10 + (buffer[3] - 0x30);
+            volatile unsigned int engine_no = (buffer[0] - 0x30);
+            bufferIndex = 0;
+            state = RX_READY;
+        }
+        break;    
     default:
         break;
     }    

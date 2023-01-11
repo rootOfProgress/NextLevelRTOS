@@ -6,6 +6,7 @@ LINK = link.ld
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffunction-sections -Wall -Wextra -static -nostdlib  \
+	 -Wno-implicit-fallthrough
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
@@ -14,7 +15,7 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = firmware
 all: $(TARGET)
 
-$(TARGET): clean compile_c compile_as $(ARCH) link
+$(TARGET): clean compile_c $(ARCH) link
 
 $(ARCH):
 	make -C arch/$(ARCH)

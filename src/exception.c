@@ -41,25 +41,24 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
   {
     /* code */
   }
-  
-
 }
 
-__attribute__((used))  void print_foo(volatile unsigned int* transfer_info)
+// function exists to preserve R0 register
+__attribute__((used))  void uprint(volatile unsigned int* transfer_info __attribute__((unused)), volatile unsigned int type __attribute__((unused)))
 {
   SV_PRINT;
 }
 
-void __attribute__((optimize("O0"))) foobar()
+void __attribute__((optimize("O0"))) kprint()
 {
-  volatile TransferInfo_t volatile* t;
+  volatile TransferInfo_t* t;
+  unsigned int type;
   __asm__("mov %0, r0" : "=r"(t));
-  
-  setup_transfer((char*) t->start_adress, t->length, GENERIC);
+  __asm__("mov %0, r1" : "=r"(type));
+  setup_transfer((char*) t->start_adress, t->length, type);
 }
 
-// void __attribute__ ((hot)) SVCall()
-volatile void __attribute__((optimize("O3"))) SVCall()
+void __attribute__((optimize("O3"))) SVCall()
 {
   // disable_systick();
   __asm (
@@ -85,7 +84,7 @@ volatile void __attribute__((optimize("O3"))) SVCall()
     __asm("str r1, [sp, #4]");
     break;
   case PRINT_MSG:
-    foobar();
+    kprint();
   case YIELD_TASK:
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;

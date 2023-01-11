@@ -28,7 +28,7 @@ void init_uart(void)
     *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 1 << 5;
 }
 
-unsigned int __attribute__ ((always_inline)) read_data_register(void)
+unsigned int read_data_register(void)
 {
     return *((char*) (((UartRegisterMap_t*) USART1_BASEADRESS)->rdr));
 }

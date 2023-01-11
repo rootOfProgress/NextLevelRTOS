@@ -23,13 +23,7 @@
                                   "svc 0\n")
                                   
                                   
-__attribute__((used)) void print_foo(volatile unsigned int* transfer_info);
-
-//static inline __attribute__((used)) __attribute__((always_inline)) void print_foo(volatile unsigned int* transfer_info)
-//{
-//    SV_PRINT;  
-//}
-
+__attribute__((used)) void uprint(volatile unsigned int* transfer_info, volatile unsigned int type);
 
 typedef enum {
     RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
