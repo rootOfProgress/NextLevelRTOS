@@ -11,6 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rustc-link-search={}", out_dir.display());
 
     // put `link.x` in the build directory
-    File::create(out_dir.join("link.x"))?.write_all(include_bytes!("link.x"))?;
+    File::create(out_dir.join("../link_external.ld"))?.write_all(include_bytes!("../link_external.ld"))?;
     Ok(())
 }
+//legacy_drivers

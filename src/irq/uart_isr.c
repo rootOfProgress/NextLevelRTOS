@@ -153,8 +153,8 @@ void __attribute__((interrupt)) uart_isr_handler(void)
                 invoke_panic(OUT_OF_MEMORY);
 
             // done because of pyserial testing to receive mem adress everytime!
-            // state = TRANSFER_TASK_BYTES;
-            state = RX_READY;
+            state = TRANSFER_TASK_BYTES;
+            // state = RX_READY;
 
             bufferIndex = 0;
             char s1[9] = {0,0,0,0,0,0,0,0,0};
@@ -193,6 +193,21 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             volatile unsigned int engine_no = (buffer[0] - 0x30);
             bufferIndex = 0;
             state = RX_READY;
+
+            
+            switch (engine_no)
+            {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;            
+            default:
+                break;
+            }
         }
         break;    
     default:
