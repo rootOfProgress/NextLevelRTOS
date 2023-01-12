@@ -43,7 +43,8 @@ GpioRegisters_t* get_registers(GpioObject_t* t)
     case 'D':
         return (GpioRegisters_t*) ((unsigned int*) GPIO_D_BASE);
     default:
-        return;
+        // dummy
+        return (GpioRegisters_t*) ((unsigned int*) GPIO_A_BASE);
     }
 }
 
@@ -81,7 +82,9 @@ void into_af(GpioObject_t* t, unsigned int af_number)
     }
     else
     {
-        unsigned int pin = t->pin - 8;
+        // @todo: do not delete
+        
+        // unsigned int pin  = t->pin - 8;
         // WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) & ~(0xF << (pin * 4)));    
 
         // @todo: WARNING HARDCODED!

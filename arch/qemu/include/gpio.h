@@ -16,7 +16,7 @@ typedef struct Gpio {
     unsigned int* afrl;
     unsigned int* afrh;
     unsigned int* brr;
-} Gpio_t;
+} GpioRegisters_t;
 
 typedef enum OutputTypes {
     PushPull,
@@ -60,6 +60,6 @@ typedef struct GpioActions {
 } GpioActions_t;
 
 void toggle_output_pin(GpioObject_t*);
-void init_gpio(GpioActions_t*);
+void init_gpio(GpioObject_t*);
 
 #endif

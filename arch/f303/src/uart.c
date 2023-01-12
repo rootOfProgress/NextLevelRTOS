@@ -6,11 +6,6 @@
 
 void init_uart(GpioObject_t *obj)
 {
-    // GpioActions_t t;
-    // GpioObject_t obj;
-    // GpioObject_t *o_ptr = &obj;
-    
-    // __asm("bkpt");
     // tx
     obj->pin = 9;
     obj->port = 'A';

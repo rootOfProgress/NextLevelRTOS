@@ -31,7 +31,7 @@
 void init_uart(void);
 void print(char *, unsigned int);
 void print_char(char c);
-unsigned int __attribute__ ((always_inline)) read_data_register(void);
+unsigned int read_data_register(void);
 
 // unsigned int __attribute__ ((always_inline)) read_data_register(void)
 // {

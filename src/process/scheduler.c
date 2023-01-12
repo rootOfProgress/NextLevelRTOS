@@ -17,15 +17,25 @@ void init_scheduler(void)
     low_priority_tasks = new_queue();
     waiting_tasks = new_queue();
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
-    process_stats->finished_tasks = 0;
-    process_stats->num_of_hardfaults = 0;
-    process_stats->started_tasks = 0;
+
     switch_task = policy_round_robin;
 }
 
 void insert_scheduled_task(Tcb_t* tcb)
 {
     enqueue_element(task_queue, (Tcb_t*) tcb);
+    mstat.total_scheduled_tasks++;
+}
+
+void update_scheduler_statistic(void)
+{
+    // mstat.waiting_tasks = 0;
+    // for (unsigned int i = 0; i < task_queue->size; i++)
+    // {
+    //     Node_t* q = get_head_element(task_queue);
+    //     if ( ((Tcb_t*) q->data)->task_state == WAITING)
+    //         mstat.waiting_tasks++;
+    // }
 }
 
 void __attribute__ ((hot)) policy_round_robin(void)
@@ -59,6 +69,7 @@ void invalidate_current_task(void)
 void block_current_task(void)
 {
     ((Tcb_t*) (currently_running->data))->task_state = WAITING;
+    mstat.waiting_tasks++;
 }
 
 void run_scheduler(void)
@@ -88,7 +99,6 @@ void remove_scheduled_task(void)
     if (!deallocate((unsigned int*) t->memory_lower_bound))
         invoke_panic(MEMORY_DEALLOC_FAILED);
 
-
     if (t->code_section != 0)
     {
         if (!deallocate((unsigned int*) t->code_section))
@@ -103,7 +113,7 @@ void remove_scheduled_task(void)
     if (!deallocate((unsigned int*) old_element))
         invoke_panic(MEMORY_DEALLOC_FAILED);
 
-    process_stats->finished_tasks++;
+    mstat.total_scheduled_tasks--;
 
     switch_task();
 

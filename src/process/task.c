@@ -7,48 +7,6 @@
 
 #define BUFFER 2048
 
-#ifdef SELF_CHECK
-void do_selfcheck_task(void)
-{
-    unsigned int test_a = 1;
-    unsigned int test_b = 1;
-    unsigned int test_c = 1;
-    unsigned int test_d = 1;
-    unsigned int test_e = 1;
-    unsigned int test_f = 1;
-    unsigned int test_g = 1;
-    unsigned int test_h = 1;
-    unsigned int test_i = 1;
-    unsigned int test_j = 1;
-    unsigned int test_k = 1;
-    unsigned int buffer_size = 512;
-
-    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + buffer_size);
-
-
-    // test_a-: locations          
-    CpuRegister_t *cpu_register = prepare_cpu_register(address, buffer_size, &do_selfcheck_task);
-    if (&cpu_register->r4 != (buffer_size + address - sizeof(CpuRegister_t)))
-        test_a = 0;
-    if ((&cpu_register->r5 - &cpu_register->r4) != 1)
-        test_b = 0;
-    if (&cpu_register->r0 != (&cpu_register->r4 + 8))
-        test_c = 0;
-    if ((&cpu_register->r0 - &cpu_register->r11) != 1)
-        test_d = 0;
-    if ((&cpu_register->r0 + 7) != &cpu_register->psr)
-        test_e = 0;
-    if (cpu_register->pc != (unsigned int) &do_selfcheck_task)
-        test_f = 0;
-    if ((address + buffer_size + sizeof(CpuRegister_t)))
-        test_g = 0;
-    int p = (unsigned int) &cpu_register->psr;
-    int end = (unsigned int) address + buffer_size + sizeof(CpuRegister_t);
-
-    int diff = (buffer_size + address + sizeof(CpuRegister_t)) - (unsigned int) &cpu_register->r0;
-}
-#endif
-
 CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_size, void (*task_function)())
 {
     // @todo
@@ -57,19 +15,9 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
     if (!cpu_register)
         invoke_panic(OUT_OF_MEMORY);
 
-    cpu_register->r4 = 0x4;
-    cpu_register->r5 = 0x5;
-    cpu_register->r6 = 0x6;
-    cpu_register->r7 = 0x7;
-    cpu_register->r8 = 0x8;
-    cpu_register->r9 = 0x9;
-    cpu_register->r10 = 0xA;
-    cpu_register->r11 = 0xB;
-    cpu_register->r0 = 0x0;
-    cpu_register->r1 = 0x1;
-    cpu_register->r2 = 0x2;
-    cpu_register->r3 = 0x3;
-    cpu_register->psr = 0x21000000;
+    memset_byte((void*) cpu_register, sizeof(CpuRegister_t), 0);
+
+    cpu_register->psr = THUMB_STATE;
     // todo
     cpu_register->pc = (unsigned int) task_function;
     cpu_register->lr = (unsigned int) remove_scheduled_task;
@@ -96,7 +44,7 @@ void create_task(void (*task_function)(), unsigned int ram_location)
     tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
     tcb->code_section = ram_location;
     tcb->task_state = READY;
-    init_process_allocator(tcb->memory_lower_bound);
+    init_process_allocator((unsigned int*) tcb->memory_lower_bound);
 //@leave it
 //     volatile unsigned int *shcsr = (void *)0xE000ED24;
 //     *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);

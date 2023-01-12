@@ -28,29 +28,20 @@ void setup_nvic_controller()
 }
 
 
-static void __attribute__((__noipa__)) stat(void)
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
-  //SV_PRINT;
   while (1) {
-    update_statistic();
-    SV_YIELD_TASK;
+    block_current_task();
+    update_memory_statistic();
+    volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
+    uprint((unsigned int*) &t, STATISTIC);
   };
 }
 
-static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) hans(void)
+static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
-  volatile TransferInfo_t t = {.length = 9, .start_adress = &"hallo:)\n\r"};
-  print_foo(&t);
-  //   // SV_PRINT;
-  //   char *s = "hi";
-  //   foo(&s,3);
-  while (1) {
-    SV_YIELD_TASK;
-  };
-}
-
-static void __attribute__((__noipa__)) wurst(void)
-{
+  volatile TransferInfo_t t = {.length = 17, .start_adress = &"Reached idle...\n\r"};
+  uprint((unsigned int*) &t, GENERIC);
   while (1) {
     SV_YIELD_TASK;
   };
@@ -79,26 +70,11 @@ void do_selfcheck_main()
 
 int main_init(void)
 {
-  #ifdef SELF_CHECK
-    // do_selfcheck_main();
-    // do_selfcheck_svc();
-  #endif
-  // GpioActions_t *t = (GpioActions_t*) allocate(sizeof(GpioActions_t));
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
-  
-  // t->gpio_object->number = 3;
-  // t->gpio_object->port = "A";
-  // init_gpio(t);
-  // toggle_output_pin(t);
-
-
-  //init_systick(1000);
-  //YIELD_TASK_BLOCK;
   init_scheduler();
   create_task(&transfer_handler, 0);
-  create_task(&hans, 0);
   create_task(&stat, 0);
-  create_task(&wurst, 0);
+  create_task(&idle, 0);
   init_isr();
   init_uart(t);
   run_scheduler();
