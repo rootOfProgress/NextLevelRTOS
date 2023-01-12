@@ -216,6 +216,24 @@ def device_rx():
                 # process_result()
                 # bytes_read = 0
 
+
+def alter_speed(speed):
+    print_info("set device into speed state...")
+    cmd = "printf \"\\x04\\x12\\x34\\x56\" >> /dev/ttyUSB0"
+    os.system(cmd) 
+    time.sleep(1)
+
+    n = list(speed)
+    cmd_0 = "printf \"" 
+    cmd_1 = "" 
+    
+    for l in n:
+        cmd_1 += "\\\\x" + f'{ord(l):x}' 
+
+    line = cmd_0 + cmd_1 + "\" >> /dev/ttyUSB0"
+    os.system(line)
+    # print(line)
+
 if __name__ == '__main__':
     receiver = Thread(target = device_rx)
     # receiver.start()
@@ -224,8 +242,8 @@ if __name__ == '__main__':
         print("1: Upload Binary")
         print("2: Fetch OS Lifetime info")
         print("3: Alter Engine Speed")
-        # n = input()
-        n = 3
+        n = input()
+        # n = 3
         match int(n):
             case 1:
                 print("Enter package name:")
@@ -234,31 +252,8 @@ if __name__ == '__main__':
             case 2:
                 fetch_lifetime_info()
             case 3:
-                print("EngineNoSpeed:")
-                # n = input()
-                n = list("3767")
-                cmd_0 = "printf \"" 
-                cmd_1 = "" 
-                
-                # \\x03\\x12\\x34\\x56\" >> /dev/ttyUSB0"
-                for l in n:
-                    cmd_1 += "\\\\x" + f'{ord(l):x}' 
-                    # print(f'{ord(l):x}')
+                print("EngineSpeed:")
+                n = input()
+                alter_speed(n)
 
-                line = cmd_0 + cmd_1 + "\" >> /dev/ttyUSB0"
-                print(line)
-                # n = list(n.split(','))
-                # engine_no = n[0]
-                # speed = n[1]
-                # l = []
-
-                # print(int(n).to_bytes(4, 'big'))
-                # l.append(int(ord(speed[0])).to_bytes(1, 'big'))
-                # l.append(int(ord(speed[1])).to_bytes(1, 'big'))
-                # l.append(int(ord(speed[2])).to_bytes(1, 'big'))
-                # # list(hex(ord(speed[0])), hex(ord(speed[1])), hex(ord(speed[2])))
-                # m = b''.join(l)
-                # print(m)
-                # print(hex(ord(engine_no)), hex(ord(speed[0])), hex(ord(speed[1])), hex(ord(speed[2])))
-                # upload_binary("ext")
     receiver.join()

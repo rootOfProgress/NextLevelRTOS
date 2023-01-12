@@ -19,7 +19,7 @@ unsafe fn init_tim_3() {
     let mut tim_3: TimerDevice = TimerDevice::new(3);
     
     tim_3
-        .set_arr_register(100)
+        .set_arr_register(999)
         .set_psc_register(2)
         .set_ccmr1_register(
             (6 << bitfields::tim3::ccmr1::OC2M)
