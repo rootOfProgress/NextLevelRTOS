@@ -11,7 +11,8 @@ typedef enum transfer_types {
     GENERIC = 0,
     MEM_ADDRESS,
     MEM_STAT,
-    SCHEDULER_STAT
+    SCHEDULER_STAT,
+    TEXT
 } TransferType_t;
 
 void init_isr(void);

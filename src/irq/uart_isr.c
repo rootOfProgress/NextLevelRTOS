@@ -31,7 +31,6 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
     if (transfer_list->size == 0)
         wakeup_pid(0);
 
-
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
     
     if (!t)
