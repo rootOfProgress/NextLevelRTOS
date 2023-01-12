@@ -22,9 +22,6 @@ $(TARGET): convert_elf
 convert_elf:
 	cd runtime && cargo b 2>/dev/null && cd ..
 	$(OBJCP) runtime/target/thumbv7em-none-eabihf/debug/runtime ./build/legacy_drivers_binary -O binary
-	#cat zeros >> legacy_bin
-	#cp legacy_bin ../driver
-	#truncate --size=512 ../driver
 
 clean:
 	rm -f $(OUTDIR)/*.o $(TARGET)

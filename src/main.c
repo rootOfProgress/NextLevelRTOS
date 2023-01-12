@@ -78,7 +78,6 @@ int main_init(void)
   init_isr();
   init_uart(t);
   run_scheduler();
-
   
   __asm__("ldr r0, =main_loop\n"
           "mov pc,r0");

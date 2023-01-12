@@ -6,14 +6,10 @@
 #![no_std]
 #![no_main]
 #![feature(rustc_private)]
-// #![no_main]
 use core::panic::PanicInfo;
 extern crate devices;
 
 use devices::init_devs;
-// use devices;
-
-// extern crae libc;
 #[no_mangle]
 #[link_section = ".main"]
 pub extern "C" fn main() {
@@ -24,6 +20,7 @@ pub extern "C" fn main() {
 }
 
 #[panic_handler]
+#[link_section = ".panic"]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
     loop {}
 }

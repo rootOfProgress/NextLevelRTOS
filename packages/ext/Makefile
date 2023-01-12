@@ -26,4 +26,4 @@ convert_elf:
 	$(OBJCP) $(OUTDIR)/ext $(OUTDIR)/ext_binary -O binary
 
 clean:
-	rm -f $(OUTDIR)/*.o ext
+	rm -f $(OUTDIR)/*.o ./build/ext*

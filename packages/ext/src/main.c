@@ -140,9 +140,10 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
         rpm *= 60;
         num_to_char(rpm, buffer);
         t.start_adress = &buffer;
-        print_foo((unsigned int*) &t);
+        // print_foo((unsigned int*) &t);
         flush();
         init_buffer(buffer);
         rpm = 0; 
+        SV_YIELD_TASK;
     };
 }

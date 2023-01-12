@@ -74,6 +74,7 @@ pub mod gpio {
         /// * `GpioPort Struct Object`
         ///
         pub unsafe fn new(port_mnemonic: &str, pin_number: u32) -> GpioDevice {
+            // loop{}
             let gpio_base = match port_mnemonic {
                 "A" => {
                     rcc::rcc::activate_gpio_bus_clock(port_mnemonic);

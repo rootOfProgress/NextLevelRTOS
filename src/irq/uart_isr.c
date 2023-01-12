@@ -194,16 +194,21 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             bufferIndex = 0;
             state = RX_READY;
 
-            
+            // should be moved into own function soon
             switch (engine_no)
             {
             case 0:
+                // ccr1
+                WRITE_REGISTER(0x40000434, pwm_speed);
                 break;
             case 1:
+                WRITE_REGISTER(0x40000438, pwm_speed);
                 break;
             case 2:
+                WRITE_REGISTER(0x4000043C, pwm_speed);
                 break;
             case 3:
+                WRITE_REGISTER(0x40000440, pwm_speed);
                 break;            
             default:
                 break;
