@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="has-background-grey-light">
     <SpeedRegulation/>
   </div>
 </template>
