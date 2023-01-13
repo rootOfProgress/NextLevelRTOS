@@ -58,7 +58,8 @@ void __attribute__ ((hot)) policy_round_robin(void)
         if (n->task_state == READY)
             return;
     }
-    // move sleeping task
+    // no runnable task found
+    sleep();
 }
 
 void load_task(void)
