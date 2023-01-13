@@ -27,6 +27,11 @@ void insert_scheduled_task(Tcb_t* tcb)
     mstat.total_scheduled_tasks++;
 }
 
+void reboot(void)
+{
+    soft_reset();
+}
+
 void update_scheduler_statistic(void)
 {
     // mstat.waiting_tasks = 0;

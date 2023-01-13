@@ -14,3 +14,8 @@ void init_systick(unsigned int period)
     WRITE_REGISTER(stk->ctrl, READ_REGISTER(stk->ctrl) & ~0b111);
     WRITE_REGISTER(stk->ctrl, READ_REGISTER(stk->ctrl) | 0b110);
 }
+
+void soft_reset(void)
+{
+    WRITE_REGISTER(AIRCR, READ_REGISTER(AIRCR) | 1 << 2);
+}
