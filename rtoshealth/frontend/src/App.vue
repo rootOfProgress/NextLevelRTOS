@@ -1,18 +1,16 @@
 <template>
   <div id="app">
-    <!-- <h1 class="is-size-1"> <i> Bist Du ein gutes Mädchen?  </i></h1> -->
-    <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-    <HelloWorld/>
+    <SpeedRegulation/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import SpeedRegulation from './components/SpeedRegulation.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    SpeedRegulation
   }
 }
 </script>
