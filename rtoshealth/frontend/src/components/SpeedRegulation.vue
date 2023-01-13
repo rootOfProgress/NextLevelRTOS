@@ -70,16 +70,6 @@
           </div>
           <div class="content" v-else>
             <table class="table is-striped is-narrow ">
-            <!-- <thead>
-              <tr>
-                <th>CPU LoadBAR!!</th>
-                <th>Bytes Reserved</th>
-                <th>Bytes Used</th>
-                <th>RAM utilisation</th>
-                <th>Tasks</th>
-                <th>Active Tasks</th>
-              </tr>
-            </thead> -->
             <tbody>
               <tr>
                 <td> <button class="button is-link is-light is-rounded">Reboot</button> </td>
@@ -103,7 +93,7 @@
                   </div>
                 </td>
                 <td> 
-                  <button class="button is-link is-light is-rounded">Upload "{{ selectedPackage }}" </button>
+                  <button class="button is-link is-light is-rounded" :class="{'is-static' : !isPackageSelected, 'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
                 </td>
               </tr>
             </tbody>
@@ -254,6 +244,8 @@ export default {
         { date: "10-May-07", amount: 107.34 },
       ],
       selectedPackage: "",
+      isPackageSelected: false,
+      packageUploadInProgress: false,
       packages: [
         "one",
         "two",
@@ -294,25 +286,31 @@ export default {
       engine_2: 0,
       engine_3: 0,
       pwmMax: 999,
-      insertMode: false,
-      editMode: false,
-      usrInput: '',
-      daily: [
-      ],
-      weekly: []
     }
   },
   methods: {
     selectPackage (p) {
       this.selectedPackage = p
+      this.isPackageSelected = true
+    },
+    getLifetimeInfo()
+    {
+      axios.get(`/lifetime`).then((response) => {
+        this.oshealth = response.data
+      })
+    },
+    uploadPackage () {
+      this.packageUploadInProgress = true
+      axios.post(`/upload/${this.selectedPackage}`).then(() => {
+        this.packageUploadInProgress = false
+        this.selectedPackage = ""
+      })
     },
     update_speed (value, engineNumber) {
       let valueAsString = value.toString()
       while (valueAsString.length < 3) valueAsString = '0' + valueAsString
-      console.log(valueAsString, value, engineNumber)
       valueAsString = engineNumber.toString() + valueAsString
-      console.log(valueAsString)
-      axios.post(`http://192.168.178.51:5000/set_speed/${valueAsString}`).then(() => {
+      axios.post(`/set_speed/${valueAsString}`).then(() => {
       })
     }
   }
