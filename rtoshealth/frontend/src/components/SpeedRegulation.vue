@@ -288,7 +288,7 @@ export default {
       engine_1: 0,
       engine_2: 0,
       engine_3: 0,
-      pwmMax: 999,
+      pwmMax: 100,
     }
   },
   methods: {

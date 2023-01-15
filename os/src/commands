@@ -10,3 +10,7 @@ break uart_isr.c:80
 break exception.c:60
 printf "\\x01\\x12\\x34\\x56" >> /dev/ttyUSB0 
 file ../legacy_drivers/runtime/target/thumbv7em-none-eabihf/debug/runtime
+
+registers:
+tim2 x/40x 0x40000000
+tim3 x/40x 0x40000400

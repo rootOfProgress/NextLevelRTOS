@@ -11,30 +11,6 @@
 unsigned int svc_code = 0; 
 volatile unsigned int svc_number = 0;
 
-#ifdef SELF_CHECK
-
-void do_selfcheck_svc()
-{
-  unsigned int test_a = 1;
-  unsigned int test_b = 1;
-  unsigned int test_c = 1;
-  unsigned int test_d = 1;
-  svc(3);
-  if (svc_code != 3)
-    test_a = 0;
-  svc(7);
-  if (svc_code != 7)
-    test_b = 0;
-  svc(9);
-  if (svc_code != 9)
-    test_c = 0;
-  svc(0xAB);
-  if (svc_code != 0xAB)
-    test_d = 0;
-
-}
-#endif
-
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 {
   while (1)

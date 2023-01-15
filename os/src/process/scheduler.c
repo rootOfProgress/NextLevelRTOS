@@ -59,7 +59,7 @@ void __attribute__ ((hot)) policy_round_robin(void)
             return;
     }
     // no runnable task found
-    sleep();
+    // sleep();
 }
 
 void load_task(void)
