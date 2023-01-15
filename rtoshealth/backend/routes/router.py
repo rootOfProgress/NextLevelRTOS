@@ -80,11 +80,11 @@ def process_result():
 
 def upload_binary(package_name):
     print_info("Compile programm...")
-    cmd = "make -C " + " ../packages/" + package_name
+    cmd = "make -C " + " ../../packages/" + package_name
     os.system(cmd)
 
     print_info("Get Size...")
-    cmd = "wc -c < " + " ../packages/" + package_name + "/build/" + package_name + "_binary"
+    cmd = "wc -c < " + " ../../packages/" + package_name + "/build/" + package_name + "_binary"
     size = int(os.popen(cmd).read())
 
     if size > 0:
@@ -92,7 +92,7 @@ def upload_binary(package_name):
     else:
         print_fail("Could not read filesize!")
 
-    text_file = open("../packages/" + package_name + "/prepare", "wb")
+    text_file = open("../../packages/" + package_name + "/prepare", "wb")
     text_file.write(size.to_bytes(4,'big'))
     text_file.close()
 
@@ -105,7 +105,7 @@ def upload_binary(package_name):
     receiver.start()
 
     print_info("send binary size to device...")
-    cmd = "dd if=../packages/" + package_name + "/prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes"
+    cmd = "dd if=../../packages/" + package_name + "/prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes"
     os.system(cmd)
     time.sleep(1)
 
@@ -123,7 +123,7 @@ def upload_binary(package_name):
     time.sleep(1)
 
     print_info("upload binary to target...")
-    cmd = "dd if=../packages/" + package_name + "/build/" + package_name + "_binary" + " of=/dev/ttyUSB0 iflag=direct,skip_bytes"
+    cmd = "dd if=../../packages/" + package_name + "/build/" + package_name + "_binary" + " of=/dev/ttyUSB0 iflag=direct,skip_bytes"
     os.system(cmd)   
 
     print_success("done!")
@@ -139,11 +139,11 @@ def recompile_binary(final_adress, package_name, size):
 
     # change startadress
     print_info("change startadress in linker script...")
-    cmd = "sed -i \"1 s/.*/STARTADRESS\ =\ " + hex(final_adress_adjusted) + ";/\"" + " ../packages/" + package_name + "/link_external.ld"
+    cmd = "sed -i \"1 s/.*/STARTADRESS\ =\ " + hex(final_adress_adjusted) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
     os.system(cmd)
 
     print_info("recompile programm...")
-    cmd = "make -C " + " ../packages/" + package_name
+    cmd = "make -C " + " ../../packages/" + package_name
     os.system(cmd)
 
 
