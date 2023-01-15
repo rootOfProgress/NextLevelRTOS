@@ -139,9 +139,7 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
             {
                 unsigned int n = *((unsigned int*)0x48000010);
                 if (((n & 1)) < previous)
-                {
                     rpm++;
-                }
                 previous = n & 1;
             }
         stop();

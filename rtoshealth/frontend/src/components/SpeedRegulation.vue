@@ -17,6 +17,7 @@
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
                 :value=rpm.engine_0
+                needleColor="#757474"
                 textColor="#000000"
               />
             </div>
@@ -35,6 +36,7 @@
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
                 :value=rpm.engine_1
+                needleColor="#757474"
                 textColor="#000000"
               />
             </div>
@@ -55,6 +57,7 @@
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
                 :value=rpm.engine_2
+                needleColor="#757474"
                 textColor="#000000"
               />
             </div>
@@ -74,6 +77,7 @@
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
                 :value=rpm.engine_3
+                needleColor="#757474"
                 textColor="#000000"
               />
             </div>
