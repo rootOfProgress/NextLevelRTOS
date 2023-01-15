@@ -157,7 +157,14 @@ export default {
     //   this.daily = res.data
     // })
   },
-  mounted(){
+  mounted() {
+    axios.get('/get_packages').then((res) => {
+      this.packages = res.data
+    })
+    
+    axios.get('/lifetime').then((res) => {
+      this.oshealth = res.data
+    })
     // const width = 300;
     // const height = 200;
     // const data = [];
@@ -246,11 +253,7 @@ export default {
       selectedPackage: "",
       isPackageSelected: false,
       packageUploadInProgress: false,
-      packages: [
-        "one",
-        "two",
-        "three"
-      ],
+      packages: [],
       toggleOSPane: true,
       sensorReadings: {
         environment: {

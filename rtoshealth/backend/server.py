@@ -7,6 +7,9 @@ import os
 import time
 import serial
 
+path_suffix = '../../'
+package_path = path_suffix + 'packages'
+
 # general
 app = Flask(__name__)
 cors = CORS(app)
@@ -35,14 +38,11 @@ def detect_serial_interface() -> bool:
                 return True
     return False
 
-
 if __name__ == '__main__':
     # receiver = Thread(target = sync.listen_to_device)
     # rpm = Thread(target = router.request_rpm)
     # sync.myThread()
     if detect_serial_interface():
-        # receiver.start()
-        # rpm.start()
         app.run(host="192.168.178.51")
     else:
        print("No Serial Device found!")

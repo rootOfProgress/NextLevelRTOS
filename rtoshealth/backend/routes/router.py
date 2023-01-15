@@ -1,6 +1,5 @@
-from __main__ import app#, SERIAL_DEVICE
-# from server import SERIAL_DEVICE
-#from .hello import *
+from __main__ import app, path_suffix, package_path
+
 import json
 import os
 import time
@@ -78,13 +77,16 @@ def process_result():
             generic = b''.join(result[0:]).decode("utf-8")
             print(generic)
 
+def collect_available_packages():
+    return os.listdir(package_path)
+
 def upload_binary(package_name):
     print_info("Compile programm...")
-    cmd = "make -C " + " ../../packages/" + package_name
+    cmd = "make -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
 
     print_info("Get Size...")
-    cmd = "wc -c < " + " ../../packages/" + package_name + "/build/" + package_name + "_binary"
+    cmd = "wc -c < " + path_suffix + "packages/" + package_name + "/build/" + package_name + "_binary"
     size = int(os.popen(cmd).read())
 
     if size > 0:
@@ -92,7 +94,7 @@ def upload_binary(package_name):
     else:
         print_fail("Could not read filesize!")
 
-    text_file = open("../../packages/" + package_name + "/prepare", "wb")
+    text_file = open(path_suffix + "packages/" + package_name + "/prepare", "wb")
     text_file.write(size.to_bytes(4,'big'))
     text_file.close()
 
@@ -105,7 +107,7 @@ def upload_binary(package_name):
     receiver.start()
 
     print_info("send binary size to device...")
-    cmd = "dd if=../../packages/" + package_name + "/prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes"
+    cmd = "dd if=" + path_suffix + "packages/" + package_name + "/prepare of=/dev/ttyUSB0 iflag=direct,skip_bytes"
     os.system(cmd)
     time.sleep(1)
 
@@ -123,7 +125,7 @@ def upload_binary(package_name):
     time.sleep(1)
 
     print_info("upload binary to target...")
-    cmd = "dd if=../../packages/" + package_name + "/build/" + package_name + "_binary" + " of=/dev/ttyUSB0 iflag=direct,skip_bytes"
+    cmd = "dd if=" + path_suffix + "packages/" + package_name + "/build/" + package_name + "_binary" + " of=/dev/ttyUSB0 iflag=direct,skip_bytes"
     os.system(cmd)   
 
     print_success("done!")
@@ -143,8 +145,12 @@ def recompile_binary(final_adress, package_name, size):
     os.system(cmd)
 
     print_info("recompile programm...")
-    cmd = "make -C " + " ../../packages/" + package_name
+    cmd = "make -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
+
+@app.route('/get_packages', methods=['GET'])
+def get_packages():
+    return collect_available_packages()
 
 
 @app.route('/lifetime', methods=['GET'])
