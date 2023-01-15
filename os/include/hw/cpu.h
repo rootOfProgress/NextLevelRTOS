@@ -32,8 +32,9 @@ typedef enum {
     PendSVSet = 28,
 } Icsr_t;
 
-// #define SCB 0xE000ED00
 #define STK 0xE000E010
+#define AIRCR 0xE000ED0C
+#define SCR 0xE000ED10
 
 #define CTRL 0x00
 #define LOAD 0x04
@@ -59,7 +60,8 @@ static inline __attribute__((always_inline)) void disable_systick(void)
     WRITE_REGISTER(stk->ctrl, READ_REGISTER(stk->ctrl) & ~1);
 }
 
-
 void init_systick(unsigned int);
+void soft_reset(void);
+void sleep(void);
 
 #endif

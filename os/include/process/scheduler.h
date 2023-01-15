@@ -58,5 +58,6 @@ void invalidate_current_task(void);
 void unblock_task(unsigned int);
 void load_task(void);
 void update_scheduler_statistic(void);
+void reboot(void);
 
 #endif

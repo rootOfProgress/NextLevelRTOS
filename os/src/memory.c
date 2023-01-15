@@ -65,7 +65,7 @@ void init_process_allocator(unsigned int* memtable_start)
     }    
 }
 
-void init_allocator(unsigned int start_os_section) {
+void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
     while ((start_os_section & 0x3) != 0) {
         start_os_section += 1;
     }
@@ -77,17 +77,8 @@ void init_allocator(unsigned int start_os_section) {
         *(MEM_TABLE_START + index) = 0x0000FFFE;
     }
 
-    // mstat.num_of_allocs = 0;
-    // mstat.num_of_deallocs = 0;
-    // mstat.num_of_fractial_allocs = 0;
-    // mstat.total_byte_alloced = 0;
-    // mstat.total_byte_used = 0;
-    // mstat.os_data_end = (unsigned int) USEABLE_MEM_START;
-    // mstat.free_useable = 0;
-    // mstat.waiting_tasks = 0;
-    // mstat.total_scheduled_tasks = 0;
-    // mstat.cpu_load = 0; 
     memset_byte((void*) &mstat, sizeof(MemoryStatistic_t), 0); 
+    mstat.ram_size = ram_size;
 }
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
@@ -123,72 +114,6 @@ void __attribute__ ((cold)) update_memory_statistic(void)
     } while (q != task_queue->head);
     // setup_transfer((char*) mstat, sizeof(MemoryStatistic_t));
 
-}
-
-unsigned int* allocate_process(unsigned int size, unsigned int* table_start) {
-    unsigned int requested_size = size;
-    unsigned int next_useable_chunk = 0;
-
-    while ((requested_size & 0x3) != 0) {
-        requested_size += 1;
-    }
-
-    /*
-     *  CHUNK LIST LAYOUT
-     *
-     *  start_of_memory_block: 0x2000_0100 + OFFSET
-     *  | OFFSET , SIZE, IS_OCUPIED | [31..16, 15..1, 0]
-     *
-     *
-     **/
-    for (unsigned int index = 0; index < 10; index++)
-    {
-        // 47 possible allocs @todo WRONG COUNT!!
-        unsigned int memory_entry = *(table_start + index);
-
-        // check if occupied
-        if ((memory_entry & 1) == 1) {
-            // get size and add to offset
-            next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
-            continue;
-        }
-
-        // if ((memory_entry & 1) == 0) {
-            // check if chunk was already in use: Offset is not 0 
-        if ((((memory_entry >> 16) != 0) && ((memory_entry & 0xFFFE) >> 1) == requested_size))
-        {
-            unsigned int old_size = (memory_entry & 0xFFFE) >> 1;
-            memory_entry &= ~0xFFFF;
-            unsigned int remaining = old_size - requested_size;
-
-            // untested!
-            if (remaining > 0)
-            {
-                unsigned int j = index;
-                while (*(table_start + j++) != 0x0000FFFE) {};
-                *(table_start + j) = ((memory_entry >> 16) + requested_size) | remaining << 1 | 0; 
-                mstat.num_of_fractial_allocs++;
-            }
-
-            *(table_start + index) = memory_entry | (requested_size << 1) | 0x1;
-            mstat.num_of_allocs++;
-            return (unsigned int*) ((memory_entry >> 16) + (unsigned int) 10);
-        } 
-        // check if size fits on new chunk
-        if (((memory_entry & 0xFFFE) >> 1) >= requested_size)
-        {
-            // update offsetadress, size, mark as occupied
-            memory_entry = (next_useable_chunk << 16) | (requested_size << 1) | 1;
-
-            // write back changes
-            *(table_start + index) = memory_entry;
-            mstat.num_of_allocs++;
-            return (unsigned int*) ((memory_entry >> 16) + (unsigned int) 10);
-        }
-        next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
-       // }
-    }
-    return NULL;
 }
 
 unsigned int* allocate(unsigned int size) {
@@ -233,7 +158,7 @@ unsigned int* allocate(unsigned int size) {
                 unsigned int j = index;
                 while (*(MEM_TABLE_START + j++) != 0x0000FFFE) {};
                 *(MEM_TABLE_START + j) = ((memory_entry >> 16) + requested_size) | remaining << 1 | 0; 
-                mstat.num_of_fractial_allocs++;
+                // mstat.num_of_fractial_allocs++;
             }
 
             *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;

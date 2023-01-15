@@ -5,8 +5,9 @@ import '../node_modules/bulma/bulma.sass'
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'
 import 'bulma-slider'
+import axios from 'axios'
 Vue.config.productionTip = false
-// axios.defaults.baseURL = 'http://192.168.178.51:5000'
+axios.defaults.baseURL = 'http://192.168.178.51:5000'
 
 new Vue({
   store,

@@ -27,6 +27,11 @@ void insert_scheduled_task(Tcb_t* tcb)
     mstat.total_scheduled_tasks++;
 }
 
+void reboot(void)
+{
+    soft_reset();
+}
+
 void update_scheduler_statistic(void)
 {
     // mstat.waiting_tasks = 0;
@@ -53,7 +58,8 @@ void __attribute__ ((hot)) policy_round_robin(void)
         if (n->task_state == READY)
             return;
     }
-    // move sleeping task
+    // no runnable task found
+    sleep();
 }
 
 void load_task(void)

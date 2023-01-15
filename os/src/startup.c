@@ -18,6 +18,7 @@ extern unsigned int _edata;
 extern unsigned int _sbss;
 extern unsigned int _ebss;
 extern unsigned int stack_top;
+extern unsigned int ram_size;
 
 void reset_handler(void)
 {
@@ -26,7 +27,7 @@ void reset_handler(void)
         max = (unsigned int) &_edata;
     if ((unsigned int) &_sidata > max)
         max = (unsigned int) &_sidata; 
-    init_allocator( max );
+    init_allocator( max , (unsigned int*) &ram_size );
     main_init();
 }
 
