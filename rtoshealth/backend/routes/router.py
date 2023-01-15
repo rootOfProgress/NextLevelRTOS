@@ -148,6 +148,11 @@ def recompile_binary(final_adress, package_name, size):
     cmd = "make -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
 
+@app.route('/runrpm', methods=['GET'])
+def runrpm():
+    receiver = Thread(target = device_rx)
+    receiver.start()
+
 @app.route('/get_packages', methods=['GET'])
 def get_packages():
     return collect_available_packages()

@@ -8,6 +8,7 @@ import 'bulma-slider'
 import axios from 'axios'
 Vue.config.productionTip = false
 axios.defaults.baseURL = 'http://192.168.178.51:5000'
+import ReactSpeedometer from "react-d3-speedometer"
 
 new Vue({
   store,

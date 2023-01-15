@@ -7,13 +7,37 @@
             <p class="title">Engine 0</p>
             <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_0" @change="update_speed(engine_0,0)">
             <p>{{ (engine_0 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
-            <p> {{ rpm.engine_0 }} <i>rpm</i> </p>
+            <div>
+              <vue-speedometer 
+                :needleHeightRatio="0.7"
+                :maxSegmentLabels="1"
+                :segments="4"
+                :minValue="0"
+                :maxValue="30000"
+                :customSegmentStops="[0, 22000, 25000, 30000]"
+                :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
+                :value=rpm.engine_0
+                textColor="#000000"
+              />
+            </div>
           </article>
           <article class="tile is-child notification is-grey">
             <p class="title">Engine 1</p>
             <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_1" @change="update_speed(engine_1,1)">
             <p>{{ (engine_1 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
-            <p> {{ rpm.engine_1 }} <i>rpm</i> </p>
+            <div>
+              <vue-speedometer 
+                :needleHeightRatio="0.7"
+                :maxSegmentLabels="1"
+                :segments="4"
+                :minValue="0"
+                :maxValue="30000"
+                :customSegmentStops="[0, 22000, 25000, 30000]"
+                :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
+                :value=rpm.engine_1
+                textColor="#000000"
+              />
+            </div>
           </article>
         </div>
         <div class="tile is-parent is-vertical ">
@@ -21,13 +45,38 @@
             <p class="title">Engine 2</p>
             <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_2" @change="update_speed(engine_2,2)">
             <p>{{ (engine_2 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
-            <p> {{ rpm.engine_2 }} <i>rpm</i> </p>
+            <div>
+              <vue-speedometer 
+                :needleHeightRatio="0.7"
+                :maxSegmentLabels="1"
+                :segments="4"
+                :minValue="0"
+                :maxValue="30000"
+                :customSegmentStops="[0, 22000, 25000, 30000]"
+                :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
+                :value=rpm.engine_2
+                textColor="#000000"
+              />
+            </div>
           </article>
           <article class="tile is-child notification is-grey">
             <p class="title">Engine 3</p>
             <input class="slider is-fullwidth has-text-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_3" @change="update_speed(engine_3,3)">
             <p>{{ (engine_3 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
-            <p> {{ rpm.engine_3 }} <i>rpm</i> </p>
+            <!-- <p> {{ rpm.engine_3 }} <i>rpm</i> </p> -->
+            <div>
+              <vue-speedometer 
+                :needleHeightRatio="0.7"
+                :maxSegmentLabels="1"
+                :segments="4"
+                :minValue="0"
+                :maxValue="30000"
+                :customSegmentStops="[0, 22000, 25000, 30000]"
+                :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
+                :value=rpm.engine_3
+                textColor="#000000"
+              />
+            </div>
           </article>
         </div>
       </div>
@@ -147,8 +196,13 @@
 <script>
 import * as d3 from "d3";
 import axios from 'axios'
+// import VueSpeedMeter from "vue-speed-meter";
+import VueSpeedometer from "vue-speedometer"
 export default {
   name: 'SpeedRegulation',
+  components: {
+    VueSpeedometer,
+  },
   props: {
     msg: String
   },
@@ -164,77 +218,18 @@ export default {
     
     axios.get('/lifetime').then((res) => {
       this.oshealth = res.data
-    })
-    // const width = 300;
-    // const height = 200;
-    // const data = [];
-
-    // const svg = d3.select("svg").attr("width", width).attr("height", height);
-    // const g = svg.append("g");
-
-    // //2. Parse the dates
-    // const parseTime = d3.timeParse("%d-%b-%y");
-
-    // //3. Creating the Chart Axes
-    // const x = d3
-    //   .scaleTime()
-    //   .domain(
-    //     d3.extent(this.foo, function (d) {
-    //       return parseTime(d.date);
-    //     })
-    //   )
-    //   .rangeRound([0, width]);
-
-    // const y = d3
-    //   .scaleLinear()
-    //   .domain(
-    //     d3.extent(this.foo, function (d) {
-    //       return d.amount;
-    //     })
-    //   )
-    //   .rangeRound([height, 0]);
-
-    // //4. Creating a Line
-    // const line = d3
-    //   .line()
-    //   .x(function (d) {
-    //     return x(parseTime(d.date));
-    //   })
-    //   .y(function (d) {
-    //     return y(d.amount);
-    //   });
-
-    // //5. Appending the Axes to the Chart
-    // g.append("g")
-    //   .attr("transform", "translate(0," + height + ")")
-    //   .call(d3.axisBottom(x))
-    //   .append("text")
-    //   .attr("fill", "#000")
-    //   .attr("y", 6)
-    //   .attr("dy", "0.71em")
-    //   .attr("text-anchor", "end")
-    //   .text("FOO");
-    // g.append("g")
-    //   .call(d3.axisLeft(y))
-    //   .append("text")
-    //   .attr("fill", "#000")
-    //   .attr("transform", "rotate(-90)")
-    //   .attr("y", 6)
-    //   .attr("dy", "0.71em")
-    //   .attr("text-anchor", "end")
-    //   .text("Price ($)");    
-
-    // //6. Appending a path to the Chart
-    // g.append("path")
-    //   .datum(this.foo)
-    //   .attr("fill", "none")
-    //   .attr("stroke", "steelblue")
-    //   .attr("stroke-width", 1.5)
-    //   .attr("d", line);
-  
+    })  
   },
   data () {
     return {
+      customStyle: {
+        size: 200,
+        needleColor: "#eb4034",
+        mainBackgroundColor: "#e3e3e3",
+        scaleValuesColor: "#001aff",
+        scaleStep: 2000
+      },
+      customCurrentValue: 40,
       foo: [
         { date: "24-Apr-07", amount: 93.24 },
         { date: "25-Apr-07", amount: 95.35 },
