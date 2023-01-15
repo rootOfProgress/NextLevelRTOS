@@ -11,16 +11,15 @@ OBJ:=$(wildcard ./build/*.o)
 TARGET = devices
 all: $(TARGET)
 
-$(TARGET): clean compile_c move_objects move_objects_to_main
-
-move_objects_to_main:
-	cp ./build/*.o ../../build
+$(TARGET): clean compile_platform move_objects
 
 move_objects:
-	mv ./*.o ./build
+	if ! [ -d "./build" ]; then \
+        mkdir build; \
+    fi
+	mv ./*.o ../../build
 
-
-compile_c: $(SRC)
+compile_platform: $(SRC)
 	$(CC) $(CFLAGS) $(INC) $^ -c 
 
 clean:

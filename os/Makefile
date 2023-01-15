@@ -15,23 +15,24 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = firmware
 all: $(TARGET)
 
-$(TARGET): clean compile_c $(ARCH) link
+$(TARGET): clean build_kernel build_platform_$(ARCH) link_objects
+# $(TARGET): clean build_kernel link_objects
 
-$(ARCH):
+build_platform_$(ARCH):
 	make -C arch/$(ARCH)
 
 move_objects:
 	mv *.o ./build
 
-compile_c: $(SRC)
+build_kernel: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
 	mv *.o ./build
 
 compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
-link: 
-	make -C ./build ARCH=$(ARCH)
+link_objects: 
+	make -C ./buildscripts ARCH=$(ARCH)
 
 clean:
 	rm -f ./build/*.o $(TARGET)
