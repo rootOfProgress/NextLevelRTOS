@@ -18,6 +18,13 @@ all: $(TARGET)
 $(TARGET): clean build_kernel build_platform_$(ARCH) link_objects
 # $(TARGET): clean build_kernel link_objects
 
+# enables ramdisk feature
+ifeq (1,$(SYSTICK))
+CFLAGS += -DSYSTICK=1
+else
+CFLAGS += -DSYSTICK=0
+endif
+
 build_platform_$(ARCH):
 	make -C arch/$(ARCH)
 

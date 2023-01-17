@@ -125,6 +125,11 @@ void init()
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
+    while (1)
+    {
+        /* code */
+    }
+    
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
     while (1)
     {

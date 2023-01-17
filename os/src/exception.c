@@ -17,6 +17,14 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
   {
     /* code */
   }
+  
+  __asm (
+      "MRS r2, PSP\n"
+      "STMDB r2!, {r4-r11}\n"
+      "MSR PSP, r2\n"
+  );
+  *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+
 }
 
 // function exists to preserve R0 register
@@ -36,19 +44,22 @@ void __attribute__((optimize("O0"))) kprint()
 
 void __attribute__((optimize("O3"))) SVCall()
 {
-  // disable_systick();
+  if (SYSTICK)
+    disable_systick();
+  
   __asm (
     "TST lr, #4\n"
     "ITTT NE\n"
     "MRSNE r2, PSP\n"
     "STMDBNE r2!, {r4-r11}\n"
     "MSRNE PSP, r2\n"
-  ) ;
+  );
   __asm__("mov %0, r6" : "=r"(svc_number));
 
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
+    init_systick(1000);
     unsigned int sp1 = (unsigned int) ((Tcb_t*)currently_running->data)->sp;
     __asm__ volatile ("MOV R0, %[input_i]"
       :  
@@ -68,4 +79,6 @@ void __attribute__((optimize("O3"))) SVCall()
     __builtin_unreachable();
     break;
   }
+  if (SYSTICK)
+    enable_systick();
 }

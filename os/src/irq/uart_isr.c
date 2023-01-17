@@ -125,6 +125,13 @@ void send_number(unsigned int number, char converted[])
 
 void __attribute__((interrupt)) uart_isr_handler(void)
 {
+    // __asm (
+    //     "MRS r2, PSP\n"
+    //     "STMDB r2!, {r4-r11}\n"
+    //     "MSR PSP, r2\n"
+    // );
+    // __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) currently_running->data)->sp));
+
     switch (state)
     {
     case RX_READY:
@@ -189,7 +196,9 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         wakeup_pid(TASK_STATISTIC);
         state = RX_READY;
         unsigned int dummy = read_data_register();
-        break;
+        // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+        return;
+        // break;
     case ALTER_SPEED:
         buffer[bufferIndex++] = read_data_register();
         if (bufferIndex == 4)
@@ -224,8 +233,15 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         wakeup_pid(TASK_RPM);
         state = RX_READY;
         unsigned int dummy1 = read_data_register();
-        break;
+        // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+        return;
+        // break;
     default:
         break;
     }    
+    // __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
+    // __asm volatile (
+    //   "LDMFD r2!, {r4-r11}\n"
+    //   "MSR PSP, r2\n"
+    // );
 }

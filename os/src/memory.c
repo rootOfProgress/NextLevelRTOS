@@ -77,7 +77,7 @@ void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
     }
 
     memset_byte((void*) &mstat, sizeof(MemoryStatistic_t), 0); 
-    mstat.ram_size = ram_size;
+    mstat.ram_size = (unsigned int) ram_size;
 }
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {

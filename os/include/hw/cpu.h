@@ -42,22 +42,32 @@ typedef enum {
 #define CALIB 0x0C
 
 typedef struct Systick {
-    unsigned int* ctrl;
-    unsigned int* load;
-    unsigned int* val;
-    unsigned int* calib;
+    unsigned int ctrl;
+    unsigned int load;
+    unsigned int val;
+    unsigned int calib;
 } SystickRegisters_t;
 
 static inline __attribute__((always_inline)) void enable_systick(void)
 {
     SystickRegisters_t* stk = (SystickRegisters_t*) STK;
-    WRITE_REGISTER(stk->ctrl, READ_REGISTER(stk->ctrl) | 1);
+    WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) | 1);
+}
+
+static inline __attribute__((always_inline)) void enable_irq(void)
+{
+    __asm ("CPSIE I");
+}
+
+static inline __attribute__((always_inline)) void disable_irq(void)
+{
+    __asm ("CPSID I");
 }
 
 static inline __attribute__((always_inline)) void disable_systick(void)
 {
     SystickRegisters_t* stk = (SystickRegisters_t*) STK;
-    WRITE_REGISTER(stk->ctrl, READ_REGISTER(stk->ctrl) & ~1);
+    WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) & ~1);
 }
 
 void init_systick(unsigned int);
