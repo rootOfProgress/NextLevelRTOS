@@ -13,18 +13,12 @@ volatile unsigned int svc_number = 0;
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 {
-  while (1)
-  {
-    /* code */
-  }
-  
   __asm (
       "MRS r2, PSP\n"
       "STMDB r2!, {r4-r11}\n"
       "MSR PSP, r2\n"
   );
   *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
-
 }
 
 // function exists to preserve R0 register

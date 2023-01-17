@@ -1,4 +1,5 @@
 #include "drohne/rpm.h"
+#include "hw/cpu.h"
 
 #define BUFFERLENGTH 7
 #define TIM2_BASE 0x40000000
@@ -93,6 +94,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) do_measurement(
 {
     unsigned int rpm = 0;
     unsigned int previous = 1;
+    // disable_irq();
     start();
     // tim counts with 8kHz
     // example:
@@ -106,6 +108,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) do_measurement(
         previous = n & 1;
     }
     stop();
+    // enable_irq();
     // 1 sec
     rpm *= 60;
     rpm_results.engine_0 = rpm;
