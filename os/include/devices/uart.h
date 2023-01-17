@@ -15,7 +15,8 @@ typedef enum transfer_types {
     GENERIC = 0,
     MEM_ADDRESS,
     MEM_STAT,
-    STATISTIC
+    STATISTIC,
+    RPM
 } TransferType_t;
 
 typedef struct transfer {
@@ -30,7 +31,8 @@ typedef enum {
     TRANSFER_TASK_BYTES = 0x2,
     REQUEST_STATISTIC,
     ALTER_SPEED,
-    UNKNOWN = 0x3,
+    REQUEST_RPM,
+    // UNKNOWN = 0x3,
 } UartStates_t;
 
 extern void init_uart(GpioObject_t*);

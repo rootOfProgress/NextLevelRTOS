@@ -5,7 +5,6 @@
         <div class="tile is-parent is-vertical">
           <article class="tile is-child notification is-grey">
             <p class="title">Engine 0</p>
-            <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_0" @change="update_speed(engine_0,0)">
             <p>{{ (engine_0 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
             <div>
               <vue-speedometer 
@@ -13,6 +12,7 @@
                 :maxSegmentLabels="1"
                 :segments="4"
                 :minValue="0"
+                :height="180"
                 :maxValue="30000"
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
@@ -21,10 +21,10 @@
                 textColor="#000000"
               />
             </div>
+            <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_0" @change="update_speed(engine_0,0)">
           </article>
           <article class="tile is-child notification is-grey">
             <p class="title">Engine 1</p>
-            <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_1" @change="update_speed(engine_1,1)">
             <p>{{ (engine_1 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
             <div>
               <vue-speedometer 
@@ -32,6 +32,7 @@
                 :maxSegmentLabels="1"
                 :segments="4"
                 :minValue="0"
+                :height="180"
                 :maxValue="30000"
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
@@ -40,12 +41,12 @@
                 textColor="#000000"
               />
             </div>
+            <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_1" @change="update_speed(engine_1,1)">
           </article>
         </div>
         <div class="tile is-parent is-vertical ">
           <article class="tile is-child notification is-grey">
             <p class="title">Engine 2</p>
-            <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_2" @change="update_speed(engine_2,2)">
             <p>{{ (engine_2 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
             <div>
               <vue-speedometer 
@@ -53,6 +54,7 @@
                 :maxSegmentLabels="1"
                 :segments="4"
                 :minValue="0"
+                :height="180"
                 :maxValue="30000"
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
@@ -61,10 +63,10 @@
                 textColor="#000000"
               />
             </div>
+            <input class="slider is-fullwidth is-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_2" @change="update_speed(engine_2,2)">
           </article>
           <article class="tile is-child notification is-grey">
             <p class="title">Engine 3</p>
-            <input class="slider is-fullwidth has-text-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_3" @change="update_speed(engine_3,3)">
             <p>{{ (engine_3 / (pwmMax / 100)).toFixed(2) }} <i>%</i> </p>
             <!-- <p> {{ rpm.engine_3 }} <i>rpm</i> </p> -->
             <div>
@@ -73,6 +75,7 @@
                 :maxSegmentLabels="1"
                 :segments="4"
                 :minValue="0"
+                :height="180"
                 :maxValue="30000"
                 :customSegmentStops="[0, 22000, 25000, 30000]"
                 :segmentColors='["#bbffb5", "#faffc4", "#ffcbc4"]'
@@ -81,6 +84,7 @@
                 textColor="#000000"
               />
             </div>
+            <input class="slider is-fullwidth has-text-success" step="1" min="0" :max="pwmMax" value="0" type="range" v-model="engine_3" @change="update_speed(engine_3,3)">
           </article>
         </div>
       </div>
@@ -114,7 +118,8 @@
                 <td> {{ oshealth.cpu_load }} <i>%</i> </td>
                 <td> {{ oshealth.total_byte_alloced }} </td>
                 <td> {{ oshealth.total_byte_used  }} </td>
-                <td>RAM utilisation <i>%</i> </td>
+                <td> {{ (oshealth.total_byte_alloced / oshealth.ram_size) * 100 }} <i>%</i> </td>
+                <!-- <td> {{ oshealth.ram_size }} <i>%</i> </td> -->
                 <td> {{ oshealth.total_scheduled_tasks }} </td>
                 <td> {{ oshealth.total_scheduled_tasks - oshealth.waiting_tasks }} </td>
               </tr>
@@ -125,7 +130,7 @@
             <table class="table is-striped is-narrow ">
             <tbody>
               <tr>
-                <td> <button class="button is-link is-light is-rounded">Reboot</button> </td>
+                <td> <button class="button is-link is-light is-rounded " @click=fetchRPM()>Reboot</button> </td>
                 <td>  
                   <div class="dropdown is-hoverable">
                     <div class="dropdown-trigger">
@@ -136,8 +141,8 @@
                         </span>
                       </button>
                     </div>
-                    <div class="dropdown-menu" id="dropdown-menu4" role="menu">
-                      <div class="dropdown-content">
+                    <div class="dropdown-menu is-up" id="dropdown-menu4" role="menu">
+                      <div class="dropdown-content is-up">
                         <div class="dropdown-item">
                           <p v-for="p in packages" @click="selectPackage(p)"> {{ p }} </p>
                         </div>
@@ -214,6 +219,11 @@ export default {
     // axios.get('/getDaily').then((res) => {
     //   this.daily = res.data
     // })
+    // setInterval(() => {
+    //     axios.get('/rpm').then((res) => {
+    //       this.rpm.engine_3 = res.data[0].engine_3
+    //     })
+    //     }, 2000)
   },
   mounted() {
     axios.get('/get_packages').then((res) => {
@@ -268,7 +278,7 @@ export default {
       oshealth: {
         num_of_allocs: 0,
         num_of_deallocs: 0,
-        num_of_fractial_allocs: 0,
+        ram_size: 0,
         total_byte_alloced: 0,
         total_byte_used: 0,
         os_data_end: 0,
@@ -288,6 +298,7 @@ export default {
       engine_2: 0,
       engine_3: 0,
       pwmMax: 100,
+      interval: 0
     }
   },
   methods: {
@@ -300,6 +311,24 @@ export default {
       axios.get(`/lifetime`).then((response) => {
         this.oshealth = response.data
       })
+    },
+    fetchRPM() {
+    axios.get('/rpm').then((res) => {
+           console.log(res);
+           this.rpm.engine_3 = res.data.engine_3
+         })  
+      //     axios.get('/rpm').then((res) => {
+        //       this.rpm.engine_3 = res.data[0].engine_3
+      // this.interval = setInterval(() => axios.get('/rpm').then((res) => {
+      //      console.log(res);
+      //      this.rpm.engine_3 = res.data.engine_3
+      //    }), 5000);
+      // setInterval(() => {
+      //   axios.get('/rpm').then((res) => {
+      //     console.log(res);
+      //     this.rpm.engine_3 = res.data.engine_3
+      //   }), 1000
+      //         })
     },
     uploadPackage () {
       this.packageUploadInProgress = true

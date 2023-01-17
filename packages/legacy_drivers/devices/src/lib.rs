@@ -48,6 +48,7 @@ unsafe fn init_tim_3() {
 #[no_mangle] 
 pub unsafe extern "C" fn init_devs ()
 {
+    // i2c1 sda
     GpioDevice::new("B", 7)
         .as_af(4)
         .as_alternate_function()

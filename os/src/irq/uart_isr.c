@@ -65,6 +65,11 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
                 print(m, 8);
                 remaining -= 8;
                 break;
+            case RPM:
+                m = "CCCCAAAA";
+                print(m, 8);
+                remaining -= 8;
+                break;
             default:
                 break;
             }
@@ -214,7 +219,12 @@ void __attribute__((interrupt)) uart_isr_handler(void)
                 break;
             }
         }
-        break;    
+        break; 
+    case REQUEST_RPM:
+        wakeup_pid(TASK_RPM);
+        state = RX_READY;
+        unsigned int dummy1 = read_data_register();
+        break;
     default:
         break;
     }    

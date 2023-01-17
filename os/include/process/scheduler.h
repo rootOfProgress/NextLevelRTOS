@@ -9,6 +9,7 @@
 
 #define TASK_TRANSFER_HANDLER 0
 #define TASK_STATISTIC 1
+#define TASK_RPM 3
 
 typedef struct proc_stats {
     unsigned int num_of_hardfaults;

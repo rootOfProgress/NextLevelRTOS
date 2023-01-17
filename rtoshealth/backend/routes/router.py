@@ -11,6 +11,14 @@ from random import randrange
 serial_device = None
 result = []
 
+current_speed = {
+      "engine_0": 0,
+      "engine_1": 0,
+      "engine_2": 0,
+      "engine_3": 0,    
+}
+
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -61,7 +69,7 @@ def process_result():
             response = {
                 "num_of_allocs" : unpack('I', b''.join(result[8:12]))[0],
                 "num_of_deallocs" : unpack('I', b''.join(result[12:16]))[0], 
-                "num_of_fractial_allocs" : unpack('I', b''.join(result[16:20]))[0], 
+                "ram_size" : unpack('I', b''.join(result[16:20]))[0], 
                 "total_byte_alloced" : unpack('I', b''.join(result[20:24]))[0], 
                 "total_byte_used" : unpack('I', b''.join(result[24:28]))[0], 
                 "os_data_end" : unpack('I', b''.join(result[28:32]))[0], 
@@ -69,6 +77,16 @@ def process_result():
                 "waiting_tasks" : unpack('I', b''.join(result[36:40]))[0], 
                 "total_scheduled_tasks" : unpack('I', b''.join(result[40:44]))[0], 
                 "cpu_load" : unpack('I', b''.join(result[44:48]))[0],                
+            }
+            del result[:]
+            return response
+        case "CCCCAAAA":
+            print_success("Got device response!")
+            response = {
+                "engine_0" : unpack('I', b''.join(result[8:12]))[0],
+                "engine_1" : unpack('I', b''.join(result[12:16]))[0], 
+                "engine_2" : unpack('I', b''.join(result[16:20]))[0], 
+                "engine_3" : unpack('I', b''.join(result[20:24]))[0],            
             }
             del result[:]
             return response
@@ -181,11 +199,34 @@ def lifetime():
     response = process_result()
     return response
 
+@app.route('/rpm', methods=['GET'])
+def rpm():
+    print_info("set device into REQUEST_RPM state...")
+    cmd = "printf \"\\x05\\x12\\x34\\x56\" >> /dev/ttyUSB0"
+    os.system(cmd)
+    time.sleep(1)
+
+    receiver = Thread(target = device_rx)
+    receiver.start()
+
+    print_info("trigger update...")
+    cmd = "printf \"\\x05\" >> /dev/ttyUSB0"
+    os.system(cmd)
+
+    print_info("waiting for device response...")
+    start = time.time()
+    receiver.join()
+
+    stop = time.time()
+    print_info("Took " + str(stop - start) + " ms")
+    response = process_result()
+    return response    
+
 def alter_speed(speed):
     print_info("set device into speed state...")
     cmd = "printf \"\\x04\\x12\\x34\\x56\" >> /dev/ttyUSB0"
     os.system(cmd) 
-    time.sleep(1)
+    time.sleep(0.2)
 
     n = list(speed)
     cmd_0 = "printf \"" 
@@ -199,7 +240,29 @@ def alter_speed(speed):
 
 @app.route('/set_speed/<speed>', methods=['POST'])
 def set_speed(speed):
-    alter_speed(speed)
+    engine_no = int(speed[0])
+    new_speed = int(speed[1:4])
+
+    diff = new_speed - current_speed["engine_3"]
+    if (diff > 0):
+        while current_speed["engine_3"] != new_speed:
+            current_speed["engine_3"] += 1
+            speed = "3" + str(current_speed["engine_3"])
+            if (int(speed) > 300 and int(speed) < 399):
+                alter_speed(speed)
+                print(speed)
+            time.sleep(0.6)
+    else :
+        while current_speed["engine_3"] != new_speed:
+            current_speed["engine_3"] -= 1
+            speed = "3" + str(current_speed["engine_3"])
+            if (int(speed) > 300 and int(speed) < 399):
+                alter_speed(speed)
+                print(speed)
+            time.sleep(0.6)
+    
+    current_speed["engine_3"] = int(speed[1:4])
+    # alter_speed(speed)
     return 'data'
 
 @app.route('/upload/<package_name>', methods=['POST'])

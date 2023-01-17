@@ -10,7 +10,6 @@ const unsigned int NUM_OF_SLOTS = 60;
 
 MemoryStatistic_t mstat;
 
-
 void swap(char* buffer)
 {
     // char* p = (char*) buffer;
@@ -98,7 +97,7 @@ unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
 
 void __attribute__ ((cold)) update_memory_statistic(void)
 {
-    // mstat->total_byte_alloced = 0;
+    mstat.total_byte_alloced = 0;
     // count alloced spaces
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)
     {

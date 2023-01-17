@@ -7,6 +7,7 @@
 #include "devices/uart.h"
 #include "memory.h"
 #include "test.h"
+#include "drohne/rpm.h"
 #define EnablePrivilegedMode() __asm("SVC #0xF")
 
 
@@ -27,6 +28,19 @@ void setup_nvic_controller()
   *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
 }
 
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) drohne_rpm(void)
+{
+  init_rpm_timer();
+  block_current_task();
+  SV_YIELD_TASK;
+
+  while (1) {
+    block_current_task();
+    do_measurement();
+    volatile TransferInfo_t t_rpm = {.length = sizeof(Rpm_t), .start_adress = &rpm_results};
+    uprint((unsigned int*) &t_rpm, RPM);
+  };
+}
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
@@ -40,8 +54,6 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
 
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
-  volatile TransferInfo_t t = {.length = 17, .start_adress = &"Reached idle...\n\r"};
-  uprint((unsigned int*) &t, GENERIC);
   while (1) {
     SV_YIELD_TASK;
   };
@@ -72,9 +84,10 @@ int main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
-  create_task(&transfer_handler, 0);
-  create_task(&stat, 0);
-  create_task(&idle, 0);
+  create_task(&transfer_handler, 0); // pid0
+  create_task(&stat, 0); // pid1
+  create_task(&idle, 0); // pid2
+  create_task(&drohne_rpm, 0); // pid3
   init_isr();
   init_uart(t);
   run_scheduler();
