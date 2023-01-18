@@ -66,9 +66,12 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) thread1(void)
 {
   while (1) {
-    // lock_mutex((void*) &mutex);
-    if (++glob >= 1000)
+    lock_mutex((void*) &mutex);
+    if (glob < 1000000)
+      glob++;
+    else
       return;
+    unlock_mutex((void*) &mutex);
   };
 }
 
@@ -76,8 +79,11 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) thread2(v
 {
   while (1) {
     // lock_mutex((void*) &mutex);
-    if (++glob >= 1000)
+    if (glob < 1000000)
+      glob++;
+    else
       return;
+    // unlock_mutex((void*) &mutex);
   };
 }
 
@@ -114,7 +120,7 @@ int main_init(void)
   create_task(&idle, 0); // pid2
   // create_task(&drohne_rpm, 0); // pid3
   create_task(&thread1, 0); // pid2
-  create_task(&thread2, 0); // pid3
+  // create_task(&thread2, 0); // pid3
   init_isr();
   init_uart(t);
   run_scheduler();

@@ -1,5 +1,6 @@
 .global lock_mutex
 .global unlock_mutex
+.global foo
 .cpu cortex-m4
 .syntax unified
 .thumb
@@ -12,10 +13,9 @@
 // lock_mutex
 // ; Declare for use from C as extern void lock_mutex(void * mutex);
 lock_mutex:
-    ldr r1, =locked
     ldrex   r2, [r0]
 foo:  
-    CMP   r2, r1        //; Test if mutex is locked or unlocked
+    CMP   r2, locked        //; Test if mutex is locked or unlocked
     BEQ    foo           //; If locked - wait for it to be released, from 2
     STREX r2, r1, [r0]  //; Not locked, attempt to lock it
     CMP   r2, #1        //; Check if Store-Exclusive failed
