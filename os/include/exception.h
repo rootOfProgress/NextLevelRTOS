@@ -18,6 +18,12 @@
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
+#define SV_STD __asm volatile ("mov r6, 3\n" \
+                                  "svc 0\n")
+
+#define SV_STE __asm volatile ("mov r6, 4\n" \
+                                  "svc 0\n")
+
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
                                   "mov r9, r0\n"\
                                   "svc 0\n")
@@ -34,7 +40,8 @@ typedef enum {
     EXEC_PSP_TASK = 0,
     PRINT_MSG,
     YIELD_TASK,
-    ALLOCATE,
+    STD,
+    STE,
     RESET
 } TrapType_t;
 

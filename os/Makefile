@@ -15,7 +15,7 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = firmware
 all: $(TARGET)
 
-$(TARGET): clean build_kernel build_platform_$(ARCH) link_objects
+$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) link_objects
 # $(TARGET): clean build_kernel link_objects
 
 # enables ramdisk feature

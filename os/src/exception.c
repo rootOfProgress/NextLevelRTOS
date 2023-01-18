@@ -8,7 +8,6 @@
 #include "devices/uart.h"
 #include "process/scheduler.h"
 
-unsigned int svc_code = 0; 
 volatile unsigned int svc_number = 0;
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
@@ -21,7 +20,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
   *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 }
 
-// function exists to preserve R0 register
+// function exists to preserve R0 / R1 register
 __attribute__((used))  void uprint(volatile unsigned int* transfer_info __attribute__((unused)), volatile unsigned int type __attribute__((unused)))
 {
   SV_PRINT;
@@ -69,6 +68,25 @@ void __attribute__((optimize("O3"))) SVCall()
   case YIELD_TASK:
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
+  if (SYSTICK)
+  {
+    case STD:
+      disable_systick();
+      __asm volatile (
+        "MRS r2, PSP\n"
+        "LDMFD r2!, {r4-r11}\n"
+        "MSR PSP, r2\n"
+      );
+      return;
+    case STE:
+      enable_systick();
+      __asm volatile (
+        "MRS r2, PSP\n"
+        "LDMFD r2!, {r4-r11}\n"
+        "MSR PSP, r2\n"
+      );
+      return;
+  }
   default:
     __builtin_unreachable();
     break;

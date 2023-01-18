@@ -1,7 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#define FOURBYTE 0x04
+#define RAM_START 0x20000000
 
 typedef struct MemoryResult {
     unsigned int* start_address;

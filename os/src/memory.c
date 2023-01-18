@@ -98,6 +98,14 @@ unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
 void __attribute__ ((cold)) update_memory_statistic(void)
 {
     mstat.total_byte_alloced = 0;
+
+    unsigned int msp_position;
+    __asm volatile ("mrs %0, msp" : "=r"(msp_position));
+
+    mstat.total_byte_alloced += (RAM_START + mstat.ram_size) - msp_position;
+    mstat.total_byte_alloced += (unsigned int) MEM_TABLE_START - RAM_START;
+    mstat.total_byte_alloced += NUM_OF_SLOTS * sizeof(unsigned int);
+
     // count alloced spaces
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)
     {
@@ -116,6 +124,7 @@ void __attribute__ ((cold)) update_memory_statistic(void)
 }
 
 unsigned int* allocate(unsigned int size) {
+    // SV_STD;
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
@@ -162,6 +171,7 @@ unsigned int* allocate(unsigned int size) {
 
             *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;
             mstat.num_of_allocs++;
+            // SV_STE;
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         } 
         // check if size fits on new chunk
@@ -173,10 +183,12 @@ unsigned int* allocate(unsigned int size) {
             // write back changes
             *(MEM_TABLE_START + index) = memory_entry;
             mstat.num_of_allocs++;
+            // SV_STE;
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         }
         next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
        // }
     }
+    // SV_STE;
     return NULL;
 }
