@@ -15,10 +15,6 @@
 // {
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
 // }
-unsigned int glob;
-unsigned int mutex;
-extern void lock_mutex(void * mutex);
-extern void unlock_mutex(void * mutex);
 
 void setup_nvic_controller()
 {
@@ -63,31 +59,6 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void
   };
 }
 
-static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) thread1(void)
-{
-  while (1) {
-    lock_mutex((void*) &mutex);
-    if (glob < 1000000)
-      glob++;
-    else
-      return;
-    unlock_mutex((void*) &mutex);
-  };
-}
-
-static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) thread2(void)
-{
-  while (1) {
-    // lock_mutex((void*) &mutex);
-    if (glob < 1000000)
-      glob++;
-    else
-      return;
-    // unlock_mutex((void*) &mutex);
-  };
-}
-
-
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
 {
   // svc(0);
@@ -99,28 +70,16 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
   }
 }
 
-#ifdef FOOSELF_CHECK
-void do_selfcheck_main()
-{
-  queue_selfcheck();
-  do_selfcheck_task();
-  do_selfcheck_scheduler();
-  do_selfcheck_svc();
-}
-#endif
-
 int main_init(void)
 {
-  mutex=0;
-  glob=0;
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
   create_task(&transfer_handler, 0); // pid0
   create_task(&stat, 0); // pid1
   create_task(&idle, 0); // pid2
+
   // create_task(&drohne_rpm, 0); // pid3
-  create_task(&thread1, 0); // pid2
-  // create_task(&thread2, 0); // pid3
+
   init_isr();
   init_uart(t);
   run_scheduler();

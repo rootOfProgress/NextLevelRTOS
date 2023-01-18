@@ -25,6 +25,8 @@ else
 CFLAGS += -DSYSTICK=0
 endif
 
+CFLAGS += -DARCH
+
 build_platform_$(ARCH):
 	make -C arch/$(ARCH)
 

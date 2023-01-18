@@ -31,6 +31,8 @@ void swap(char*);
 void memset_byte(void*,unsigned int, char);
 
 extern MemoryStatistic_t mstat;
+extern void lock_mutex(void * mutex);
+extern void unlock_mutex(void * mutex);
 
 static inline void os_memcpy(char* dst, char data)
 {

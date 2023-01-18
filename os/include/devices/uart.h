@@ -44,5 +44,6 @@ void setup_transfer(char*, unsigned int, TransferType_t);
 void init_transfer_handler(void);
 void transfer_handler(void);
 unsigned int read_data_register(void);
+// static inline __attribute__((always_inline)) unsigned int read_data_register(void);
 
 #endif

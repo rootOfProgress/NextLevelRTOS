@@ -44,7 +44,6 @@ void create_task(void (*task_function)(), unsigned int ram_location)
     tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
     tcb->code_section = ram_location;
     tcb->task_state = READY;
-    init_process_allocator((unsigned int*) tcb->memory_lower_bound);
 //@leave it
 //     volatile unsigned int *shcsr = (void *)0xE000ED24;
 //     *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);

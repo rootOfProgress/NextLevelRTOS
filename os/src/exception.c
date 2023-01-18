@@ -52,7 +52,7 @@ void __attribute__((optimize("O3"))) SVCall()
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
-    init_systick(50);
+    init_systick(26);
     unsigned int sp1 = (unsigned int) ((Tcb_t*)currently_running->data)->sp;
     __asm__ volatile ("MOV R0, %[input_i]"
       :  

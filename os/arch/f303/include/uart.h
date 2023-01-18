@@ -27,6 +27,10 @@ typedef struct UartRegisterMap {
 // {
 //     return *((unsigned int*) 0x40013824);   
 // }
+// static inline __attribute__((always_inline)) unsigned int read_data_register(void)
+// {
+//     return *((unsigned int*) 0x40013824);    
+// }
 
 void init_uart(GpioObject_t*);
 void print(char *, unsigned int);
