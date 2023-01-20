@@ -2,3 +2,4 @@ build/
 !build/Makefile
 virt/
 packages/legacy_drivers/prepare
+tmp

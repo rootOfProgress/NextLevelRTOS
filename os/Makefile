@@ -7,7 +7,7 @@ LINK = link.ld
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static -nostdlib  \
-	 -Wno-implicit-fallthrough
+	 -Wno-implicit-fallthrough -mfloat-abi=hard
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
