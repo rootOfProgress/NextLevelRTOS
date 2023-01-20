@@ -1,5 +1,4 @@
-#include "drohne/rpm.h"
-#include "hw/cpu.h"
+#include "rpm.h"
 
 #define BUFFERLENGTH 7
 #define TIM2_BASE 0x40000000

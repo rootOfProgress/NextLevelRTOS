@@ -1,6 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
-INC = -Iinclude
+NON_OS_SRC := ../drohnentasks
+INC = -Iinclude -I$(NON_OS_SRC)/include/
 LINK = link.ld
 
 CFLAGS = -O2  \
@@ -15,8 +16,7 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = firmware
 all: $(TARGET)
 
-$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) link_objects
-# $(TARGET): clean build_kernel link_objects
+$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects
 
 # enables ramdisk feature
 ifeq (1,$(SYSTICK))
@@ -29,6 +29,9 @@ CFLAGS += -DARCH
 
 build_platform_$(ARCH):
 	make -C arch/$(ARCH)
+
+build_non_os_src:
+	make -C $(NON_OS_SRC)
 
 move_objects:
 	mv *.o ./build

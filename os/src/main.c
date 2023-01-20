@@ -7,7 +7,7 @@
 #include "devices/uart.h"
 #include "memory.h"
 #include "test.h"
-#include "drohne/rpm.h"
+#include "rpm.h"
 #define EnablePrivilegedMode() __asm("SVC #0xF")
 
 
