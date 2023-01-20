@@ -18,20 +18,27 @@ all: $(TARGET)
 
 $(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects
 
-# enables ramdisk feature
 ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1
 else
 CFLAGS += -DSYSTICK=0
 endif
 
+ifeq (1,$(HWFP))
+CFLAGS += -mfloat-abi=hard
+CFLAGS += -DHWFP=1
+else
+CFLAGS += -mfloat-abi=soft
+CFLAGS += -DHWFP=0
+endif
+
 CFLAGS += -DARCH
 
 build_platform_$(ARCH):
-	make -C arch/$(ARCH)
+	make -C arch/$(ARCH) HWFP=$(HWFP)
 
 build_non_os_src:
-	make -C $(NON_OS_SRC)
+	make -C $(NON_OS_SRC) HWFP=$(HWFP)
 
 move_objects:
 	mv *.o ./build

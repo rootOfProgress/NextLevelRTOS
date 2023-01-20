@@ -62,18 +62,18 @@ float root(int, int);
 
 void regulate_linear(unsigned int start_speed, unsigned int target_speed)
 {
-    float resolution = (float) target_speed - (float) start_speed;
-    float speed;
-    float current_speed;
-    float sleep_each_step = (MAX_DELAY / resolution);
-    unsigned int round = 0;
+    // float resolution = (float) target_speed - (float) start_speed;
+    // float speed;
+    // float current_speed;
+    // float sleep_each_step = (MAX_DELAY / resolution);
+    // unsigned int round = 0;
 
 
-    while (start_speed++ != target_speed)
-    {
-        current_speed = start_speed;
+    // while (start_speed++ != target_speed)
+    // {
+    //     current_speed = start_speed;
 
-    }
+    // }
 }
 
 int main(void)

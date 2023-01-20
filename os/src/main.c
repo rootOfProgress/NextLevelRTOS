@@ -55,6 +55,11 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
   while (1) {
+    float a = 0.0;
+    float b = 231.43;
+    float c = 442.923;
+    a = b + c;
+    // float foo = (float) 3.23 + (float) 5.58;
     SV_YIELD_TASK;
   };
 }

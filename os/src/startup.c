@@ -28,6 +28,19 @@ void reset_handler(void)
     if ((unsigned int) &_sidata > max)
         max = (unsigned int) &_sidata; 
     init_allocator( max , (unsigned int*) &ram_size );
+
+    if (HWFP)
+    {
+        __asm(
+            "LDR.W R0, =0xE000ED88\n"
+            "LDR R1, [R0]\n"
+            "ORR R1, R1, #(0xF << 20)\n"
+            "STR R1, [R0]\n"
+            "DSB\n"
+            "ISB\n"
+        );
+    }
+    // WRITE_REGISTER(0xE000EF34, READ_REGISTER(0xE000EF34) & ~(1 << 30));
     main_init();
 }
 
