@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "test.h"
 #include "rpm.h"
+#include "math.h"
 #define EnablePrivilegedMode() __asm("SVC #0xF")
 
 
@@ -15,6 +16,7 @@
 // {
 //   WRITE_REGISTER(0xE000E100, 0x1 << 6);
 // }
+unsigned int __errno = 0;
 
 void setup_nvic_controller()
 {
@@ -55,6 +57,7 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
   while (1) {
+    float foo = pow(2,4);
     float a = 0.0;
     float b = 231.43;
     float c = 442.923;

@@ -26,6 +26,7 @@ endif
 
 ifeq (1,$(HWFP))
 CFLAGS += -mfloat-abi=hard
+CFLAGS += -mfpu=fpv4-sp-d16
 CFLAGS += -DHWFP=1
 else
 CFLAGS += -mfloat-abi=soft
@@ -33,6 +34,8 @@ CFLAGS += -DHWFP=0
 endif
 
 CFLAGS += -DARCH
+
+export CFLAGS
 
 build_platform_$(ARCH):
 	make -C arch/$(ARCH) HWFP=$(HWFP)
@@ -51,7 +54,8 @@ compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
 link_objects: 
-	make -C ./buildscripts ARCH=$(ARCH) HWFP=$(HWFP)
+	make -C ./buildscripts
+#/sARCH=$(ARCH) 
 
 clean:
 	rm -f ./build/*.o $(TARGET)

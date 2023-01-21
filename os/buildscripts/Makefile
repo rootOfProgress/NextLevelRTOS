@@ -8,13 +8,34 @@ LINK = ../arch/$(ARCH)/link.ld
 LFLAGS = -nostdlib -nostartfiles
 OBJ:=$(wildcard ../build/*.o)
 
-ifeq (0,$(HWFP))
-LFLAGS += -lgcc
-endif
+# ifeq (0,$(HWFP))
+# LFLAGS += -lgcc
+# endif
 
 TARGET = $(ARCH)
-all: link
+ifeq (1,$(HWFP))
+all: link_hard
+else
+all: link_soft
+endif
 
-link: $(OBJ)
-	$(CC) -T $(LINK) -ffunction-sections $^  -o ../build/firmware $(LFLAGS)
+# -L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/arm-none-eabi/lib/thumb/v7+fp/hard \
+# -L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/12.2.0/thumb/v7+fp/hard \
+
+link_hard: $(OBJ)
+	$(CC) -T $(LINK) \
+	-L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/arm-none-eabi/lib/thumb/v7e-m+fp/hard \
+	-L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/12.2.0/thumb/v7e-m+fp/hard \
+	-ffunction-sections $^  -o ../build/firmware $(LFLAGS) -lm -lgcc
+#// $((if (0,$(HWFP)), "-lgcc"))
+
+# -L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/arm-none-eabi/lib/thumb/nofp/ \
+# -L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/12.2.0/thumb/v7+fp/softfp/ \
+
+link_soft: $(OBJ)
+	$(CC) -T $(LINK) \
+	-L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/arm-none-eabi/lib/v7e-m+fp/softfp/ \
+	-L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/12.2.0/thumb/v7e-m+fp/softfp/ \
+	-ffunction-sections $^  -o ../build/firmware $(LFLAGS) -lc -lm -lgcc
+	# $(CC) -T $(LINK)  -ffunction-sections $^  -o ../build/firmware $(LFLAGS) -lc -lm -lgcc
 #// $((if (0,$(HWFP)), "-lgcc"))

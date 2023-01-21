@@ -119,7 +119,7 @@ void __attribute__ ((cold)) update_memory_statistic(void)
 }
 
 unsigned int* allocate(unsigned int size) {
-    lock_mutex((void*) mutex);
+    lock_mutex((void*) &mutex);
     unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
@@ -167,7 +167,7 @@ unsigned int* allocate(unsigned int size) {
             *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;
             mstat.num_of_allocs++;
             // SV_STE;
-            unlock_mutex((void*) mutex);
+            unlock_mutex((void*) &mutex);
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         } 
         // check if size fits on new chunk
@@ -180,14 +180,14 @@ unsigned int* allocate(unsigned int size) {
             *(MEM_TABLE_START + index) = memory_entry;
             mstat.num_of_allocs++;
             // SV_STE;
-            unlock_mutex((void*) mutex);
+            unlock_mutex((void*) &mutex);
 
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         }
         next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
        // }
     }
-    unlock_mutex((void*) mutex);
+    unlock_mutex((void*) &mutex);
 
     // SV_STE;
     return NULL;
