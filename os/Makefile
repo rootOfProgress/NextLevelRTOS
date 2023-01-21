@@ -6,8 +6,8 @@ LINK = link.ld
 
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static -nostdlib  \
-	 -Wno-implicit-fallthrough -mfloat-abi=hard
+	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
+	 -Wno-implicit-fallthrough
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
@@ -51,7 +51,7 @@ compile_as: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
 link_objects: 
-	make -C ./buildscripts ARCH=$(ARCH)
+	make -C ./buildscripts ARCH=$(ARCH) HWFP=$(HWFP)
 
 clean:
 	rm -f ./build/*.o $(TARGET)
