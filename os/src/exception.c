@@ -48,10 +48,7 @@ void __attribute__((optimize("O3"))) SVCall()
     "MSRNE PSP, r2\n"
   );
   __asm__("mov %0, r6" : "=r"(svc_number));
-    float a = 0.0;
-    float b = 231.43;
-    float c = 442.923;
-    a = b + c;
+
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
