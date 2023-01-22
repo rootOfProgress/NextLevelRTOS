@@ -6,8 +6,8 @@ LINK = link.ld
 
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
-	 -Wno-implicit-fallthrough
+	 -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
+	 -g -Wno-implicit-fallthrough
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)

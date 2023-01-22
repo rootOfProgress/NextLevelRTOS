@@ -73,7 +73,7 @@ void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
     // return;
-    lock_mutex((void*) mutex);
+    lock_mutex((void*) &mutex);
 
     unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index++)
@@ -82,12 +82,12 @@ unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
         if ((alloc_entry >> 16) == address_offset) {
             mstat.num_of_deallocs++;
             *(MEM_TABLE_START + index) = alloc_entry & ~1;
-            unlock_mutex((void*) mutex);
+            guggus((void*) &mutex);
 
             return 1;
         }
     }
-    unlock_mutex((void*) mutex);
+    guggus((void*) &mutex);
 
     return 0;
 }
@@ -167,7 +167,7 @@ unsigned int* allocate(unsigned int size) {
             *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;
             mstat.num_of_allocs++;
             // SV_STE;
-            unlock_mutex((void*) &mutex);
+            guggus((void*) &mutex);
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         } 
         // check if size fits on new chunk
@@ -180,14 +180,14 @@ unsigned int* allocate(unsigned int size) {
             *(MEM_TABLE_START + index) = memory_entry;
             mstat.num_of_allocs++;
             // SV_STE;
-            unlock_mutex((void*) &mutex);
+            guggus((void*) &mutex);
 
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         }
         next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
        // }
     }
-    unlock_mutex((void*) &mutex);
+    guggus((void*) &mutex);
 
     // SV_STE;
     return NULL;
