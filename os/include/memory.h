@@ -19,6 +19,7 @@ typedef struct MemoryStatistic {
     unsigned int waiting_tasks;
     unsigned int total_scheduled_tasks;
     unsigned int cpu_load;
+    // unsigned int num_of_hardfaults;
 } MemoryStatistic_t;
 
 unsigned int* allocate(unsigned int);

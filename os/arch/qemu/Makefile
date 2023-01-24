@@ -3,7 +3,8 @@ INC = -Iinclude
 
 CFLAGS = -O3  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib \
+	 -g -nostartfiles -ffunction-sections  \
+	 -Wall -Wextra -static -nostdlib \
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)

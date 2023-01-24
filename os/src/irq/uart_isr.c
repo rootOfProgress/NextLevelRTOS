@@ -76,7 +76,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
             print(transfer->start_adress, transfer->length);
             remaining -= transfer->length;
 
-            char zero = '0';
+            char zero = '1';
             while (remaining-- != 0)
                 print(&zero, 1);
 

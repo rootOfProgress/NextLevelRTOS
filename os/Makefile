@@ -7,7 +7,10 @@ LINK = link.ld
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
-	 -g -Wno-implicit-fallthrough
+	 -g -Wno-implicit-fallthrough -fsingle-precision-constant 
+	 
+#-print-libgcc-file-name \
+#-print-multiarch 
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)

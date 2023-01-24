@@ -17,7 +17,7 @@ void init_scheduler(void)
     low_priority_tasks = new_queue();
     waiting_tasks = new_queue();
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
-
+    memset_byte((void*) process_stats, sizeof(ProcessStats_t*), 0);
     switch_task = policy_round_robin;
 }
 
@@ -76,6 +76,7 @@ void block_current_task(void)
 {
     ((Tcb_t*) (currently_running->data))->task_state = WAITING;
     mstat.waiting_tasks++;
+    SV_YIELD_TASK;
 }
 
 void run_scheduler(void)

@@ -9,6 +9,7 @@ import serial
 
 path_suffix = '../../'
 package_path = path_suffix + 'packages'
+# device_address = ""
 
 # general
 app = Flask(__name__)
@@ -34,7 +35,10 @@ def detect_serial_interface() -> bool:
                 if "ID_MODEL_ID" in device_info:
                     MODEL_ID = device_info.split('=')[-1]
             if (VENDOR_ID == ID_VENDOR_ID and MODEL_ID == ID_MODEL_ID):
+                print("found device!")
                 router.serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=2, xonxoff=False, rtscts=False, dsrdtr=False)
+                # global device_address
+                router.device_address = f"ttyUSB{i}"
                 return True
     return False
 
