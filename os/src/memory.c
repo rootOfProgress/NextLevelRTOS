@@ -118,14 +118,11 @@ void __attribute__ ((cold)) update_memory_statistic(void)
     } while (q != task_queue->head);
 }
 
-unsigned int* allocate(unsigned int size) {
+unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
     lock_mutex((void*) &mutex);
-    unsigned int requested_size = size;
     unsigned int next_useable_chunk = 0;
 
-    while ((requested_size & 0x3) != 0) {
-        requested_size += 1;
-    }
+    while ((size & 0x3) != 0) { size++; }
 
     /*
      *  CHUNK LIST LAYOUT
@@ -147,48 +144,46 @@ unsigned int* allocate(unsigned int size) {
             continue;
         }
 
-        // if ((memory_entry & 1) == 0) {
-            // check if chunk was already in use: Offset is not 0 
-        if ((((memory_entry >> 16) != 0) && ((memory_entry & 0xFFFE) >> 1) == requested_size))
+        // check if chunk was already in use: Offset is not 0 
+        if ((((memory_entry >> 1) & 0xFFFF) != 0x7FFF && ((memory_entry & 0xFFFE) >> 1) >= size))
         {
             unsigned int old_size = (memory_entry & 0xFFFE) >> 1;
+
+            // mark size as 0, mark is_used 0
             memory_entry &= ~0xFFFF;
-            unsigned int remaining = old_size - requested_size;
+            unsigned int remaining = old_size - size;
 
             // untested!
             if (remaining > 0)
             {
                 unsigned int j = index;
-                while (*(MEM_TABLE_START + j++) != 0x0000FFFE) {};
-                *(MEM_TABLE_START + j) = ((memory_entry >> 16) + requested_size) | remaining << 1 | 0; 
+                while (*(MEM_TABLE_START + j) != 0x0000FFFE) { j++; };
+                *(MEM_TABLE_START + j) = (((memory_entry >> 16) + size) << 16) | remaining << 1 | 0; 
                 // mstat.num_of_fractial_allocs++;
             }
 
-            *(MEM_TABLE_START + index) = memory_entry | (requested_size << 1) | 0x1;
+            *(MEM_TABLE_START + index) &= 0xFFFF0000;
+            *(MEM_TABLE_START + index) |= (size << 1) | 0x1;
             mstat.num_of_allocs++;
-            // SV_STE;
             unlock_mutex((void*) &mutex);
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         } 
         // check if size fits on new chunk
-        if (((memory_entry & 0xFFFE) >> 1) >= requested_size)
+        if (((memory_entry & 0xFFFE) >> 1) >= size)
         {
             // update offsetadress, size, mark as occupied
-            memory_entry = (next_useable_chunk << 16) | (requested_size << 1) | 1;
+            memory_entry = (next_useable_chunk << 16) | (size << 1) | 1;
 
             // write back changes
             *(MEM_TABLE_START + index) = memory_entry;
             mstat.num_of_allocs++;
-            // SV_STE;
             unlock_mutex((void*) &mutex);
 
             return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
         }
         next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
-       // }
     }
     unlock_mutex((void*) &mutex);
 
-    // SV_STE;
     return NULL;
 }
