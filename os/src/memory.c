@@ -72,7 +72,6 @@ void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
 }
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
-    // return;
     lock_mutex((void*) mutex);
 
     unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
@@ -94,8 +93,6 @@ unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
 
 void __attribute__ ((cold)) update_memory_statistic(void)
 {
-    // mstat.total_byte_alloced = 0;
-
     unsigned int msp_position;
     __asm volatile ("mrs %0, msp" : "=r"(msp_position));
 
