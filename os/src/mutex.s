@@ -1,5 +1,5 @@
 .global lock_mutex
-.global guggus
+.global release_mutex
 .global foo
 .cpu cortex-m4
 .syntax unified
@@ -24,7 +24,7 @@ foo:
     DMB                   //; Required before accessing protected resource
     BX      lr
 
-guggus:
+release_mutex:
     ldr r1, =unlocked
     DMB                   //; Required before releasing protected resource
     STR     r1, [r0]      //; Unlock mutex
