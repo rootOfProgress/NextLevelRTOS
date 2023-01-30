@@ -8,18 +8,15 @@ CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
 	 -g -Wno-implicit-fallthrough -fsingle-precision-constant 
-	 
-#-print-libgcc-file-name \
-#-print-multiarch 
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
 SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
-TARGET = firmware
+TARGET = os
 all: $(TARGET)
 
-$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects
+$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects clean_objects
 
 ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1
@@ -58,7 +55,9 @@ compile_as: $(SRC_AS)
 
 link_objects: 
 	make -C ./buildscripts
-#/sARCH=$(ARCH) 
 
 clean:
-	rm -f ./build/*.o $(TARGET)
+	rm -f ./build/*.o *.$(ARCH) memmap.$(ARCH)
+
+clean_objects:
+	rm -f ./build/*.o

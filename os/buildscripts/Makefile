@@ -43,6 +43,6 @@ link_soft: $(OBJ)
 	$(CC) -T $(LINK) \
 	-L../lib/math/nofp \
 	-L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/12.2.0/thumb/v7e-m/nofp/ \
-	-ffunction-sections $^  -o ../build/firmware $(LFLAGS) -lm -lgcc
+	-ffunction-sections $^  -o ../build/os.$(ARCH) $(LFLAGS) -Xlinker -Map=../build/memmap.$(ARCH) -lm -lgcc
 # $(CC) -T $(LINK)  -ffunction-sections $^  -o ../build/firmware $(LFLAGS) -lc -lm -lgcc
 #// $((if (0,$(HWFP)), "-lgcc"))
