@@ -16,7 +16,7 @@ TARGET = $(ARCH)
 ifeq (1,$(HWFP))
 all: link_hard
 else
-all: link_soft
+all: link_soft create_api
 endif
 
 # -L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/arm-none-eabi/lib/thumb/v7+fp/hard \
@@ -38,6 +38,9 @@ link_hard: $(OBJ)
 
 #-L/usr/share/arm-gnu-toolchain-12.2.mpacbti-bet1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/12.2.0/thumb/v7e-m/nofp/ \
 	-L../lib/gcc/nofp \
+
+create_api:
+	python collect_external_headers.py $(ARCH)
 
 link_soft: $(OBJ)
 	$(CC) -T $(LINK) \

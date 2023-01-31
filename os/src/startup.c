@@ -29,6 +29,11 @@ void reset_handler(void)
         max = (unsigned int) &_sidata; 
     init_allocator( max , (unsigned int*) &ram_size );
 
+    if (TEST)
+    {
+        WRITE_REGISTER(0x20000000, 0);
+    }
+
     if (HWFP)
     {
         __asm(

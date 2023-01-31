@@ -236,6 +236,19 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
         return;
         // break;
+    case REBOOT:
+        state = RX_READY;
+        soft_reset();
+        unsigned int dummy2 = read_data_register();
+        return;
+    case REQUEST_TEST_RESULT:
+        unsigned int dummy3 = read_data_register();
+        char *test = "DDDDEEEE";
+        print(test, 8);
+        print((char*) 0x20000000, 4);
+        WRITE_REGISTER(0x20000000, 0);
+        state = RX_READY;
+        return;
     default:
         break;
     }    

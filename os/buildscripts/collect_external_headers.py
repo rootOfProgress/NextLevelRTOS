@@ -1,8 +1,10 @@
 import os
+import sys
+
 
 path_prefix = '../build/memmap.'
 public_functions = ['allocate', 'deallocate']
-arch = 'qemu'
+arch = list(sys.argv)[1]
 header = ""
 
 if __name__ == '__main__':
@@ -14,15 +16,16 @@ if __name__ == '__main__':
         # result = os.system(cmd)
         # void (*functionPtr2)(void);
         # functionPtr = (void (*)()) (0x08000843);
-        result = int(str(os.popen(cmd).read()).strip(), 16) - 1
+        result = int(str(os.popen(cmd).read()).strip(), 16) | 1
         # header += " #define " + function + " " + str(result)
 
         header += "#define " + function + "_addr " + hex(result) + "\n"
 
     header += "#endif\n"
-    with open("os_header.h", "w") as myfile:
+    with open("addresses.h", "w") as myfile:
         myfile.write(header)
         myfile.close()
+    os.system("mv addresses.h ../../packages/include")
 
         # print(cmd)
     

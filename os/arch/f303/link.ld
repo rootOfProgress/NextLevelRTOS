@@ -1,5 +1,5 @@
 ram_size = 40000;
-ram_start = 0x20000000;
+ram_start = 0x20000004;
 EXTERN(reset_handler)
 ENTRY(reset_handler)
 

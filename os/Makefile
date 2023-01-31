@@ -6,8 +6,8 @@ LINK = link.ld
 
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
-	 -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
-	 -g -Wno-implicit-fallthrough -fsingle-precision-constant 
+	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
+	 -Wno-implicit-fallthrough -fsingle-precision-constant 
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
@@ -22,6 +22,12 @@ ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1
 else
 CFLAGS += -DSYSTICK=0
+endif
+
+ifeq (1,$(TEST))
+CFLAGS += -DTEST=1
+else
+CFLAGS += -DTEST=0
 endif
 
 ifeq (1,$(HWFP))
@@ -55,6 +61,7 @@ compile_as: $(SRC_AS)
 
 link_objects: 
 	make -C ./buildscripts
+
 
 clean:
 	rm -f ./build/*.o *.$(ARCH) memmap.$(ARCH)
