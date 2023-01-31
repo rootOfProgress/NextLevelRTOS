@@ -20,7 +20,16 @@ void sleep(void)
     WRITE_REGISTER(SCR, READ_REGISTER(SCR) | 1 << 1);
 }
 
-void soft_reset(void)
+void  __attribute__((optimize("O0"))) soft_reset(void)
 {
-    WRITE_REGISTER(AIRCR, READ_REGISTER(AIRCR) | 1 << 2);
+    __asm("dsb");
+    // __asm("ldr r1,=0x05FA0004");
+    // __asm("str r1, [r0, #0]"); 
+    WRITE_REGISTER(AIRCR, 0x05FA0001);
+    __asm("dsb");
+    while (1)
+    {
+        /* code */
+    }
+    
 }

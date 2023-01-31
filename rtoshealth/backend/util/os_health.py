@@ -5,6 +5,16 @@ import os
 import time
 from threading import Thread, Lock
 
+def reboot():
+    logging.print_info("set device into REBOOT state...")
+    cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
+    os.system(cmd)
+    time.sleep(1)
+    
+    logging.print_info("perform reboot...")
+    cmd = "printf \"\\x06\" >> /dev/" + uart_receiver.device_address
+    os.system(cmd)
+
 def get_lifetime():
     uart_receiver.flush()
     if uart_receiver.is_busy:

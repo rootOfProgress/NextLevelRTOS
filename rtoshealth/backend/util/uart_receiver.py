@@ -64,9 +64,8 @@ def process_result():
                 return response
             case "DDDDEEEE":
                 logging.print_success("Got device response!")
-                print(result)
                 response = {
-                    "engine_0" : unpack('I', b''.join(result[8:12]))[0]        
+                    "test_result" : unpack('I', b''.join(result[8:12]))[0]        
                 }
                 del result[:]
                 return response
@@ -97,6 +96,7 @@ def device_rx(expected = 64):
             bytesToRead = serial_device.inWaiting()
             incoming_byte = serial_device.read(bytesToRead)
             if bytesToRead != 0:
+                # print(incoming_byte)
                 result.append(incoming_byte)
                 bytes_read += 1
                 if bytes_read == expected:

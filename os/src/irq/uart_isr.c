@@ -238,8 +238,8 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         // break;
     case REBOOT:
         state = RX_READY;
-        soft_reset();
         unsigned int dummy2 = read_data_register();
+        soft_reset();
         return;
     case REQUEST_TEST_RESULT:
         unsigned int dummy3 = read_data_register();

@@ -70,27 +70,27 @@ void __attribute__((optimize("O3"))) SVCall()
     break;
   if (SYSTICK)
   {
-    case STD:
-      disable_systick();
-      __asm volatile (
-        "MRS r2, PSP\n"
-        "LDMFD r2!, {r4-r11}\n"
-        "MSR PSP, r2\n"
-      );
-      return;
-    case STE:
-      enable_systick();
-      __asm volatile (
-        "MRS r2, PSP\n"
-        "LDMFD r2!, {r4-r11}\n"
-        "MSR PSP, r2\n"
-      );
-      return;
+  case STD:
+    disable_systick();
+    __asm volatile (
+      "MRS r2, PSP\n"
+      "LDMFD r2!, {r4-r11}\n"
+      "MSR PSP, r2\n"
+    );
+    return;
+  case STE:
+    enable_systick();
+    __asm volatile (
+      "MRS r2, PSP\n"
+      "LDMFD r2!, {r4-r11}\n"
+      "MSR PSP, r2\n"
+    );
+    return;
   }
   default:
     __builtin_unreachable();
     break;
   }
-  if (SYSTICK)
-    enable_systick();
+  // if (SYSTICK)
+  //   enable_systick();
 }

@@ -9,6 +9,7 @@ import util.uart_receiver as uart_receiver
 import util.binary_loader as binary_loader
 import util.os_health as os_health
 import test.test_util as test_util
+import test.memory as memory_test
 
 
 # from logging import print_fail, print_info, print_success, print_warning
@@ -50,21 +51,26 @@ def lifetime():
 @app.route('/reboot', methods=['GET'])
 def reboot():
     logging.print_info("set device into REBOOT state...")
-    cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + device_address
+    cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
     time.sleep(1)
-    
+    # receiver = Thread(target = uart_receiver.device_rx)
+    # receiver.start()
 
     logging.print_info("perform reboot...")
-    cmd = "printf \"\\x06\" >> /dev/" + device_address
+    cmd = "printf \"\\x06\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
-
+    # receiver.join()
     return {}    
 
 
 @app.route('/get_test_results', methods=['GET'])
 def get_test_results():
     return test_util.get_test_results()
+
+@app.route('/test/memory', methods=['GET'])
+def test_memory():
+    return memory_test.test_memory_api()
 
 @app.route('/rpm', methods=['GET'])
 def rpm():
