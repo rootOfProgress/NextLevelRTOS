@@ -30,7 +30,7 @@ def test_memory_api():
     test_result = test_util.get_test_results()
     test_result = test_result["test_result"]
     result = []
-    for test in range(0,7):
+    for test in range(0,12):
         if (test_result & 1 << test):
             logging.print_success("Test " + str(test) + " succeeded!")
             test = {'test'+str(test): "PASS"}
