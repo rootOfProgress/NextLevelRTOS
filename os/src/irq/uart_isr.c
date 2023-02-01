@@ -76,7 +76,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
             print(transfer->start_adress, transfer->length);
             remaining -= transfer->length;
 
-            char zero = '0';
+            char zero = '1';
             while (remaining-- != 0)
                 print(&zero, 1);
 
@@ -236,6 +236,19 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
         return;
         // break;
+    case REBOOT:
+        state = RX_READY;
+        unsigned int dummy2 = read_data_register();
+        soft_reset();
+        return;
+    case REQUEST_TEST_RESULT:
+        unsigned int dummy3 = read_data_register();
+        char *test = "DDDDEEEE";
+        print(test, 8);
+        print((char*) 0x20000000, 4);
+        WRITE_REGISTER(0x20000000, 0);
+        state = RX_READY;
+        return;
     default:
         break;
     }    

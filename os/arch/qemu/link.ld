@@ -3,6 +3,9 @@ ram_start = 0x20000000;
 EXTERN(reset_handler)
 ENTRY(reset_handler)
 
+
+bar1 = 0xC00fffff; 
+
 MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K

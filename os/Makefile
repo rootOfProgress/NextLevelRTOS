@@ -7,21 +7,27 @@ LINK = link.ld
 CFLAGS = -O2  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
-	 -Wno-implicit-fallthrough
+	 -Wno-implicit-fallthrough -fsingle-precision-constant 
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
 SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
-TARGET = firmware
+TARGET = os
 all: $(TARGET)
 
-$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects
+$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects clean_objects
 
 ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1
 else
 CFLAGS += -DSYSTICK=0
+endif
+
+ifeq (1,$(TEST))
+CFLAGS += -DTEST=1
+else
+CFLAGS += -DTEST=0
 endif
 
 ifeq (1,$(HWFP))
@@ -55,7 +61,10 @@ compile_as: $(SRC_AS)
 
 link_objects: 
 	make -C ./buildscripts
-#/sARCH=$(ARCH) 
+
 
 clean:
-	rm -f ./build/*.o $(TARGET)
+	rm -f ./build/*.o *.$(ARCH) memmap.$(ARCH)
+
+clean_objects:
+	rm -f ./build/*.o

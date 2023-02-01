@@ -2,7 +2,8 @@ import json
 from flask import Flask
 from flask_cors import CORS, cross_origin
 from threading import Thread
-
+import util.logging as logging
+# import test.memory as memory
 import os
 import time
 import serial
@@ -17,6 +18,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config["DEBUG"] = True
 
 import routes.router as router
+import util.uart_receiver as receiver
 from threadSync import sync
 
 ID_VENDOR_ID = "067b"
@@ -34,7 +36,10 @@ def detect_serial_interface() -> bool:
                 if "ID_MODEL_ID" in device_info:
                     MODEL_ID = device_info.split('=')[-1]
             if (VENDOR_ID == ID_VENDOR_ID and MODEL_ID == ID_MODEL_ID):
-                router.serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=2, xonxoff=False, rtscts=False, dsrdtr=False)
+                print("found device!")
+                receiver.serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=2, xonxoff=False, rtscts=False, dsrdtr=False)
+                # global device_address
+                receiver.device_address = f"ttyUSB{i}"
                 return True
     return False
 
