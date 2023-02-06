@@ -54,6 +54,22 @@ void memset_byte(void* dest, unsigned int number_of_bytes, char pattern)
     }
 }
 
+void garbage_collect()
+{
+    // todo: sort by offset
+    for (unsigned int index = 1; index < NUM_OF_SLOTS; index++)
+    {
+        unsigned int memory_entry = *(MEM_TABLE_START + index);
+        unsigned int memory_entry_predecor = *(MEM_TABLE_START + index - 1);
+        // check if free
+        if ((memory_entry & 1) != 1 && (memory_entry_predecor & 1) != 1) {
+            // get size and add to offset
+            // next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
+            continue;
+        }        
+        *(MEM_TABLE_START + index) = 0x0000FFFE;
+    }    
+}
 
 void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
     while ((start_os_section & 0x3) != 0) {

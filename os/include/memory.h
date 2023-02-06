@@ -30,6 +30,7 @@ void init_allocator(unsigned int,unsigned int*);
 void init_process_allocator(unsigned int*);
 void swap(char*);
 void memset_byte(void*,unsigned int, char);
+void garbage_collect(void);
 
 extern MemoryStatistic_t mstat;
 extern void lock_mutex(void * mutex);
