@@ -70,6 +70,17 @@ void garbage_collect()
         *(MEM_TABLE_START + index) = 0x0000FFFE;
     }    
 }
+int size_comparator(unsigned int a, unsigned int b)
+{
+    unsigned int size_a = (a & 0xFFFE) > 1;
+    unsigned int size_b = (b & 0xFFFE) > 1;
+    if (size_a > size_b)
+        return 1;
+    if (size_a < size_b)
+        return -1;
+    return 0;
+}
+
 
 void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
     while ((start_os_section & 0x3) != 0) {
