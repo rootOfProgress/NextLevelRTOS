@@ -20,7 +20,7 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
     cpu_register->psr = THUMB_STATE;
     // todo
     cpu_register->pc = (unsigned int) task_function;
-    cpu_register->lr = (unsigned int) remove_scheduled_task;
+    cpu_register->lr = (unsigned int) finish_task;
     return cpu_register;
 }
 

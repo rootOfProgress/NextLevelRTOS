@@ -60,5 +60,8 @@ void unblock_task(unsigned int);
 void load_task(void);
 void update_scheduler_statistic(void);
 void reboot(void);
+void finish_task(void);
+void search_invalidate_tasks(void);
+void clean_up_task(Tcb_t*, Node_t*);
 
 #endif
