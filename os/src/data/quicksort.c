@@ -25,7 +25,6 @@ void __attribute__((optimize("O0"))) quicksortR(int A[], int lo, int hi, int (*c
 {
     if ((lo >= hi) || (lo < 0))
         return;
-    // if (comparator(lo,hi) < 0)
     {
         int p = make_partition(A, lo, hi, comparator);
         quicksortR(A, lo, p - 1, comparator);
@@ -40,7 +39,7 @@ int __attribute__((optimize("O0"))) make_partition(int A[], int lo, int hi, int 
 
     for (int j = lo; j < hi ; j++)
     {
-        if (comparator(A[j], pivot) == 0 || comparator(A[j], pivot) == -1)//A[j] <= pivot)
+        if (comparator(A[j], pivot) == 0 || comparator(A[j], pivot) == -1)
         {
             i++;
             swapi((int*) &A[i], (int*) &A[j]);

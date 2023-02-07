@@ -98,10 +98,8 @@ void __attribute__((optimize("O0"))) defrag()
             *(MEM_TABLE_START + base_index) |= (new_size << 1);
 
             // relocate #tetrisstyle
-            // unsigned int next_valid_entry = offset_index + 1;
             for (unsigned int new_location_start = base_index + 1; new_location_start < highest_used_entry + 1; new_location_start++, offset_index++)
                 *(MEM_TABLE_START + new_location_start) = *(MEM_TABLE_START + offset_index);
-            
         } 
     }
 }
