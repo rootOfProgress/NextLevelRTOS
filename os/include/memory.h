@@ -30,11 +30,12 @@ void init_allocator(unsigned int,unsigned int*);
 void init_process_allocator(unsigned int*);
 void swap(char*);
 void memset_byte(void*,unsigned int, char);
-void garbage_collect(void);
-int size_comparator(unsigned int, unsigned int);
+void defrag(void);
+int size_comparator(int, int);
+int offset_comparator(int, int);
 extern MemoryStatistic_t mstat;
 extern void lock_mutex(void * mutex);
-extern void unlock_mutex(void * mutex);
+extern void release_mutex(void * mutex);
 
 static inline void os_memcpy(char* dst, char data)
 {
