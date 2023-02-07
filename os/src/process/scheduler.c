@@ -100,9 +100,8 @@ void __attribute__ ((hot)) PendSV(void)
     );
 }
 
-void remove_scheduled_task(void)
+void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
 {
-    Tcb_t* t = (Tcb_t*) currently_running->data;
     if (!deallocate((unsigned int*) t->memory_lower_bound))
         invoke_panic(MEMORY_DEALLOC_FAILED);
 
@@ -115,14 +114,32 @@ void remove_scheduled_task(void)
     if (!deallocate((unsigned int*) t))
         invoke_panic(MEMORY_DEALLOC_FAILED);
 
-    Node_t* old_element = dequeue_element(task_queue, currently_running);
+    Node_t* old_element = dequeue_element(task_queue, obsolete_node);
 
     if (!deallocate((unsigned int*) old_element))
-        invoke_panic(MEMORY_DEALLOC_FAILED);
+        invoke_panic(MEMORY_DEALLOC_FAILED);      
+}
 
+void search_invalidate_tasks(void) 
+{
+    Node_t* q = (Node_t*) currently_running;
+    for (unsigned int j = 0; j < task_queue->size; j++)
+    {
+        Tcb_t* t = (Tcb_t*) q->data;
+        if (t->task_state == FINISHED || t->task_state == INVALID)
+            clean_up_task(t, q);
+        q = q->next;
+    }
+}
+
+void finish_task(void)
+{
+    Tcb_t* n = (Tcb_t*) currently_running->data;
+    n->task_state = FINISHED;
     mstat.total_scheduled_tasks--;
 
     switch_task();
 
     SV_EXEC_PSP_TASK;
 }
+
