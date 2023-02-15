@@ -57,6 +57,8 @@ void memset_byte(void* dest, unsigned int number_of_bytes, char pattern)
 
 void __attribute__((optimize("O0"))) defrag()
 {
+    lock_mutex((void*) &mutex);
+
     int highest_used_entry = -1; 
     while (*(MEM_TABLE_START + ++highest_used_entry) != 0xFFFE){}
     
@@ -102,6 +104,7 @@ void __attribute__((optimize("O0"))) defrag()
                 *(MEM_TABLE_START + new_location_start) = *(MEM_TABLE_START + offset_index);
         } 
     }
+    release_mutex((void*) &mutex);
 }
 
 int __attribute__((optimize("O0"))) offset_comparator(int a, int b)

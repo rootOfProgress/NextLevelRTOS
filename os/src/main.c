@@ -57,6 +57,8 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
   while (1) {
+    search_invalidate_tasks();
+    defrag();
     SV_YIELD_TASK;
   };
 }
@@ -76,9 +78,12 @@ int main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
-  create_task(&transfer_handler, 0); // pid0
-  create_task(&stat, 0); // pid1
+
+  // always pid0
   create_task(&idle, 0); // pid2
+  
+  pid_of_transferhandler = create_task(&transfer_handler, 0); // pid0
+  pid_of_mstat = create_task(&stat, 0); // pid1
 
   // create_task(&drohne_rpm, 0); // pid3
 

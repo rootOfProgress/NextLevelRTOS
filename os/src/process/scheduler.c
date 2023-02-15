@@ -51,6 +51,9 @@ void __attribute__ ((hot)) policy_round_robin(void)
         return;
     }
 
+    if (((Tcb_t*) currently_running->data)->pid == 0)
+        ((Tcb_t*) currently_running->data)->task_state = WAITING;
+
     for (unsigned int j = 0; j < task_queue->size; j++)
     {
         currently_running = currently_running->next;
@@ -58,7 +61,10 @@ void __attribute__ ((hot)) policy_round_robin(void)
         if (n->task_state == READY)
             return;
     }
-    // no runnable task found
+    // no runnable task found, wakeup pid0
+    currently_running = (Node_t*) get_head_element(task_queue);
+    ((Tcb_t*) currently_running->data)->task_state = READY;
+
     // sleep();
 }
 
