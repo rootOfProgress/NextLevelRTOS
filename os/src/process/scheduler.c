@@ -32,17 +32,6 @@ void reboot(void)
     soft_reset();
 }
 
-void update_scheduler_statistic(void)
-{
-    // mstat.waiting_tasks = 0;
-    // for (unsigned int i = 0; i < task_queue->size; i++)
-    // {
-    //     Node_t* q = get_head_element(task_queue);
-    //     if ( ((Tcb_t*) q->data)->task_state == WAITING)
-    //         mstat.waiting_tasks++;
-    // }
-}
-
 void __attribute__ ((hot)) policy_round_robin(void)
 {   
     if (!currently_running)
@@ -64,13 +53,6 @@ void __attribute__ ((hot)) policy_round_robin(void)
     // no runnable task found, wakeup pid0
     currently_running = (Node_t*) get_head_element(task_queue);
     ((Tcb_t*) currently_running->data)->task_state = READY;
-
-    // sleep();
-}
-
-void load_task(void)
-{
-    currently_running = (Node_t*) get_head_element(task_queue);
 }
 
 void invalidate_current_task(void)
