@@ -131,7 +131,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) write(unsigned 
     stop();
 }
 
-void __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned int target_register, unsigned int slave_addr, unsigned int length)
+unsigned int __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned int target_register, unsigned int slave_addr, unsigned int length)
 {
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0x3FF << SADD_7_1));
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0xFF << NBYTES));
@@ -176,9 +176,40 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned i
 //     stop();
 // }
 
+signed int complement(unsigned int payload, unsigned int pos, char axis)
+{
+    unsigned int result = 0;
+
+    // bit 9
+    signed int sign = (payload >> (pos - 1)) & ~(0xFFFE);
+
+    // bit 8 .. 0
+    signed int value = (value) & ~(0xFE00);
+    // negative
+    if (sign == 1)
+    {
+        result = (((512 - value) + 1) * -1) / 256;
+        if (axis == 'y' && result == -1)
+            return 0;
+    }
+    else
+    {
+        if (axis == 'y' && ((value + 1) / 256) == 1)
+            return 0;
+    }
+    return result;
+}
+
+typedef struct readings {
+    signed int x;
+    signed int y;
+    signed int z;
+} readings_t;
+
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {    
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
+    readings_t myreadings = { .x = 0, .y = 0, .z = 0};
     // while (1)
     // {
         // read(0xD0,0x76);
@@ -186,9 +217,20 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
         char payload[2] = {0x2D, 8};
         write(ADXL345, &payload, 2);
         read(0x00, ADXL345, 1);
-        read(0x36, ADXL345, 1);
-        read(0x37, ADXL345, 1);
+
+        myreadings.x |= read(0x32, ADXL345, 1);
+        myreadings.x |= (read(0x33, ADXL345, 1) << 8);
+        myreadings.y |= read(0x34, ADXL345, 1);
+        myreadings.y |= (read(0x35, ADXL345, 1) << 8);
+        myreadings.z |= read(0x36, ADXL345, 1);
+        myreadings.z |= (read(0x37, ADXL345, 1) << 8);
+
+        myreadings.x = complement(myreadings.x, 10, 'x');
+        myreadings.y = complement(myreadings.y, 10, 'y');
+        myreadings.z = complement(myreadings.z, 10, 'z');
         // SV_YIELD_TASK;
+        
+        
     // }
     
     // write(0, 0x53);
