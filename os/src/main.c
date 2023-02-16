@@ -80,10 +80,10 @@ int main_init(void)
   init_scheduler();
 
   // always pid0
-  create_task(&idle, 0); // pid2
+  create_task(&idle, 0); // pid0
   
-  pid_of_transferhandler = create_task(&transfer_handler, 0); // pid0
-  pid_of_mstat = create_task(&stat, 0); // pid1
+  pid_of_transferhandler = create_task(&transfer_handler, 0); // pid1
+  pid_of_mstat = create_task(&stat, 0); // pid2
 
   // create_task(&drohne_rpm, 0); // pid3
 

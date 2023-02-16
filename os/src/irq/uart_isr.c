@@ -27,7 +27,7 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
         return;
 
     if (transfer_list->size == 0)
-        wakeup_pid(TASK_TRANSFER_HANDLER);
+        wakeup_pid(1);
 
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
     
@@ -187,7 +187,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         }
         break;
     case REQUEST_STATISTIC:
-        wakeup_pid(pid_of_mstat);
+        wakeup_pid(2);
         state = RX_READY;
         unsigned int dummy = read_data_register();
         return;
