@@ -3,12 +3,15 @@
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "devices/gpio.h"
+#include "devices/i2c.h"
 #include "types.h"
 #include "devices/uart.h"
 #include "memory.h"
 #include "test.h"
 #include "rpm.h"
+#include "position.h"
 #include "math.h"
+
 #define EnablePrivilegedMode() __asm("SVC #0xF")
 
 
@@ -54,6 +57,17 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   };
 }
 
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fetch_coordinates(void)
+{
+  while (1) {
+    block_current_task();
+    calculate_position();
+    // update_memory_statistic();
+    volatile TransferInfo_t t = {.length = sizeof(readings_t), .start_adress = &position_readings};
+    uprint((unsigned int*) &t, PLANEPOSITION);
+  };
+}
+
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
   while (1) {
@@ -78,12 +92,14 @@ int main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
+  init_i2c();
 
   // always pid0
   create_task(&idle, 0); // pid0
   
   pid_of_transferhandler = create_task(&transfer_handler, 0); // pid1
   pid_of_mstat = create_task(&stat, 0); // pid2
+  create_task(&fetch_coordinates, 0); //pid3
 
   // create_task(&drohne_rpm, 0); // pid3
 

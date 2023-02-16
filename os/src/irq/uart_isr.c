@@ -70,6 +70,11 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
                 print(m, 8);
                 remaining -= 8;
                 break;
+            case PLANEPOSITION:
+                m = "DDDDAAAA";
+                print(m, 8);
+                remaining -= 8;
+                break;
             default:
                 break;
             }
@@ -88,7 +93,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         else
         {
             block_current_task();
-            SV_YIELD_TASK;
+            // SV_YIELD_TASK;
         }
     }    
 }
@@ -238,6 +243,11 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         print(test, 8);
         print((char*) 0x20000000, 4);
         WRITE_REGISTER(0x20000000, 0);
+        state = RX_READY;
+        return;
+    case REQUEST_POSITION:
+        unsigned int dummy4 = read_data_register();
+        wakeup_pid(3);
         state = RX_READY;
         return;
     default:
