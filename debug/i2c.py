@@ -3,31 +3,6 @@ from enum import Enum
 import unicodedata
 
 I2C1 = 0x40005400
-MODER = 0x48000000
-OTYPER = 0x48000004
-SPEEDR = 0x48000008
-PUPDR = 0x4800000C
-IDR = 0x48000010
-ODR = 0x48000014
-BSRR = 0x48000018
-LCKR = 0x4800001C
-AFRL = 0x48000020
-AFRH = 0x48000024
-BRR = 0x48000028
-
-class GpioRegs(Enum):
-    I2C1 = 0x48000000
-    MODER = 0x48000000
-    OTYPER = 0x48000004
-    SPEEDR = 0x48000008
-    PUPDR = 0x4800000C
-    IDR = 0x48000010
-    ODR = 0x48000014
-    BSRR = 0x48000018
-    LCKR = 0x4800001C
-    AFRL = 0x48000020
-    AFRH = 0x48000024
-    BRR = 0x48000028    
 
 regs = [
     "CR1",
@@ -55,7 +30,7 @@ def get_high(reg_content) -> list:
             bits_set.append(bit)
     return bits_set
 
-def print_gpio_a_state():
+def print_i2c_state():
     idx = 0
     for reg in range(I2C1, I2C1 + 0x2C, 0x04):
         foo = ""
@@ -65,4 +40,4 @@ def print_gpio_a_state():
         print(command + " " + regs[idx] + " -> " + remove_control_characters(foo.split(':')[1]) + " Bits set: " + str(bits_on_high))
         idx += 1
 
-print_gpio_a_state()
+print_i2c_state()

@@ -130,7 +130,7 @@
             <table class="table is-striped is-narrow ">
             <tbody>
               <tr>
-                <td> <button class="button is-link is-light is-rounded " @click=fetchRPM()>Reboot</button> </td>
+                <td> <button class="button is-link is-light is-rounded " @click=legacy()>legacy</button> </td>
                 <td>  
                   <div class="dropdown is-hoverable">
                     <div class="dropdown-trigger">
@@ -151,7 +151,8 @@
                   </div>
                 </td>
                 <td> 
-                  <button class="button is-link is-light is-rounded" :class="{'is-static' : !isPackageSelected, 'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
+                  <!-- <button class="button is-link is-light is-rounded" :class="{'is-static' : !isPackageSelected, 'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button> -->
+                  <button class="button is-link is-light is-rounded" :class="{'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
                 </td>
               </tr>
             </tbody>
@@ -263,7 +264,7 @@ export default {
       isPackageSelected: false,
       packageUploadInProgress: false,
       packages: [],
-      toggleOSPane: true,
+      toggleOSPane: false,
       sensorReadings: {
         environment: {
           altitude: 0,
@@ -330,12 +331,23 @@ export default {
       //   }), 1000
       //         })
     },
-    uploadPackage () {
+    legacy () {
       this.packageUploadInProgress = true
-      axios.post(`/upload/${this.selectedPackage}`).then(() => {
+      axios.post(`/upload/legacy_drivers`).then(() => {
         this.packageUploadInProgress = false
         this.selectedPackage = ""
       })
+    },
+    uploadPackage () {
+      this.packageUploadInProgress = true
+      axios.post(`/upload/i2c`).then(() => {
+        this.packageUploadInProgress = false
+        this.selectedPackage = ""
+      })
+      // axios.post(`/upload/${this.selectedPackage}`).then(() => {
+      //   this.packageUploadInProgress = false
+      //   this.selectedPackage = ""
+      // })
     },
     update_speed (value, engineNumber) {
       let valueAsString = value.toString()

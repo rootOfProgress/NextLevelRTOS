@@ -78,59 +78,118 @@ void stop(void)
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (1<< STOP));
 }
 
-void start(void)
+void set_write_direction(void)
 {
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(1<< RD_WRN));
+}
+
+void set_read_direction(void)
+{
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (1<< RD_WRN));
+}
+
+void start(void)
+{
+    // WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(1<< RD_WRN));
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (1<< START));
 }
 
 void request_read(void)
 {
-    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (1<< RD_WRN));
+    // WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (1<< RD_WRN));
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (1<< START));
 
 }
 
-void write(unsigned int data, unsigned int slave_addr)
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) write(unsigned int slave_addr, char *payload, unsigned int length)
 {
-    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (slave_addr << SADD_7_1 | 1 << NBYTES));
+    WRITE_REGISTER(&i2c_regs->CR1, READ_REGISTER(&i2c_regs->CR1) & ~1);
+    WRITE_REGISTER(&i2c_regs->CR1, READ_REGISTER(&i2c_regs->CR1) | 1);
+
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0x3FF << SADD_7_1));
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0xFF << NBYTES));
+    // direction -> write
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(1<< RD_WRN));
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (slave_addr << SADD_7_1) | (length << NBYTES));
+    
+    // flush
+    WRITE_REGISTER(&i2c_regs->ISR,(READ_REGISTER(&i2c_regs->ISR) & ~(1 << TXE)));
+
+    unsigned int sent = 0;
 
     start();
 
-    while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TXE)) != 0) {}
-    WRITE_REGISTER(&i2c_regs->TXDR, data);
-
-    while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TC)) != 0) {}
+    do 
+    {
+        if ((READ_REGISTER(&i2c_regs->ISR) & (1 << TXE)))
+        {
+            WRITE_REGISTER(&i2c_regs->TXDR, payload[sent]);
+            sent++;
+        }
+    } while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TC)));
+    
     stop();
 }
 
-void __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned int target_register, unsigned int slave_addr)
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned int target_register, unsigned int slave_addr, unsigned int length)
 {
-    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (slave_addr << SADD_7_1) | 1 << NBYTES);
-    start();
-    while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TXE)) != 0) {}
-    WRITE_REGISTER(&i2c_regs->TXDR, target_register);
-    while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TC)) != 0) {}
-    stop();
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0x3FF << SADD_7_1));
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0xFF << NBYTES));
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (slave_addr << SADD_7_1) | (length << NBYTES));
 
-    request_read();
+    set_write_direction();
+    char payload[1] = {(char) target_register};
+    write(ADXL345, payload, 1);
+        for (unsigned int i =0 ; i < 1000; i++){}
+    // start();
+    // while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TXE)) != 0) {}
+    // WRITE_REGISTER(&i2c_regs->TXDR, target_register);
+    // while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TC)) != 0) {}
+    // stop();
+
+    set_read_direction();
+    start();
+    unsigned int result = READ_REGISTER(&i2c_regs->RXDR);
     while (!((READ_REGISTER(&i2c_regs->ISR) & (1 << RXNE)) != 0)) {}
     stop();
+    return result;
 }
 
-void init()
-{
-}
+// void __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned int target_register, unsigned int slave_addr, unsigned int)
+// {
+//     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0x3FF << SADD_7_1));
+//     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0xFF << NBYTES));
 
+//     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (slave_addr << SADD_7_1) | (1 << NBYTES));
+//     start();
+//     while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TXE)) != 0) {}
+//     WRITE_REGISTER(&i2c_regs->TXDR, target_register);
+//     while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << TC)) != 0) {}
+//     stop();
+
+//     // 1,5ms, 1 cycle ca 1.5usec
+//     for (unsigned int i =0 ; i < 1000; i++){}
+
+//     request_read();
+//     unsigned int result = READ_REGISTER(&i2c_regs->RXDR);
+//     while (!((READ_REGISTER(&i2c_regs->ISR) & (1 << RXNE)) != 0)) {}
+//     stop();
+// }
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {    
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
-    while (1)
-    {
-        read(0x00, ADXL345);
-        SV_YIELD_TASK;
-    }
+    // while (1)
+    // {
+        // read(0xD0,0x76);
+        // write()
+        char payload[2] = {0x2D, 8};
+        write(ADXL345, &payload, 2);
+        read(0x00, ADXL345, 1);
+        read(0x36, ADXL345, 1);
+        read(0x37, ADXL345, 1);
+        // SV_YIELD_TASK;
+    // }
     
     // write(0, 0x53);
 }
