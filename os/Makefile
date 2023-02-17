@@ -24,6 +24,12 @@ else
 CFLAGS += -DSYSTICK=0
 endif
 
+ifeq (1,$(DEBUG))
+CFLAGS += -DDEBUG=1
+else
+CFLAGS += -DDEBUG=0
+endif
+
 ifeq (1,$(TEST))
 CFLAGS += -DTEST=1
 else

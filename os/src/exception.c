@@ -12,10 +12,16 @@ volatile unsigned int svc_number = 0;
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 {
+  disable_systick();
+  if (DEBUG)
+    process_stats->num_of_systick_interrupts++;
+  
   __asm (
-      "MRS r2, PSP\n"
-      "STMDB r2!, {r4-r11}\n"
-      "MSR PSP, r2\n"
+    "TST lr, #4\n"
+    "ITTT NE\n"
+    "MRSNE r2, PSP\n"
+    "STMDBNE r2!, {r4-r11}\n"
+    "MSRNE PSP, r2\n"
   );
   *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 }
@@ -39,6 +45,9 @@ void __attribute__((optimize("O3"))) SVCall()
 {
   if (SYSTICK)
     disable_systick();
+
+  if (DEBUG)
+    process_stats->num_of_svcalls++;
   
   __asm (
     "TST lr, #4\n"
@@ -52,7 +61,7 @@ void __attribute__((optimize("O3"))) SVCall()
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
-    init_systick(26);
+    init_systick(30);
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
 
     // initially block pid0, will run 0 time
@@ -95,6 +104,6 @@ void __attribute__((optimize("O3"))) SVCall()
     __builtin_unreachable();
     break;
   }
-  // if (SYSTICK)
-  //   enable_systick();
+  if (SYSTICK)
+    enable_systick();
 }

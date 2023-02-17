@@ -99,6 +99,8 @@ void run_scheduler(void)
 
 void __attribute__ ((hot)) PendSV(void)
 {
+    if (DEBUG)
+        process_stats->num_of_pendsv++;
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
     switch_task();
     __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));

@@ -67,6 +67,7 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void
 {
   while (1) {
     search_invalidate_tasks();
+    defrag();
     wakeup_pid(pid_of_foo);
     SV_YIELD_TASK;
   };
