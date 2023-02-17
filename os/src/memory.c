@@ -9,6 +9,7 @@ static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
 const unsigned int NUM_OF_SLOTS = 60;
 unsigned int mutex;
+char is_first_round = 1;
 
 MemoryStatistic_t mstat;
 
@@ -176,6 +177,9 @@ void __attribute__ ((cold)) update_memory_statistic(void)
     mstat.total_byte_alloced += (unsigned int) MEM_TABLE_START - RAM_START;
     mstat.total_byte_alloced += NUM_OF_SLOTS * sizeof(unsigned int);
 
+    mstat.waiting_tasks = waiting_tasks->size;
+    mstat.running_tasks = running_tasks->size;
+
     // count alloced spaces
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)
     {
@@ -183,12 +187,12 @@ void __attribute__ ((cold)) update_memory_statistic(void)
         if ((entry & 1) == 1)
             mstat.total_byte_alloced += (entry & 0xFFFE) >> 1;
     }    
-    Node_t* q = task_queue->head;
+    Node_t* q = running_tasks->head;
     do
     {
             Tcb_t* t = q->data;
             mstat.total_byte_used = t->memory_upper_bound - t->sp;
-    } while (q != task_queue->head);
+    } while (q != running_tasks->head);
 }
 
 unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
@@ -256,7 +260,17 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
         }
         next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
     }
-    release_mutex((void*) &mutex);
-
-    return NULL;
+    if (is_first_round)
+    {
+        defrag();
+        is_first_round = 0;
+        release_mutex((void*) &mutex);
+        return allocate(size);
+    }
+    else
+    {
+        is_first_round = 1;
+        release_mutex((void*) &mutex);
+        return NULL;
+    }
 }

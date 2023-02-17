@@ -56,7 +56,7 @@ void __attribute__((optimize("O3"))) SVCall()
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
 
     // initially block pid0, will run 0 time
-    tcb_of_pid0->task_state = WAITING;
+    // tcb_of_pid0->task_state = WAITING;
 
     __asm__ volatile ("MOV R0, %[input_i]"
       :  

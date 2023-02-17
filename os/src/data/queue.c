@@ -100,28 +100,42 @@ Node_t* get_head_element(Queue_t* queue)
     return queue->head;
 }
 
-void enqueue_node(Queue_t* queue, Node_t* new_node)
+void isolate_node(Queue_t* source_queue, Node_t* node)
 {
-    if (!new_node)
-        invoke_panic(ACCESS_ON_NULL);
-
-    if (queue->size == 0)
+    if (source_queue->size == 1)
     {
-        new_node->next = new_node;
-        new_node->prev = new_node;
-        queue->tail = new_node;
-        queue->head = new_node;
+        node->next = node;
+        node->prev = node;
+        source_queue = NULL;
+    }
+    else
+    {
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+    }
+    source_queue->size--;
+}
+
+
+void move_node(Queue_t* target_queue, Node_t* node)
+{
+    if (target_queue->size == 0)
+    {
+        node->next = node;
+        node->prev = node;
+        target_queue->tail = node;
+        target_queue->head = node;
     }
     else
     {
         // @todo: update head nodes prev to tail!
-        new_node->prev = queue->tail;
-        new_node->next = queue->head;
-        queue->tail->next = new_node;
-        queue->tail = new_node;
-        queue->head->prev = queue->tail;
+        node->prev = target_queue->tail;
+        node->next = target_queue->head;
+        target_queue->tail->next = node;
+        target_queue->tail = node;
+        target_queue->head->prev = target_queue->tail;
     }
-    queue->size++;
+    target_queue->size++;
 }
 
 void enqueue_element(Queue_t* queue, void* data)

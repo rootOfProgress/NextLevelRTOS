@@ -44,6 +44,15 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) drohne_r
   };
 }
 
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) footask(void)
+{
+  while (1) {
+    block_current_task();
+    SV_YIELD_TASK;
+  };
+}
+
+
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
@@ -58,7 +67,7 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void
 {
   while (1) {
     search_invalidate_tasks();
-    defrag();
+    wakeup_pid(pid_of_foo);
     SV_YIELD_TASK;
   };
 }
@@ -84,6 +93,7 @@ int main_init(void)
   
   pid_of_transferhandler = create_task(&transfer_handler, 0); // pid0
   pid_of_mstat = create_task(&stat, 0); // pid1
+  pid_of_foo = create_task(&footask, 0); // pid1
 
   // create_task(&drohne_rpm, 0); // pid3
 

@@ -9,6 +9,7 @@
 
 unsigned int pid_of_transferhandler;
 unsigned int pid_of_mstat;
+unsigned int pid_of_foo;
 
 CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_size, void (*task_function)())
 {
@@ -41,7 +42,7 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
     if (!tcb)
         invoke_panic(OUT_OF_MEMORY);
 
-    tcb->pid = task_queue->size;
+    tcb->pid = running_tasks->size;
     tcb->sp = (unsigned int) &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
     tcb->memory_upper_bound = ((unsigned int)address + STACK_SIZE);

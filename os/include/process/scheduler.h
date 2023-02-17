@@ -19,30 +19,29 @@ typedef struct proc_stats {
 } ProcessStats_t;
 
 extern ProcessStats_t* process_stats;
-extern Queue_t* task_queue;
+extern Queue_t* running_tasks;
 extern Node_t* currently_running;
 extern Queue_t* waiting_tasks;
 extern void (*switch_task)();
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
 {
-    Node_t *q = currently_running;
-    while (1)
+    Node_t *q = get_head_element(waiting_tasks);
+    if (!q)
+        return;
+
+    for (unsigned int i = 0; i < waiting_tasks->size; i++)
     {
         if (((Tcb_t*)q->data)->pid == pid)
         {
             ((Tcb_t*)q->data)->task_state = READY;
-            mstat.waiting_tasks--;
+
+            isolate_node(waiting_tasks,q);
+            move_node(running_tasks,q);
             return;
         }
         q = q->next;
     }
-}
-
-static inline __attribute__((always_inline)) void move_to_waiting(void)
-{
-    Node_t* old_element = dequeue_element(task_queue, currently_running);
-    enqueue_node(waiting_tasks, old_element);    
 }
 
 void next_task(void);

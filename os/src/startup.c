@@ -115,7 +115,6 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     {
         invalidate_current_task();
         switch_task();
-        mstat.total_scheduled_tasks--;
         __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
         __asm volatile (
         "LDMFD r2!, {r4-r11}\n"

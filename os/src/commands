@@ -1,6 +1,6 @@
 p *(Node_t*)currently_running->data
 p *((Tcb_t*)currently_running->data)
-p *((Queue_t*) task_queue)
+p *((Queue_t*) running_tasks)
 break scheduler.c:58
 delete breakpoints
 monitor reset halt
