@@ -13,9 +13,6 @@
 
 typedef struct proc_stats {
     unsigned int num_of_hardfaults;
-    unsigned int started_tasks;
-    unsigned int finished_tasks;
-    unsigned int waiting_tasks;
 } ProcessStats_t;
 
 extern ProcessStats_t* process_stats;

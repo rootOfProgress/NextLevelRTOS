@@ -10,6 +10,7 @@ float root(int, int);
 float root(int input, int n)
 {
 //   return powf((float) input, (float) 1./n);
+    return 0.0;
 }
 
 // void regulate_log(unsigned int start_speed, unsigned int target_speed)

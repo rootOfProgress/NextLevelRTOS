@@ -65,14 +65,14 @@ void __attribute__((optimize("O0"))) defrag()
     
     quicksort((int*) MEM_TABLE_START, 0, --highest_used_entry, &offset_comparator);
     
-    for (unsigned int base_index = 0; base_index < highest_used_entry; base_index++)
+    for (int base_index = 0; base_index < highest_used_entry; base_index++)
     {
         unsigned int mementry_ptr_1 = *(MEM_TABLE_START + base_index);
         char gap_found = 0;
         // search free element
         if ((mementry_ptr_1 & 1) != 1 && (mementry_ptr_1 != 0xFFFE)) {
             // search next free elements
-            unsigned int offset_index = base_index + 1;
+            int offset_index = base_index + 1;
             while (1)
             {
                 unsigned int mementry_ptr_2 = *(MEM_TABLE_START + offset_index);
@@ -93,7 +93,7 @@ void __attribute__((optimize("O0"))) defrag()
             
             // calc new chunk size
             unsigned int new_size = 0;
-            for (unsigned int k = base_index; k < offset_index; k++)
+            for (int k = base_index; k < offset_index; k++)
                 new_size += (*(MEM_TABLE_START + k) & 0xFFFE) >> 1;
 
             // merge
@@ -101,7 +101,7 @@ void __attribute__((optimize("O0"))) defrag()
             *(MEM_TABLE_START + base_index) |= (new_size << 1);
 
             // relocate #tetrisstyle
-            for (unsigned int new_location_start = base_index + 1; new_location_start < highest_used_entry + 1; new_location_start++, offset_index++)
+            for (int new_location_start = base_index + 1; new_location_start < highest_used_entry + 1; new_location_start++, offset_index++)
                 *(MEM_TABLE_START + new_location_start) = *(MEM_TABLE_START + offset_index);
         } 
     }

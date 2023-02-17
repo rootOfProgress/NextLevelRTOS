@@ -75,7 +75,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     unsigned int USFR = READ_REGISTER(0xE000ED28);
 
     // UNDEFINSTR 
-    if (USFR & 1 + 16)
+    if (USFR & (1 + 16))
     {
         while (1)
         {
@@ -84,7 +84,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 
     // INVSTATE
-    if (USFR & 1 << 1 + 16)
+    if (USFR & 1 << (1 + 16))
     {
         while (1)
         {
@@ -93,7 +93,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 
     // INVPC
-    if (USFR & 1 << 2 + 16)
+    if (USFR & 1 << (2 + 16))
     {
         while (1)
         {
@@ -102,7 +102,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 
     // NOCP
-    if (USFR & 1 << 3 + 16)
+    if (USFR & 1 << (3 + 16))
     {
         while (1)
         {
@@ -111,7 +111,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 
     // DIVBYZERO
-    if (USFR & 1 << 9 + 16)
+    if (USFR & 1 << (9 + 16))
     {
         invalidate_current_task();
         switch_task();
