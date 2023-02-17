@@ -3,7 +3,6 @@
 #include "memory.h"
 #include "panic.h"
 
-Queue_t* low_priority_tasks = NULL;
 Queue_t* running_tasks = NULL;
 Queue_t* waiting_tasks = NULL;
 Node_t* currently_running = NULL;
@@ -15,7 +14,6 @@ void (*switch_task)();
 void init_scheduler(void)
 {
     running_tasks = new_queue();
-    low_priority_tasks = new_queue();
     waiting_tasks = new_queue();
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
     memset_byte((void*) process_stats, sizeof(ProcessStats_t*), 0);
@@ -46,14 +44,16 @@ void __attribute__ ((hot)) policy_round_robin(void)
     for (unsigned int j = 0; j < running_tasks->size; j++)
     {
         currently_running = currently_running->next;
-        task_to_preserve = currently_running;
         Tcb_t* n = (Tcb_t*) currently_running->data;
         if (n->task_state == READY)
+        {
+            task_to_preserve = currently_running;
             return;
+        }
     }
     while (1)
     {
-        /* code */
+        // no task found, do something useful here
     }
     
     // no runnable task found, wakeup pid0
