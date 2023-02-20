@@ -16,13 +16,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
   if (DEBUG)
     process_stats->num_of_systick_interrupts++;
   
-  __asm (
-    "TST lr, #4\n"
-    "ITTT NE\n"
-    "MRSNE r2, PSP\n"
-    "STMDBNE r2!, {r4-r11}\n"
-    "MSRNE PSP, r2\n"
-  );
+  save_psp_if_threadmode();
   *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 }
 
