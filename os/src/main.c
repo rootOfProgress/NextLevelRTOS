@@ -48,7 +48,6 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) footask(
 {
   while (1) {
     block_current_task();
-    SV_YIELD_TASK;
   };
 }
 
@@ -90,11 +89,11 @@ int main_init(void)
   init_scheduler();
 
   // always pid0
-  create_task(&idle, 0); // pid2
+  create_task(&idle, 0);
   
   pid_of_transferhandler = create_task(&transfer_handler, 0); // pid0
   pid_of_mstat = create_task(&stat, 0); // pid1
-  pid_of_foo = create_task(&footask, 0); // pid1
+  pid_of_foo = create_task(&footask, 0); // pid3
 
   // create_task(&drohne_rpm, 0); // pid3
 

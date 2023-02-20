@@ -102,18 +102,21 @@ Node_t* get_head_element(Queue_t* queue)
 
 void isolate_node(Queue_t* source_queue, Node_t* node)
 {
-    if (source_queue->size == 1)
+    source_queue->size--;
+    if (source_queue->size == 0)
     {
-        node->next = node;
-        node->prev = node;
-        source_queue = NULL;
+        source_queue->head = NULL;
+        source_queue->tail = NULL;
     }
     else
     {
+        if (node == source_queue->head)
+            source_queue->head = node->next;
+        if (node == source_queue->tail)
+            source_queue->tail = node->prev;
         node->prev->next = node->next;
         node->next->prev = node->prev;
     }
-    source_queue->size--;
 }
 
 
