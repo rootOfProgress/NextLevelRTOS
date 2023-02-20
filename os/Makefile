@@ -4,7 +4,7 @@ NON_OS_SRC := ../drohnentasks
 INC = -Iinclude -I$(NON_OS_SRC)/include/
 LINK = link.ld
 
-CFLAGS = -O2  \
+CFLAGS = -O3  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
 	 -Wno-implicit-fallthrough -fsingle-precision-constant 

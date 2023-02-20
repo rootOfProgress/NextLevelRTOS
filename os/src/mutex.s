@@ -14,7 +14,6 @@ lock_mutex:
     STREX r2, r1, [r0]  //; Not locked, attempt to lock it
     CMP   r2, #1        //; Check if Store-Exclusive failed
     BEQ     lock_mutex           //; Failed - retry from 1
-    // Lock acquired
     DMB                   //; Required before accessing protected resource
     BX      lr
 
