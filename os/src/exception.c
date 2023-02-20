@@ -12,12 +12,24 @@ volatile unsigned int svc_number = 0;
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
 {
-  disable_systick();
+  // disable_systick();
   if (DEBUG)
     process_stats->num_of_systick_interrupts++;
   
   save_psp_if_threadmode();
-  *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
+    switch_task();
+    __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
+    __asm volatile (
+      "ldmfd r2!, {r4-r11}\n"
+      "msr psp, r2\n"
+    );
+    // __asm volatile (
+      // "mrs r2, psp\n"
+      // "ldmfd r2!, {r4-r11}\n"
+      // "msr psp, r2\n"
+    // );
+  // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 }
 
 // function exists to preserve R0 / R1 register

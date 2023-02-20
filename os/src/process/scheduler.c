@@ -68,6 +68,7 @@ void invalidate_current_task(void)
 
 void block_current_task(void)
 {
+    disable_systick();
     ((Tcb_t*) (currently_running->data))->task_state = WAITING;
 
     // On context switch, task->next is loaded. Jump back one task here ensures that next task is 
@@ -83,6 +84,7 @@ void block_current_task(void)
     move_node(waiting_tasks, currently_running);
 
     currently_running = q;
+    enable_systick();
     SV_YIELD_TASK;
 }
 

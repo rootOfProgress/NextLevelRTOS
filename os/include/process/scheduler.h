@@ -3,6 +3,7 @@
 
 #include "data/queue.h"
 #include "process/tcb.h"
+#include "hw/cpu.h"
 #include "lang.h"
 #include "memory.h"
 #include "exception.h"
@@ -19,13 +20,18 @@ typedef struct proc_stats {
 } ProcessStats_t;
 
 extern ProcessStats_t* process_stats;
-extern Queue_t* running_tasks;
+
 extern Node_t* currently_running;
+extern Node_t* task_to_preserve;
+
+extern Queue_t* running_tasks;
 extern Queue_t* waiting_tasks;
+
 extern void (*switch_task)();
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
 {
+    disable_systick();
     Node_t *q = get_head_element(waiting_tasks);
     if (!q)
         return;
@@ -42,6 +48,7 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
         }
         q = q->next;
     }
+    enable_systick();
 }
 
 void next_task(void);
