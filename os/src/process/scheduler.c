@@ -103,10 +103,10 @@ void __attribute__ ((hot)) PendSV(void)
         process_stats->num_of_pendsv++;
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
     switch_task();
-    __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
+    __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm volatile (
-      "LDMFD r2!, {r4-r11}\n"
-      "MSR PSP, r2\n"
+      "ldmfd r2!, {r4-r11}\n"
+      "msr psp, r2\n"
     );
 }
 

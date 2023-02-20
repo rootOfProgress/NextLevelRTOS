@@ -49,61 +49,54 @@ void __attribute__((optimize("O3"))) SVCall()
   if (DEBUG)
     process_stats->num_of_svcalls++;
   
-  __asm (
-    "TST lr, #4\n"
-    "ITTT NE\n"
-    "MRSNE r2, PSP\n"
-    "STMDBNE r2!, {r4-r11}\n"
-    "MSRNE PSP, r2\n"
-  );
+  save_psp_if_threadmode();
   __asm__("mov %0, r6" : "=r"(svc_number));
 
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
-    init_systick(30);
+    if (SYSTICK)
+      init_systick(30);
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
 
-    // initially block pid0, will run 0 time
-    // tcb_of_pid0->task_state = WAITING;
-
-    __asm__ volatile ("MOV R0, %[input_i]"
-      :  
-      : [input_i] "r" (tcb_of_pid0->sp)
-        );
-    __asm__("ldmia.w  r0!, {r4, r5, r6, r7, r8, r9, sl, fp}");
-    __asm__("msr psp, r0");
-    __asm("mov r1, 0xFFFFFFFD");
-    __asm("str r1, [sp, #4]");
-    break;
+    __asm volatile ("mov r0, %[sp]" :: [sp] "r" (tcb_of_pid0->sp));
+    __asm volatile ("ldmia.w  r0!, {r4-r11}");
+    __asm volatile ("msr psp, r0");
+    __asm volatile ("mov r1, 0xfffffffd");
+    __asm volatile ("str r1, [sp, #4]");
+    return;
   case PRINT_MSG:
     kprint();
   case YIELD_TASK:
-    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
-  if (SYSTICK)
-  {
   case STD:
-    disable_systick();
-    __asm volatile (
-      "MRS r2, PSP\n"
-      "LDMFD r2!, {r4-r11}\n"
-      "MSR PSP, r2\n"
-    );
+    if (SYSTICK)
+    {
+      disable_systick();
+      __asm volatile (
+        "mrs r2, psp\n"
+        "ldmfd r2!, {r4-r11}\n"
+        "msr psp, r2\n"
+      );
+    }
     return;
   case STE:
-    enable_systick();
-    __asm volatile (
-      "MRS r2, PSP\n"
-      "LDMFD r2!, {r4-r11}\n"
-      "MSR PSP, r2\n"
-    );
+    if (SYSTICK)
+    {
+      enable_systick();
+      __asm volatile (
+        "mrs r2, psp\n"
+        "ldmfd r2!, {r4-r11}\n"
+        "msr psp, r2\n"
+      );
+    }
     return;
-  }
   default:
     __builtin_unreachable();
     break;
   }
   if (SYSTICK)
     enable_systick();
+
+  *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
 }
