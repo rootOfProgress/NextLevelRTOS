@@ -38,6 +38,7 @@
     "unordered_set": "c",
     "fstream": "c",
     "valarray": "c",
-    "*.inc": "c"
+    "*.inc": "c",
+    "rcc.h": "c"
   }
 }

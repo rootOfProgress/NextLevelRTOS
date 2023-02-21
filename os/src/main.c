@@ -9,8 +9,6 @@
 #include "test.h"
 #include "rpm.h"
 #include "math.h"
-#define EnablePrivilegedMode() __asm("SVC #0xF")
-
 
 // void enable_exti0_cpu_irq()
 // {
@@ -30,19 +28,19 @@ void setup_nvic_controller()
   *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
 }
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) drohne_rpm(void)
-{
-  init_rpm_timer();
-  block_current_task();
-  SV_YIELD_TASK;
+// static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) drohne_rpm(void)
+// {
+//   init_rpm_timer();
+//   block_current_task();
+//   SV_YIELD_TASK;
 
-  while (1) {
-    block_current_task();
-    do_measurement();
-    volatile TransferInfo_t t_rpm = {.length = sizeof(Rpm_t), .start_adress = &rpm_results};
-    uprint((unsigned int*) &t_rpm, RPM);
-  };
-}
+//   while (1) {
+//     block_current_task();
+//     do_measurement();
+//     volatile TransferInfo_t t_rpm = {.length = sizeof(Rpm_t), .start_adress = &rpm_results};
+//     uprint((unsigned int*) &t_rpm, RPM);
+//   };
+// }
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {

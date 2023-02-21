@@ -1,0 +1,47 @@
+#ifndef RCC_H
+#define RCC_H
+
+#define RCC_BASE 0x40023800
+
+
+// for stm32f4x...
+// #[repr(C)]
+typedef struct Rcc {
+    unsigned int cr;
+    unsigned int pllcfgr;
+    unsigned int cfgr;
+    unsigned int cir; // 0x0c
+    unsigned int ahb1rstr;
+    unsigned int ahb2rstr; // 0x14
+    unsigned int reserved0; // 0x18
+    unsigned int reserved1; // 0x1C
+    unsigned int apb1rstr;
+    unsigned int apb2rstr;
+    unsigned int reserved2; // 0x28
+    unsigned int reserved3; // 0x2C
+    unsigned int ahb1enr;
+    unsigned int ahb2enr;
+    unsigned int reserved4; // 0x38
+    unsigned int reserved5; // 0x3C
+    unsigned int apb1enr;
+    unsigned int apb2enr;
+    unsigned int reserved6;
+    unsigned int reserved7; // 0x4C
+    unsigned int ahb1lpenr;
+    unsigned int ahb2lpenr; // 0x54
+    unsigned int reserved8;
+    unsigned int reserved9; // 0x5c
+    unsigned int apb1lpenr;
+    unsigned int apb2lpenr;
+    unsigned int reserved10;
+    unsigned int reserved11; // 0x6c
+    unsigned int bdcr;
+    unsigned int csr;
+    unsigned int reserved12;
+    unsigned int reserved13;
+    unsigned int sscgrg;
+    unsigned int plli2scfgr;
+    unsigned int dckcfgr;
+} RccRegisterMap_t;
+
+#endif

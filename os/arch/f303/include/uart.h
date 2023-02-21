@@ -1,6 +1,7 @@
 #ifndef UART_H
 #define UART_H
 #include "gpio.h"
+
 #define USART1_BASEADRESS 0x40013800
 #define UE 0
 #define RE 2
