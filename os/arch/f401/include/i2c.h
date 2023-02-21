@@ -77,7 +77,9 @@ typedef struct i2cRegisterMap
     i2c_sr1_t i2c_sr1;
 } i2cRegisterMap_t;
 
-void init_i2c(void);
+void i2c_init(void);
+void i2c_start(void);
+void i2c_stop(void);
 
 
 #endif
