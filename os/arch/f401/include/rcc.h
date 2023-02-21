@@ -2,7 +2,7 @@
 #define RCC_H
 
 #define RCC_BASE 0x40023800
-
+#define I2C1EN 21
 
 // for stm32f4x...
 // #[repr(C)]
