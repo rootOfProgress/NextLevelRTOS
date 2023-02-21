@@ -4,5 +4,6 @@
 extern void i2c_i2c(void);
 extern void i2c_start(void);
 extern void i2c_stop(void);
+extern char i2c_read(void);
 
 #endif

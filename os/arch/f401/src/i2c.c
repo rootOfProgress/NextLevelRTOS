@@ -4,10 +4,16 @@
 
 i2cRegisterMap_t* i2c_regs;
 
+char i2c_read(void)
+{
+    return i2c_regs->i2c_dr;
+}
+
 void i2c_start(void)
 {
     i2c_regs->i2c_cr1.cr1.start = 1;
 }
+
 void i2c_stop(void)
 {
     i2c_regs->i2c_cr1.cr1.stop = 1;
