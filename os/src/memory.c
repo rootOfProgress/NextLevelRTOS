@@ -188,11 +188,30 @@ void __attribute__ ((cold)) update_memory_statistic(void)
             mstat.total_byte_alloced += (entry & 0xFFFE) >> 1;
     }    
     Node_t* q = running_tasks->head;
+    mstat.total_byte_used = 0;
+    
+    #define BUG
+    #ifndef BUG
+    do
+    {
+            Tcb_t* t = q->data;
+            unsigned int b = t->memory_lower_bound;
+            unsigned int f = t->general.task_info.stack_size;
+            unsigned int c = t->sp;
+            unsigned int l = b + f - c;
+            q = q->next;
+            mstat.total_byte_used += l;
+    } while (q != running_tasks->head);
+
+    q = waiting_tasks->head;
     do
     {
             Tcb_t* t = q->data;
             mstat.total_byte_used += (t->memory_lower_bound + t->general.task_info.stack_size) - t->sp;
-    } while (q != running_tasks->head);
+            q = q->next;
+    } while (q != waiting_tasks->head);
+    #endif
+    #undef BUG
 }
 
 unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {

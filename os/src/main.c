@@ -4,6 +4,7 @@
 #include "process/task.h"
 #include "devices/gpio.h"
 #include "devices/i2c.h"
+#include "devices/tim2_5.h"
 #include "types.h"
 #include "devices/uart.h"
 #include "memory.h"
@@ -54,10 +55,11 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) footask(
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
-    block_current_task();
+    // block_current_task();
     update_memory_statistic();
-    volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
-    uprint((unsigned int*) &t, STATISTIC);
+    // volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
+    // uprint((unsigned int*) &t, STATISTIC);
+    SV_YIELD_TASK;
   };
 }
 

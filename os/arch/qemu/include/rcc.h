@@ -1,7 +1,7 @@
 #ifndef RCC_H
 #define RCC_H
 
-const unsigned int BASE_ADRESS = 0x40021000;
+#define BASE_ADRESS 0x40021000
 
 typedef struct RCC {
     unsigned int* cr;
@@ -17,6 +17,6 @@ typedef struct RCC {
     unsigned int* ahbrstr;
     unsigned int* cfgr2;
     unsigned int* cfgr3;
-} Rcc_t;
+} RccRegisterMap_t;
 
 #endif
