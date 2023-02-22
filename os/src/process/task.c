@@ -5,7 +5,10 @@
 #include "process/task.h"
 #include "panic.h"
 
-#define BUFFER 2048
+#define STACK_SIZE 1536
+
+unsigned int pid_of_transferhandler;
+unsigned int pid_of_mstat;
 
 CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_size, void (*task_function)())
 {
@@ -16,23 +19,23 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
         invoke_panic(OUT_OF_MEMORY);
 
     memset_byte((void*) cpu_register, sizeof(CpuRegister_t), 0);
+    memset_byte((void*) address, STACK_SIZE - sizeof(CpuRegister_t), 0xA5);
 
     cpu_register->psr = THUMB_STATE;
-    // todo
     cpu_register->pc = (unsigned int) task_function;
-    cpu_register->lr = (unsigned int) remove_scheduled_task;
+    cpu_register->lr = (unsigned int) finish_task;
     return cpu_register;
 }
 
 
-void create_task(void (*task_function)(), unsigned int ram_location)
+unsigned int create_task(void (*task_function)(), unsigned int ram_location)
 {
 
-    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + BUFFER);
+    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
     if (address == 0)
         invoke_panic(OUT_OF_MEMORY);
 
-    CpuRegister_t *cpu_register = prepare_cpu_register(address, BUFFER, task_function);
+    CpuRegister_t *cpu_register = prepare_cpu_register(address, STACK_SIZE, task_function);
 
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
     if (!tcb)
@@ -41,7 +44,7 @@ void create_task(void (*task_function)(), unsigned int ram_location)
     tcb->pid = task_queue->size;
     tcb->sp = (unsigned int) &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
-    tcb->memory_upper_bound = ((unsigned int)address + BUFFER);
+    tcb->memory_upper_bound = ((unsigned int)address + STACK_SIZE);
     tcb->code_section = ram_location;
     tcb->task_state = READY;
 //@leave it
@@ -57,4 +60,5 @@ void create_task(void (*task_function)(), unsigned int ram_location)
 //     volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
 //     *mpu_ctrl = 0x5;
     insert_scheduled_task((Tcb_t*) tcb);
+    return tcb->pid;
 }

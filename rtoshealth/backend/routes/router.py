@@ -75,16 +75,16 @@ def test_memory():
 @app.route('/rpm', methods=['GET'])
 def rpm():
     logging.print_info("set device into REQUEST_RPM state...")
-    cmd = "printf \"\\x05\\x12\\x34\\x56\" >> /dev/" + device_address
+    cmd = "printf \"\\x05\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
     time.sleep(1)
     
     thread_return = False
-    receiver = Thread(target = device_rx)
+    receiver = Thread(target = uart_receiver.device_rx)
     receiver.start()
 
     logging.print_info("trigger update...")
-    cmd = "printf \"\\x05\" >> /dev/" + device_address
+    cmd = "printf \"\\x05\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
     logging.print_info("waiting for device response...")
@@ -94,6 +94,30 @@ def rpm():
     stop = time.time()
     logging.print_info("Took " + str(stop - start) + " ms")
     response = process_result()
+    return response    
+
+@app.route('/position', methods=['GET'])
+def position():
+    logging.print_info("set device into REQUEST_POSITION state...")
+    cmd = "printf \"\\x08\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
+    os.system(cmd)
+    time.sleep(1)
+    
+    thread_return = False
+    receiver = Thread(target = uart_receiver.device_rx)
+    receiver.start()
+
+    logging.print_info("trigger update...")
+    cmd = "printf \"\\x08\" >> /dev/" + uart_receiver.device_address
+    os.system(cmd)
+
+    logging.print_info("waiting for device response...")
+    start = time.time()
+    receiver.join()
+
+    stop = time.time()
+    logging.print_info("Took " + str(stop - start) + " ms")
+    response = uart_receiver.process_result()
     return response    
 
 def alter_speed(speed):

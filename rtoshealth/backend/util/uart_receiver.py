@@ -62,6 +62,15 @@ def process_result():
                 }
                 del result[:]
                 return response
+            case "DDDDAAAA":
+                logging.print_success("Got device response!")
+                response = {
+                    "x" : unpack('I', b''.join(result[8:12]))[0],
+                    "y" : unpack('I', b''.join(result[12:16]))[0], 
+                    "z" : unpack('I', b''.join(result[16:20]))[0], 
+                }
+                del result[:]
+                return response
             case "DDDDEEEE":
                 logging.print_success("Got device response!")
                 response = {

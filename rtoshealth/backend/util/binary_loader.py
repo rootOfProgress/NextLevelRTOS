@@ -19,6 +19,8 @@ def recompile_binary(final_adress, package_name, size):
     os.system(cmd)
 
     logging.print_info("recompile programm...")
+    cmd = "make clean -C " + path_suffix + "packages/" + package_name
+    os.system(cmd)
     cmd = "make -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
 

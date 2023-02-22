@@ -34,6 +34,13 @@ void reset_handler(void)
         WRITE_REGISTER(0x20000000, 0);
     }
 
+    // CCR DIV_0_TRP , UNALIGN_ TRP
+    WRITE_REGISTER(0xE000ED14, READ_REGISTER(0xE000ED14) | 3 << 3);
+
+    // enable memfaults etc.
+    volatile unsigned int *shcsr = (void *)0xE000ED24;
+    *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
+
     if (HWFP)
     {
         __asm(
@@ -59,21 +66,78 @@ void memfault_handler(void)
     while (1);
 }
 
-void hardfault_handler(void)
+
+void  __attribute__((optimize("O3"))) hardfault_handler(void)
 {
     process_stats->num_of_hardfaults++;
+    // volatile uint32_t *USFR = (volatile uint32_t *)0xE000ED28;
+    // volatile uint32_t foo = *USFR;
+    unsigned int USFR = READ_REGISTER(0xE000ED28);
 
-    // kill malfunctional task
-    // UNTESTED!!
-    invalidate_current_task();
-    switch_task();
-    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    // UNDEFINSTR 
+    if (USFR & 1 + 16)
+    {
+        while (1)
+        {
+        }
+        
+    }
+
+    // INVSTATE
+    if (USFR & 1 << 1 + 16)
+    {
+        while (1)
+        {
+        }
+        
+    }
+
+    // INVPC
+    if (USFR & 1 << 2 + 16)
+    {
+        while (1)
+        {
+        }
+        
+    }
+
+    // NOCP
+    if (USFR & 1 << 3 + 16)
+    {
+        while (1)
+        {
+        }
+        
+    }
+
+    // DIVBYZERO
+    if (USFR & 1 << 9 + 16)
+    {
+        invalidate_current_task();
+        switch_task();
+        mstat.total_scheduled_tasks--;
+        __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
+        __asm volatile (
+        "LDMFD r2!, {r4-r11}\n"
+        "MSR PSP, r2\n"
+        );
+    }
 }
 
-void usage_fault(void)
+void  __attribute__((optimize("O0"))) usage_fault(void)
 {
+    unsigned int UFSR = READ_REGISTER(0xE000ED28) >> 16;
+    if (UFSR & 1 << 2) // invpc
+    {
+        while (1)
+        {
+            /* code */
+        }
+        
+    }
     while (1);
 }
+
 
 void bar_handler(void)
 {

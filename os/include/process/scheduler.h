@@ -48,7 +48,6 @@ static inline __attribute__((always_inline)) void move_to_waiting(void)
 void next_task(void);
 void policy_round_robin(void);
 void remove_current_task(void);
-void do_selfcheck_scheduler(void);
 void init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
 void remove_scheduled_task(void);
@@ -57,8 +56,9 @@ void wakeup_pid(unsigned int);
 void block_current_task(void);
 void invalidate_current_task(void);
 void unblock_task(unsigned int);
-void load_task(void);
-void update_scheduler_statistic(void);
 void reboot(void);
+void finish_task(void);
+void search_invalidate_tasks(void);
+void clean_up_task(Tcb_t*, Node_t*);
 
 #endif

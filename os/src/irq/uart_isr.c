@@ -27,7 +27,7 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
         return;
 
     if (transfer_list->size == 0)
-        wakeup_pid(TASK_TRANSFER_HANDLER);
+        wakeup_pid(1);
 
     TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
     
@@ -70,6 +70,11 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
                 print(m, 8);
                 remaining -= 8;
                 break;
+            case PLANEPOSITION:
+                m = "DDDDAAAA";
+                print(m, 8);
+                remaining -= 8;
+                break;
             default:
                 break;
             }
@@ -88,7 +93,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         else
         {
             block_current_task();
-            SV_YIELD_TASK;
+            // SV_YIELD_TASK;
         }
     }    
 }
@@ -125,13 +130,6 @@ void send_number(unsigned int number, char converted[])
 
 void __attribute__((interrupt)) uart_isr_handler(void)
 {
-    // __asm (
-    //     "MRS r2, PSP\n"
-    //     "STMDB r2!, {r4-r11}\n"
-    //     "MSR PSP, r2\n"
-    // );
-    // __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) currently_running->data)->sp));
-
     switch (state)
     {
     case RX_READY:
@@ -165,8 +163,9 @@ void __attribute__((interrupt)) uart_isr_handler(void)
                 invoke_panic(OUT_OF_MEMORY);
 
             // done because of pyserial testing to receive mem adress everytime!
-            state = TRANSFER_TASK_BYTES;
             // state = RX_READY;
+            
+            state = TRANSFER_TASK_BYTES;
 
             bufferIndex = 0;
             char s1[9] = {0,0,0,0,0,0,0,0,0};
@@ -193,10 +192,9 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         }
         break;
     case REQUEST_STATISTIC:
-        wakeup_pid(TASK_STATISTIC);
+        wakeup_pid(2);
         state = RX_READY;
         unsigned int dummy = read_data_register();
-        // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
         return;
         // break;
     case ALTER_SPEED:
@@ -233,9 +231,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         wakeup_pid(TASK_RPM);
         state = RX_READY;
         unsigned int dummy1 = read_data_register();
-        // *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
         return;
-        // break;
     case REBOOT:
         state = RX_READY;
         unsigned int dummy2 = read_data_register();
@@ -249,12 +245,12 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         WRITE_REGISTER(0x20000000, 0);
         state = RX_READY;
         return;
+    case REQUEST_POSITION:
+        unsigned int dummy4 = read_data_register();
+        wakeup_pid(3);
+        state = RX_READY;
+        return;
     default:
         break;
-    }    
-    // __asm volatile ("MOV R2, %[input_i]":: [input_i] "r" (((Tcb_t*) currently_running->data)->sp));
-    // __asm volatile (
-    //   "LDMFD r2!, {r4-r11}\n"
-    //   "MSR PSP, r2\n"
-    // );
+    }
 }

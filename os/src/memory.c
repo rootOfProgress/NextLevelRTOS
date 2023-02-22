@@ -3,6 +3,7 @@
 #include "test.h"
 #include "process/scheduler.h"
 #include "devices/uart.h"
+#include "data/quicksort.h"
 
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
@@ -52,6 +53,80 @@ void memset_byte(void* dest, unsigned int number_of_bytes, char pattern)
         *dest_1 = pattern;
         dest_1++;
     }
+}
+
+void __attribute__((optimize("O0"))) defrag()
+{
+    lock_mutex((void*) &mutex);
+
+    int highest_used_entry = -1; 
+    while (*(MEM_TABLE_START + ++highest_used_entry) != 0xFFFE){}
+    
+    quicksort((int*) MEM_TABLE_START, 0, --highest_used_entry, &offset_comparator);
+    
+    for (unsigned int base_index = 0; base_index < highest_used_entry; base_index++)
+    {
+        unsigned int mementry_ptr_1 = *(MEM_TABLE_START + base_index);
+        char gap_found = 0;
+        // search free element
+        if ((mementry_ptr_1 & 1) != 1 && (mementry_ptr_1 != 0xFFFE)) {
+            // search next free elements
+            unsigned int offset_index = base_index + 1;
+            while (1)
+            {
+                unsigned int mementry_ptr_2 = *(MEM_TABLE_START + offset_index);
+
+                // is occupied
+                if ((mementry_ptr_2 & 1) == 1 || (offset_index > highest_used_entry))
+                    break;
+                else
+                {
+                    gap_found = 1;
+                    offset_index++;
+                }
+            }
+
+            // neighbour not free
+            if (!gap_found)
+                continue;
+            
+            // calc new chunk size
+            unsigned int new_size = 0;
+            for (unsigned int k = base_index; k < offset_index; k++)
+                new_size += (*(MEM_TABLE_START + k) & 0xFFFE) >> 1;
+
+            // merge
+            *(MEM_TABLE_START + base_index) &= ~(0xFFFF);
+            *(MEM_TABLE_START + base_index) |= (new_size << 1);
+
+            // relocate #tetrisstyle
+            for (unsigned int new_location_start = base_index + 1; new_location_start < highest_used_entry + 1; new_location_start++, offset_index++)
+                *(MEM_TABLE_START + new_location_start) = *(MEM_TABLE_START + offset_index);
+        } 
+    }
+    release_mutex((void*) &mutex);
+}
+
+int __attribute__((optimize("O0"))) offset_comparator(int a, int b)
+{
+    int offset_a = (a >> 16);
+    int offset_b = (b >> 16);
+    if (offset_a > offset_b)
+        return 1;
+    if (offset_a < offset_b)
+        return -1;
+    return 0;
+}
+
+int size_comparator(int a, int b)
+{
+    unsigned int size_a = (a & 0xFFFE) >> 1;
+    unsigned int size_b = (b & 0xFFFE) >> 1;
+    if (size_a > size_b)
+        return 1;
+    if (size_a < size_b)
+        return -1;
+    return 0;
 }
 
 

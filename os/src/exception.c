@@ -53,10 +53,14 @@ void __attribute__((optimize("O3"))) SVCall()
   {
   case EXEC_PSP_TASK:
     init_systick(26);
-    unsigned int sp1 = (unsigned int) ((Tcb_t*)currently_running->data)->sp;
+    Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
+
+    // initially block pid0, will run 0 time
+    tcb_of_pid0->task_state = WAITING;
+
     __asm__ volatile ("MOV R0, %[input_i]"
       :  
-      : [input_i] "r" (sp1)
+      : [input_i] "r" (tcb_of_pid0->sp)
         );
     __asm__("ldmia.w  r0!, {r4, r5, r6, r7, r8, r9, sl, fp}");
     __asm__("msr psp, r0");

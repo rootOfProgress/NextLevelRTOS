@@ -54,6 +54,7 @@ pub unsafe extern "C" fn init_devs ()
         .as_alternate_function()
         .as_open_drain()
         .as_high_speed();
+        
     // // i2c1 scl
     GpioDevice::new("B", 8)
         .as_af(4)
