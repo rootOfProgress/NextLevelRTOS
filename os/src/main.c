@@ -3,6 +3,7 @@
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "devices/gpio.h"
+#include "devices/i2c.h"
 #include "types.h"
 #include "devices/uart.h"
 #include "memory.h"
@@ -72,7 +73,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
   }
 }
 
-int main_init(void)
+int __attribute__((optimize("O0"))) main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
