@@ -17,3 +17,4 @@ file ../legacy_drivers/runtime/target/thumbv7em-none-eabihf/debug/runtime
 registers:
 tim2 x/40x 0x40000000
 tim3 x/40x 0x40000400
+x/30x 0x20000000

@@ -208,22 +208,23 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
     for (unsigned int index = 0; index < NUM_OF_SLOTS; index++)
     {
         // 47 possible allocs @todo WRONG COUNT!!
-        unsigned int memory_entry = *(MEM_TABLE_START + index);
+        // MemoryEntry_t* memory_entry = (MemoryEntry_t*) ((unsigned int*) *(MEM_TABLE_START + index));
+        MemoryEntry_t* memory_entry = (MemoryEntry_t*) (MEM_TABLE_START + index);
 
         // check if occupied
-        if ((memory_entry & 1) == 1) {
+        if (memory_entry->mementry_fields.is_occupied) {
             // get size and add to offset
-            next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
+            next_useable_chunk += memory_entry->mementry_fields.chunk_size;
             continue;
         }
 
-        // check if chunk was already in use: Offset is not 0 
-        if ((((memory_entry >> 1) & 0xFFFF) != 0x7FFF && ((memory_entry & 0xFFFE) >> 1) >= size))
+        // check if chunk was already in use: size is not default 
+        if ((memory_entry->mementry_fields.chunk_size != 0x7FFF) && (memory_entry->mementry_fields.chunk_size >= size))
         {
-            unsigned int old_size = (memory_entry & 0xFFFE) >> 1;
+            unsigned int old_size = memory_entry->mementry_fields.chunk_size;
 
-            // mark size as 0, mark is_used 0
-            memory_entry &= ~0xFFFF;
+            memory_entry->mementry_fields.chunk_size = 0;
+            memory_entry->mementry_fields.is_occupied = 0;
             unsigned int remaining = old_size - size;
 
             // untested!
@@ -231,7 +232,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
             {
                 unsigned int j = index;
                 while (*(MEM_TABLE_START + j) != 0x0000FFFE) { j++; };
-                *(MEM_TABLE_START + j) = (((memory_entry >> 16) + size) << 16) | remaining << 1 | 0; 
+                *(MEM_TABLE_START + j) = (((memory_entry->raw >> 16) + size) << 16) | remaining << 1 | 0; 
                 // mstat.num_of_fractial_allocs++;
             }
 
@@ -239,22 +240,25 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
             *(MEM_TABLE_START + index) |= (size << 1) | 0x1;
             mstat.num_of_allocs++;
             release_mutex((void*) &mutex);
-            return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
+            return (unsigned int*) ((memory_entry->raw >> 16) + (unsigned int) USEABLE_MEM_START);
         } 
         // check if size fits on new chunk
-        if (((memory_entry & 0xFFFE) >> 1) >= size)
+        if (memory_entry->mementry_fields.chunk_size >= size)
         {
             // update offsetadress, size, mark as occupied
-            memory_entry = (next_useable_chunk << 16) | (size << 1) | 1;
+            memory_entry->mementry_fields.base_offset = next_useable_chunk;
+            memory_entry->mementry_fields.chunk_size = size;
+            memory_entry->mementry_fields.is_occupied = 1;
+            // memory_entry->mementry_fields.is_dirty = 1;
 
             // write back changes
-            *(MEM_TABLE_START + index) = memory_entry;
+            *(MEM_TABLE_START + index) = memory_entry->raw;
             mstat.num_of_allocs++;
             release_mutex((void*) &mutex);
 
-            return (unsigned int*) ((memory_entry >> 16) + (unsigned int) USEABLE_MEM_START);
+            return (unsigned int*) (memory_entry->mementry_fields.base_offset + (unsigned int) USEABLE_MEM_START);
         }
-        next_useable_chunk += (memory_entry & 0xFFFE) >> 1;
+        next_useable_chunk += memory_entry->mementry_fields.chunk_size;
     }
     release_mutex((void*) &mutex);
 
