@@ -54,8 +54,17 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   };
 }
 
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) foo_task(void)
+{
+  while (1) {
+    SV_YIELD_TASK;
+  };
+}
+
+
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
+  create_task(&foo_task,0);
   while (1) {
     search_invalidate_tasks();
     defrag();
