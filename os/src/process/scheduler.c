@@ -38,38 +38,28 @@ void __attribute__ ((hot)) policy_round_robin(void)
         return;
     }
 
-    // if (((Tcb_t*) currently_running->data)->pid == 0)
-    //     ((Tcb_t*) currently_running->data)->task_state = WAITING;
 
     for (unsigned int j = 0; j < running_tasks->size; j++)
     {
         currently_running = currently_running->next;
         Tcb_t* n = (Tcb_t*) currently_running->data;
-        if (n->task_state == READY)
+        if (n->general.task_info.state == READY)
         {
             task_to_preserve = currently_running;
             return;
         }
     }
-    while (1)
-    {
-        // no task found, do something useful here
-    }
-    
-    // no runnable task found, wakeup pid0
-    // currently_running = (Node_t*) get_head_element(waiting_tasks);
-    // ((Tcb_t*) currently_running->data)->task_state = READY;
 }
 
 void invalidate_current_task(void)
 {
-    ((Tcb_t*) (currently_running->data))->task_state = DEAD;
+    ((Tcb_t*) (currently_running->data))->general.task_info.state = DEAD;
 }
 
 void block_current_task(void)
 {
-    disable_systick();
-    ((Tcb_t*) (currently_running->data))->task_state = WAITING;
+    // disable_systick();
+    ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
 
     // On context switch, task->next is loaded. Jump back one task here ensures that next task is 
     // in fact the successor of the one that gets blocked right now.
@@ -84,7 +74,8 @@ void block_current_task(void)
     move_node(waiting_tasks, currently_running);
 
     currently_running = q;
-    enable_systick();
+    // enable_systick();
+    mstat.waiting_tasks++;
     SV_YIELD_TASK;
 }
 
@@ -138,7 +129,7 @@ void search_invalidate_tasks(void)
     for (unsigned int j = 0; j < running_tasks->size; j++)
     {
         Tcb_t* t = (Tcb_t*) q->data;
-        if (t->task_state == FINISHED || t->task_state == INVALID)
+        if (t->general.task_info.state == FINISHED || t->general.task_info.state == INVALID)
             clean_up_task(t, q);
         q = q->next;
     }
@@ -147,7 +138,7 @@ void search_invalidate_tasks(void)
 void finish_task(void)
 {
     Tcb_t* n = (Tcb_t*) currently_running->data;
-    n->task_state = FINISHED;
+    n->general.task_info.state = FINISHED;
 
     switch_task();
 

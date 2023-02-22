@@ -22,7 +22,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) SysTick()
   if (DEBUG)
   {
     process_stats->num_of_systick_interrupts++;
-    task_block->irq_statistic[0].forced_interrupts++;
+    task_block->lifetime_info[0].lifetime.forced_interrupts++;
   }
   
   switch_task();
@@ -76,6 +76,7 @@ void __attribute__((optimize("O3"))) SVCall()
   case EXEC_PSP_TASK:
     if (SYSTICK)
       init_systick(30);
+
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
 
     __asm volatile ("mov r0, %[sp]" :: [sp] "r" (tcb_of_pid0->sp));
@@ -89,9 +90,10 @@ void __attribute__((optimize("O3"))) SVCall()
   case YIELD_TASK:
     if (DEBUG)
     {
-      Tcb_t* task_block = (Tcb_t*) task_to_preserve->data;
-      task_block->irq_statistic[0].voluntary_interrupts++;
+      Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
+      tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;
     }
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   case STD:
     if (SYSTICK)

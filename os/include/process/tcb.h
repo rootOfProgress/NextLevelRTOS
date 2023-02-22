@@ -9,19 +9,30 @@ typedef enum {
     INVALID
 } TaskState_t;
 
-typedef struct InterruptStatistic {
-    unsigned long voluntary_interrupts;
-    unsigned long forced_interrupts;
-} InterruptStatistic_t;
+typedef union TaskInfo {
+    struct {
+        unsigned int pid : 4, state : 3, is_external : 1, stack_size : 16, : 8;
+    } task_info;
+    unsigned int raw;
+} TaskInfo_t;
+
+typedef union TaskLifetimeData {
+    struct {
+        unsigned int voluntary_interrupts;
+        unsigned int forced_interrupts;
+        unsigned int cpu_time;
+    } lifetime;
+    unsigned int raw[3];
+} TaskLifetimeData_t;
+
+enum { IsNoExternalTask = 0, IsExternalTask = 1 };
 
 typedef struct Tcb {
-    unsigned int pid;
+    TaskInfo_t general;
     unsigned int sp;
     unsigned int memory_lower_bound;
-    unsigned int memory_upper_bound;
     unsigned int code_section;
-    InterruptStatistic_t irq_statistic[DEBUG ? 1 : 0];
-    TaskState_t task_state;
+    TaskLifetimeData_t lifetime_info[DEBUG ? 1 : 0];
 } Tcb_t;
 
 Tcb_t* new_tcb(unsigned int,unsigned int,unsigned int,unsigned int);

@@ -38,12 +38,12 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
 
     for (unsigned int i = 0; i < waiting_tasks->size; i++)
     {
-        if (((Tcb_t*)q->data)->pid == pid)
+        if (((Tcb_t*)q->data)->general.task_info.pid == pid)
         {
-            ((Tcb_t*)q->data)->task_state = READY;
-
             isolate_node(waiting_tasks,q);
             move_node(running_tasks,q);
+            ((Tcb_t*)q->data)->general.task_info.state = READY;
+            mstat.waiting_tasks--;
             return;
         }
         q = q->next;

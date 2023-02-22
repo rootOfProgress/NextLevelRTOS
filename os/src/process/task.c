@@ -42,12 +42,19 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
     if (!tcb)
         invoke_panic(OUT_OF_MEMORY);
 
-    tcb->pid = running_tasks->size;
+    // memset_byte((void*) &tcb, sizeof(Tcb_t), 0); 
+
+
+    tcb->general.task_info.pid = running_tasks->size;
+    tcb->general.task_info.state = READY;
+    tcb->general.task_info.stack_size = STACK_SIZE;
+
+    if (ram_location)
+        tcb->general.task_info.is_external = IsExternalTask;
+
     tcb->sp = (unsigned int) &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
-    tcb->memory_upper_bound = ((unsigned int)address + STACK_SIZE);
     tcb->code_section = ram_location;
-    tcb->task_state = READY;
 //@leave it
 //     volatile unsigned int *shcsr = (void *)0xE000ED24;
 //     *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
@@ -61,5 +68,5 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
 //     volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
 //     *mpu_ctrl = 0x5;
     insert_scheduled_task((Tcb_t*) tcb);
-    return tcb->pid;
+    return tcb->general.task_info.pid;
 }
