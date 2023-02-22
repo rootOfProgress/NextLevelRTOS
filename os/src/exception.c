@@ -53,14 +53,11 @@ void __attribute__((optimize("O3"))) SVCall()
   {
   case EXEC_PSP_TASK:
     init_systick(26);
-    Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
-
-    // initially block pid0, will run 0 time
-    tcb_of_pid0->task_state = WAITING;
+    unsigned int sp_of_pid0 = ((Tcb_t*)currently_running->data)->sp;
 
     __asm__ volatile ("MOV R0, %[input_i]"
       :  
-      : [input_i] "r" (tcb_of_pid0->sp)
+      : [input_i] "r" (sp_of_pid0)
         );
     __asm__("ldmia.w  r0!, {r4, r5, r6, r7, r8, r9, sl, fp}");
     __asm__("msr psp, r0");
@@ -70,6 +67,11 @@ void __attribute__((optimize("O3"))) SVCall()
   case PRINT_MSG:
     kprint();
   case YIELD_TASK:
+    if (DEBUG)
+    {
+      Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
+      tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;
+    }
     *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
     break;
   if (SYSTICK)

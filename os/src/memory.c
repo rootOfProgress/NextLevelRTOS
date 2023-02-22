@@ -187,7 +187,7 @@ void __attribute__ ((cold)) update_memory_statistic(void)
     do
     {
             Tcb_t* t = q->data;
-            mstat.total_byte_used = t->memory_upper_bound - t->sp;
+            mstat.total_byte_used = (t->memory_lower_bound + t->general.task_info.stack_size) - t->sp;
     } while (q != task_queue->head);
 }
 

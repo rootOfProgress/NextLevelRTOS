@@ -29,9 +29,9 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
     Node_t *q = currently_running;
     while (1)
     {
-        if (((Tcb_t*)q->data)->pid == pid)
+        if (((Tcb_t*)q->data)->general.task_info.pid == pid)
         {
-            ((Tcb_t*)q->data)->task_state = READY;
+            ((Tcb_t*)q->data)->general.task_info.state = READY;
             mstat.waiting_tasks--;
             return;
         }

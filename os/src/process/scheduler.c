@@ -40,29 +40,29 @@ void __attribute__ ((hot)) policy_round_robin(void)
         return;
     }
 
-    if (((Tcb_t*) currently_running->data)->pid == 0)
-        ((Tcb_t*) currently_running->data)->task_state = WAITING;
+    if (((Tcb_t*) currently_running->data)->general.task_info.pid == 0)
+        ((Tcb_t*) currently_running->data)->general.task_info.state = WAITING;
 
     for (unsigned int j = 0; j < task_queue->size; j++)
     {
         currently_running = currently_running->next;
         Tcb_t* n = (Tcb_t*) currently_running->data;
-        if (n->task_state == READY)
+        if (n->general.task_info.state == READY)
             return;
     }
     // no runnable task found, wakeup pid0
     currently_running = (Node_t*) get_head_element(task_queue);
-    ((Tcb_t*) currently_running->data)->task_state = READY;
+    ((Tcb_t*) currently_running->data)->general.task_info.state = READY;
 }
 
 void invalidate_current_task(void)
 {
-    ((Tcb_t*) (currently_running->data))->task_state = DEAD;
+    ((Tcb_t*) (currently_running->data))->general.task_info.state = DEAD;
 }
 
 void block_current_task(void)
 {
-    ((Tcb_t*) (currently_running->data))->task_state = WAITING;
+    ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
     mstat.waiting_tasks++;
     SV_YIELD_TASK;
 }
@@ -114,7 +114,7 @@ void search_invalidate_tasks(void)
     for (unsigned int j = 0; j < task_queue->size; j++)
     {
         Tcb_t* t = (Tcb_t*) q->data;
-        if (t->task_state == FINISHED || t->task_state == INVALID)
+        if (t->general.task_info.state == FINISHED || t->general.task_info.state == INVALID)
             clean_up_task(t, q);
         q = q->next;
     }
@@ -123,7 +123,7 @@ void search_invalidate_tasks(void)
 void finish_task(void)
 {
     Tcb_t* n = (Tcb_t*) currently_running->data;
-    n->task_state = FINISHED;
+    n->general.task_info.state = FINISHED;
     mstat.total_scheduled_tasks--;
 
     switch_task();
