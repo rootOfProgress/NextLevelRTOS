@@ -8,6 +8,19 @@ typedef struct MemoryResult {
     unsigned int* end_address;
 } MemoryResult_t;
 
+typedef union MemoryEntry
+{
+    struct
+    {
+        // unsigned int is_occupied : 1, is_dirty : 1, chunk_size : 15, base_offset : 16;
+        unsigned int is_occupied : 1, chunk_size : 15, base_offset : 16;
+        // short base_offset;
+    } mementry_fields;
+
+    unsigned int raw;
+} MemoryEntry_t;
+
+
 typedef struct MemoryStatistic {
     unsigned int num_of_allocs;
     unsigned int num_of_deallocs;
