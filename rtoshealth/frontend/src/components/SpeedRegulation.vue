@@ -151,7 +151,7 @@
                   </div>
                 </td>
                 <td> 
-                  <button class="button is-link is-light is-rounded" :class="{'is-static' : !isPackageSelected, 'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
+                  <button class="button is-link is-light is-rounded" :class="{'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
                 </td>
               </tr>
             </tbody>
@@ -332,7 +332,11 @@ export default {
     },
     uploadPackage () {
       this.packageUploadInProgress = true
-      axios.post(`/upload/${this.selectedPackage}`).then(() => {
+      // axios.post(`/upload/${this.selectedPackage}`).then(() => {
+        // this.packageUploadInProgress = false
+        // this.selectedPackage = ""
+      // })
+      axios.post(`/upload/i2c`).then(() => {
         this.packageUploadInProgress = false
         this.selectedPackage = ""
       })

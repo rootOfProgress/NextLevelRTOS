@@ -25,6 +25,19 @@ def flush_rx_buffer():
 def flush():
     del result[:]
 
+def complement(payload):
+    # bit 9
+    sign = (payload >> 9) & 1
+
+    # bit 8 .. 0
+    value = (payload) & 0x1FF
+    # negative
+    if sign == 1:
+        return ((512 - value) * -1) / 32
+    else:
+        return value / 32
+
+
 def process_result():
     # byte 0..7 : code
     bts = b''.join(result[0:8])
@@ -69,6 +82,25 @@ def process_result():
                     "y" : unpack('I', b''.join(result[12:16]))[0], 
                     "z" : unpack('I', b''.join(result[16:20]))[0], 
                 }
+                # response = {
+                #     "x_low" : unpack('I', b''.join(result[8:9]))[0],
+                #     "y_low" : unpack('I', b''.join(result[9:10]))[0], 
+                #     "z_low" : unpack('I', b''.join(result[10:11]))[0],
+                #     "x_high" : unpack('I', b''.join(result[11]))[0],
+                #     "y_high" : unpack('I', b''.join(result[12]))[0], 
+                #     "z_high" : unpack('I', b''.join(result[13]))[0], 
+                # }
+                # print(response)
+                # print("{0:X}".format(response["x_low"]))
+                # print("{0:X}".format(response["y_low"]))
+                # print("{0:X}".format(response["z_low"]))
+                print("{0:016b}".format(response["x"]))
+                print("{0:016b}".format(response["y"]))
+                print("{0:016b}".format(response["z"]))
+                response["x"] = complement(response["x"])
+                response["y"] = complement(response["y"])
+                response["z"] = complement(response["z"])
+
                 del result[:]
                 return response
             case "DDDDEEEE":
