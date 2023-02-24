@@ -1,5 +1,6 @@
 #include "gpio.h"
 #include "rcc.h"
+#define NULL ( (void *) 0)
 
 
 
@@ -9,7 +10,7 @@ void init_gpio(GpioObject_t* t)
 
 GpioRegisters_t* get_registers(GpioObject_t* t)
 {
-    return;
+    return NULL;
 }
 
 

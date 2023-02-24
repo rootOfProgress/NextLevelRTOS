@@ -17,7 +17,8 @@ typedef struct Queue {
 
 void queue_selfcheck(void);
 Queue_t* new_queue(void);
-void enqueue_node(Queue_t*, Node_t*);
+void move_node(Queue_t*, Node_t*);
+void isolate_node(Queue_t*, Node_t*);
 void enqueue_element(Queue_t*, void*);
 Node_t* get_head_element(Queue_t*);
 Node_t* dequeue_element(Queue_t* queue, Node_t* node);

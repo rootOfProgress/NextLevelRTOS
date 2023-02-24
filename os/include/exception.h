@@ -31,6 +31,17 @@
                                   
 __attribute__((used)) void uprint(volatile unsigned int* transfer_info, volatile unsigned int type);
 
+static inline __attribute__((always_inline)) void save_psp_if_threadmode(void)
+{
+  __asm (
+    "TST lr, #4\n"
+    "ITTT NE\n"
+    "MRSNE r2, PSP\n"
+    "STMDBNE r2!, {r4-r11}\n"
+    "MSRNE PSP, r2\n"
+  );
+}
+
 typedef enum {
     RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
     RET_MSP_THREAD_NOFP = 0xFFFFFFF9,

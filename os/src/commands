@@ -1,6 +1,6 @@
 p *(Node_t*)currently_running->data
 p *((Tcb_t*)currently_running->data)
-p *((Queue_t*) task_queue)
+p *((Queue_t*) running_tasks)
 break scheduler.c:58
 delete breakpoints
 monitor reset halt
@@ -17,3 +17,4 @@ file ../legacy_drivers/runtime/target/thumbv7em-none-eabihf/debug/runtime
 registers:
 tim2 x/40x 0x40000000
 tim3 x/40x 0x40000400
+x/30x 0x20000000

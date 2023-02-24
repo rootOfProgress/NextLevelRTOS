@@ -15,4 +15,9 @@ typedef struct GpioActions {
 
 extern void init_gpio(GpioActions_t*);
 extern void toggle_output_pin(GpioObject_t*);
+extern void set_pin_on(GpioObject_t*); 
+extern void set_pin_off(GpioObject_t*); 
+extern unsigned int read_pin(GpioObject_t*);
+
+
 #endif

@@ -3,6 +3,7 @@
 
 #include "data/queue.h"
 #include "process/tcb.h"
+#include "hw/cpu.h"
 #include "lang.h"
 #include "memory.h"
 #include "exception.h"
@@ -13,36 +14,41 @@
 
 typedef struct proc_stats {
     unsigned int num_of_hardfaults;
-    unsigned int started_tasks;
-    unsigned int finished_tasks;
-    unsigned int waiting_tasks;
+    unsigned int num_of_systick_interrupts;
+    unsigned int num_of_svcalls;
+    unsigned int num_of_pendsv;
 } ProcessStats_t;
 
 extern ProcessStats_t* process_stats;
-extern Queue_t* task_queue;
+
 extern Node_t* currently_running;
+extern Node_t* task_to_preserve;
+
+extern Queue_t* running_tasks;
 extern Queue_t* waiting_tasks;
+
 extern void (*switch_task)();
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
 {
-    Node_t *q = currently_running;
-    while (1)
+    disable_systick();
+    Node_t *q = get_head_element(waiting_tasks);
+    if (!q)
+        return;
+
+    for (unsigned int i = 0; i < waiting_tasks->size; i++)
     {
-        if (((Tcb_t*)q->data)->pid == pid)
+        if (((Tcb_t*)q->data)->general.task_info.pid == pid)
         {
-            ((Tcb_t*)q->data)->task_state = READY;
+            isolate_node(waiting_tasks,q);
+            move_node(running_tasks,q);
+            ((Tcb_t*)q->data)->general.task_info.state = READY;
             mstat.waiting_tasks--;
             return;
         }
         q = q->next;
     }
-}
-
-static inline __attribute__((always_inline)) void move_to_waiting(void)
-{
-    Node_t* old_element = dequeue_element(task_queue, currently_running);
-    enqueue_node(waiting_tasks, old_element);    
+    enable_systick();
 }
 
 void next_task(void);

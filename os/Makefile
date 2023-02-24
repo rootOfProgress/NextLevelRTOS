@@ -4,7 +4,7 @@ NON_OS_SRC := ../drohnentasks
 INC = -Iinclude -I$(NON_OS_SRC)/include/
 LINK = link.ld
 
-CFLAGS = -O2  \
+CFLAGS = -O3  \
 	 -mcpu=cortex-m4 -mthumb \
 	 -g -nostartfiles -ffreestanding -ffunction-sections -Wall -Wextra -static \
 	 -Wno-implicit-fallthrough -fsingle-precision-constant 
@@ -16,12 +16,18 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = os
 all: $(TARGET)
 
-$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects clean_objects
+$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) link_objects clean_objects
 
 ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1
 else
 CFLAGS += -DSYSTICK=0
+endif
+
+ifeq (1,$(DEBUG))
+CFLAGS += -DDEBUG=1
+else
+CFLAGS += -DDEBUG=0
 endif
 
 ifeq (1,$(TEST))
