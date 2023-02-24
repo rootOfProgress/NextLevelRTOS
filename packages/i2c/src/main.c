@@ -114,7 +114,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) read(unsigned i
     stop();
 
     request_read();
-    while (!(READ_REGISTER(&i2c_regs->ISR) & (1 << RXNE)) != 0) {}
+    while (!((READ_REGISTER(&i2c_regs->ISR) & (1 << RXNE)) != 0)) {}
     stop();
 }
 
@@ -124,12 +124,7 @@ void init()
 
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
-{
-    while (1)
-    {
-        /* code */
-    }
-    
+{    
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
     while (1)
     {

@@ -83,7 +83,8 @@ void into_af(GpioObject_t* t, unsigned int af_number)
     else
     {
         // @todo: do not delete
-        
+        // if ((t->pin - 8) < 0 || (t->pin - 8) > 7)
+            // return;
         // unsigned int pin  = t->pin - 8;
         // WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) & ~(0xF << (pin * 4)));    
 

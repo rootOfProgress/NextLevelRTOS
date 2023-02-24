@@ -16,7 +16,8 @@ typedef enum transfer_types {
     MEM_ADDRESS,
     MEM_STAT,
     STATISTIC,
-    RPM
+    RPM,
+    PLANEPOSITION,
 } TransferType_t;
 
 typedef struct transfer {
@@ -33,7 +34,8 @@ typedef enum {
     ALTER_SPEED = 0x4,
     REQUEST_RPM = 0x5,
     REBOOT = 0x6,
-    REQUEST_TEST_RESULT = 0x7
+    REQUEST_TEST_RESULT = 0x7,
+    REQUEST_POSITION = 0x8
     // UNKNOWN = 0x3,
 } UartStates_t;
 
@@ -46,6 +48,5 @@ void setup_transfer(char*, unsigned int, TransferType_t);
 void init_transfer_handler(void);
 void transfer_handler(void);
 unsigned int read_data_register(void);
-// static inline __attribute__((always_inline)) unsigned int read_data_register(void);
 
 #endif

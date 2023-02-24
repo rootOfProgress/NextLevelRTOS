@@ -9,7 +9,6 @@
 #include "devices/uart.h"
 #include "memory.h"
 #include "test.h"
-#include "rpm.h"
 #include "math.h"
 
 // void enable_exti0_cpu_irq()
@@ -63,13 +62,16 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   };
 }
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) foo_task(void)
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fetch_coordinates(void)
 {
   while (1) {
-    SV_YIELD_TASK;
+    block_current_task();
+    calculate_position();
+    // update_memory_statistic();
+    volatile TransferInfo_t t = {.length = sizeof(readings_t), .start_adress = &position_readings};
+    uprint((unsigned int*) &t, PLANEPOSITION);
   };
 }
-
 
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
@@ -97,16 +99,14 @@ int __attribute__((optimize("O0"))) main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
+  init_i2c();
 
   // always pid0
   create_task(&idle, 0);
   
   pid_of_transferhandler = create_task(&transfer_handler, 0); // pid0
   pid_of_mstat = create_task(&stat, 0); // pid1
-  pid_of_foo = create_task(&footask, 0); // pid3
-
-  // create_task(&drohne_rpm, 0); // pid3
-
+  //create_task(&fetch_coordinates, 0); //pid3
   init_isr();
   init_uart(t);
   run_scheduler();
