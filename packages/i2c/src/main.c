@@ -1,3 +1,6 @@
+#include "fifo.h"
+#include "adxl345_common.h"
+
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
@@ -155,6 +158,33 @@ void write(unsigned int slave_addr, char *payload, unsigned int length)
     i2c_stop();
 }
 
+unsigned char* read_multiple(unsigned int target_register, unsigned int slave_addr, unsigned int length)
+{
+    unsigned char inbuffer[length];
+    unsigned char pos = 0;
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0x3FF << SADD_7_1));
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0xFF << NBYTES));
+    WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) | (slave_addr << SADD_7_1) | (length << NBYTES));
+
+    set_write_direction();
+    char payload[1] = {(char) target_register};
+    write(slave_addr, payload, 1);
+
+    set_read_direction();
+
+    i2c_start();
+
+    do
+    {
+        while (!((READ_REGISTER(&i2c_regs->ISR) & (1 << RXNE)) != 0)) {}
+        inbuffer[pos++] = (unsigned char) READ_REGISTER(&i2c_regs->RXDR);
+
+    } while (pos != length);
+    i2c_stop();
+
+    return inbuffer;
+}
+
 unsigned char read(unsigned int target_register, unsigned int slave_addr, unsigned int length)
 {
     WRITE_REGISTER(&i2c_regs->CR2, READ_REGISTER(&i2c_regs->CR2) & ~(0x3FF << SADD_7_1));
@@ -164,18 +194,56 @@ unsigned char read(unsigned int target_register, unsigned int slave_addr, unsign
     set_write_direction();
     char payload[1] = {(char) target_register};
     write(slave_addr, payload, 1);
-    
-    // ??
-    // for (unsigned int i =0 ; i < 1000; i++){}
-        
+
     set_read_direction();
     i2c_start();
-    // for (unsigned int i =0 ; i < 500; i++){}
 
     while (!((READ_REGISTER(&i2c_regs->ISR) & (1 << RXNE)) != 0)) {}
     unsigned char result = (unsigned char) READ_REGISTER(&i2c_regs->RXDR);
     i2c_stop();
     return result;
+}
+
+void init_fifo(void)
+{
+
+}
+
+void read_xyz(void)
+{
+    position_readings->x = 0;
+    position_readings->y = 0;
+    position_readings->z = 0;
+
+    position_readings->x |= (signed int) read(0x32, ADXL345, 1);
+    position_readings->x |= (signed int) (read(0x33, ADXL345, 1) << 8);
+    position_readings->y |= (signed int) read(0x34, ADXL345, 1);
+    position_readings->y |= (signed int) (read(0x35, ADXL345, 1) << 8);
+    position_readings->z |= (signed int) read(0x36, ADXL345, 1);
+    position_readings->z |= (signed int) (read(0x37, ADXL345, 1) << 8);    
+}
+
+void enable_interrupts(unsigned int irq_mask)
+{
+    char payload[2] = {INT_ENABLE, irq_mask};
+    write(ADXL345, payload, 2);    
+}
+
+void remap_interrupts(unsigned int irq_mask)
+{
+    char payload[2] = {INT_MAP, irq_mask};
+    write(ADXL345, payload, 2);    
+}
+
+void read_interrupt_src(void)
+{
+    read(INT_SOURCE, ADXL345, 1);
+}
+
+void write_fifo_ctl(char irq_mask)
+{
+    char payload[2] = {FIFO_CTL, irq_mask};
+    write(ADXL345, payload, 2); 
 }
 
 
@@ -184,31 +252,45 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
     position_readings = (readings_t*) 0x20000044;
 
-    // D3 -measure
-    char payload[2] = {0x2D, 8};
-    write(ADXL345, payload, 2);
 
-    // D1|D0 +- 16g
-    char payload1[2] = {0x31, 3};
-    write(ADXL345, payload1, 2);
-    // read(0x00, ADXL345, 1);
-
-    // clear struct
-    position_readings->x = 0;
-    position_readings->y = 0;
-    position_readings->z = 0;
+    // remap_interrupts(1 << 7 | 1);
 // 
-    position_readings->x |= (signed int) read(0x32, ADXL345, 1);
-    position_readings->x |= (signed int) (read(0x33, ADXL345, 1) << 8);
-    position_readings->y |= (signed int) read(0x34, ADXL345, 1);
-    position_readings->y |= (signed int) (read(0x35, ADXL345, 1) << 8);
-    position_readings->z |= (signed int) read(0x36, ADXL345, 1);
-    position_readings->z |= (signed int) (read(0x37, ADXL345, 1) << 8);
+    // enable_interrupts(IR_WATERMARK);
+    // read_interrupt_src();
+    // enable_interrupts(0);
+    fifoCtl_t fifo_ctl;
+    fifo_ctl.ctl.fifo_mode = FIFO;
+    fifo_ctl.ctl.trigger = 1;
+    fifo_ctl.ctl.samples = 0x20;
+    // write_fifo_ctl(0x7F);
+    // write_fifo_ctl(0x3F);
+    // // D3 -measure
+    // enable_interrupts()
 
-    // position_readings->x_low = read(0x32, ADXL345, 1);
-    // position_readings->x_high = read(0x33, ADXL345, 1);
-    // position_readings->y_low = read(0x34, ADXL345, 1);
-    // position_readings->y_high = read(0x35, ADXL345, 1);
-    // position_readings->z_low = read(0x36, ADXL345, 1);
-    // position_readings->z_high = read(0x37, ADXL345, 1);
+    // // D3 -measure
+    // char payload[2] = {0x2D, 8};
+    // write(ADXL345, payload, 2);
+
+    // // D1|D0 +- 16g
+    // char payload1[2] = {0x31, 3};
+    // write(ADXL345, payload1, 2);
+
+    // D7D6 - FifoMode,
+    // char payload2[2] = {FIFO_CTL, (1 << 6) | 6};
+    // write(ADXL345, payload2, 2);
+
+    // for (int i = 0; i < 1500; i++)
+    // {
+    // }
+    // read(FIFO_STATUS, ADXL345, 1);
+    read_xyz();
+    read_xyz();
+
+    // read(FIFO_STATUS, ADXL345, 1);
+    read(INT_SOURCE, ADXL345, 1);
+        // // D7D6 - FifoMode,
+    // char payload3[2] = {FIFO_CTL, 0};
+    // write(ADXL345, payload3, 2);
+
+    // read_multiple(0x32, ADXL345, 3);
 }
