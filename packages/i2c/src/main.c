@@ -11,6 +11,8 @@ typedef struct transfer {
     unsigned int length;
 } TransferInfo_t;
 
+
+
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
@@ -52,21 +54,6 @@ typedef struct I2C {
     unsigned int TXDR;
 } I2C_Regs_t;
 
-typedef struct readings {
-    signed int x;
-    signed int y;
-    signed int z;
-} readings_t;
-
-// 6 byte
-// typedef struct readings {
-    // char x_low;
-    // char y_low;
-    // char z_low;
-    // char x_high;
-    // char y_high;
-    // char z_high;
-// } readings_t;
 
 readings_t *position_readings;
 
@@ -209,6 +196,42 @@ void init_fifo(void)
 
 }
 
+void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) read_samples(void)
+{
+    unsigned int sample_position = 0;
+    for (unsigned int reg_addr = 0x32; reg_addr < 0x38; reg_addr++)
+    {
+        samples[sample_position++] = read(reg_addr, ADXL345, 1);
+    }
+}
+
+void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) collect_samples(void)
+{
+    // 16 bit
+    // signed int measurements[NUM_OF_SAMPLES / 2];
+    // for (unsigned int reg_low = 0, reg_high = 1, idx = 0; reg_high < NUM_OF_SAMPLES; reg_low += 2, reg_high += 2, idx++)
+    // {
+    //     measurements[idx] = samples[reg_low] | (samples[reg_high] << 8); 
+    // }
+
+    // position_readings->x = 0;
+    // position_readings->y = 0;
+    // position_readings->z = 0;
+    // position_readings->x = (signed int) measurements[0];
+    // position_readings->y = (signed int) measurements[1];
+    // position_readings->z = (signed int) measurements[2];
+
+    position_readings->x |= (signed int) samples[0];
+    position_readings->x |= (signed int) samples[1] << 8; 
+    position_readings->y |= (signed int) samples[2];
+    position_readings->y |= (signed int) samples[3] << 8; 
+    position_readings->z |= (signed int) samples[4];
+    position_readings->z |= (signed int) samples[5] << 8;    
+}
+
+
+
+
 void read_xyz(void)
 {
     position_readings->x = 0;
@@ -240,10 +263,37 @@ void read_interrupt_src(void)
     read(INT_SOURCE, ADXL345, 1);
 }
 
+void power_on(void)
+{
+    char payload[2] = {POWER_CTL, 1 << 3};
+    write(ADXL345, payload, 2);       
+}
+
 void write_fifo_ctl(char irq_mask)
 {
     char payload[2] = {FIFO_CTL, irq_mask};
     write(ADXL345, payload, 2); 
+}
+
+void set_range(char irq_mask)
+{
+    char payload[2] = {DATA_FORMAT, irq_mask};
+    write(ADXL345, payload, 2); 
+}
+
+void init_adxl345(void)
+{
+    power_on();
+    remap_interrupts(1 << 7 | 1);
+    enable_interrupts(IR_WATERMARK);
+
+    fifoCtl_t fifo_ctl;
+    fifo_ctl.ctl.fifo_mode = BYPASS;
+    fifo_ctl.ctl.trigger = 1;
+    fifo_ctl.ctl.samples = 31;
+    write_fifo_ctl(fifo_ctl.raw);
+
+    // set_range(RANGE_16G);
 }
 
 
@@ -252,17 +302,12 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
     position_readings = (readings_t*) 0x20000044;
 
+    init_adxl345();
 
-    // remap_interrupts(1 << 7 | 1);
 // 
-    // enable_interrupts(IR_WATERMARK);
     // read_interrupt_src();
     // enable_interrupts(0);
-    fifoCtl_t fifo_ctl;
-    fifo_ctl.ctl.fifo_mode = FIFO;
-    fifo_ctl.ctl.trigger = 1;
-    fifo_ctl.ctl.samples = 0x20;
-    // write_fifo_ctl(0x7F);
+
     // write_fifo_ctl(0x3F);
     // // D3 -measure
     // enable_interrupts()
@@ -283,11 +328,27 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     // {
     // }
     // read(FIFO_STATUS, ADXL345, 1);
-    read_xyz();
-    read_xyz();
+    // read_xyz();
+    while (1)
+    {
+        /* code */
+        read_xyz();
+
+        // stall
+        for (int i = 0; i < 1500; i++)
+        {
+            /* code */
+        }
+        
+        SV_YIELD_TASK;
+    }
+    
+    // read_samples();
+    // read_samples();
+    // collect_samples();
 
     // read(FIFO_STATUS, ADXL345, 1);
-    read(INT_SOURCE, ADXL345, 1);
+    // read(INT_SOURCE, ADXL345, 1);
         // // D7D6 - FifoMode,
     // char payload3[2] = {FIFO_CTL, 0};
     // write(ADXL345, payload3, 2);
