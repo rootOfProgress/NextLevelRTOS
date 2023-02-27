@@ -66,7 +66,7 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fetch_co
 {
   while (1) {
     block_current_task();
-    calculate_position();
+    // calculate_position();
     // update_memory_statistic();
     volatile TransferInfo_t t = {.length = sizeof(readings_t), .start_adress = &position_readings};
     uprint((unsigned int*) &t, PLANEPOSITION);

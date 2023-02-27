@@ -130,7 +130,7 @@
             <table class="table is-striped is-narrow ">
             <tbody>
               <tr>
-                <td> <button class="button is-link is-light is-rounded " @click=fetchRPM()>Reboot</button> </td>
+                <td> <button class="button is-link is-light is-rounded " @click=reboot()>Reboot</button> </td>
                 <td>  
                   <div class="dropdown is-hoverable">
                     <div class="dropdown-trigger">
@@ -151,7 +151,10 @@
                   </div>
                 </td>
                 <td> 
-                  <button class="button is-link is-light is-rounded" :class="{'is-static' : !isPackageSelected, 'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
+                  <button class="button is-link is-light is-rounded" :class="{'is-loading' : packageUploadInProgress} " @click="uploadPackage()">Upload "{{ selectedPackage }}" </button>
+                </td>
+                <td> 
+                  <button class="button is-link is-light is-rounded is-danger" @click="uploadI2c()">Upload i2c </button>
                 </td>
               </tr>
             </tbody>
@@ -190,9 +193,16 @@
             </thead>
             <tbody>
               <tr>
-                <td> {{ sensorReadings.plane.x }} <i>°</i> </td>
-                <td> {{ sensorReadings.plane.y }} <i>°</i> </td>
-                <td> {{ sensorReadings.plane.z }} <i>°</i> </td>
+                <td> {{ (sensorReadings.plane.x / 2.83).toFixed(3) }}  <i>°</i> </td>
+                <td> {{ (sensorReadings.plane.y / 2.83).toFixed(3) }}  <i>°</i> </td>
+                <td> {{ (sensorReadings.plane.z / 2.83).toFixed(3) }}  <i>°</i> </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>
+                  <button class="button is-small is-success" :class="{'is-danger' : observingPosition}" @click="observingPosition = !observingPosition"> Observe Position </button>
+                </td>
+                <td></td>
               </tr>
             </tbody>
           </table>
@@ -219,11 +229,20 @@ export default {
     // axios.get('/getDaily').then((res) => {
     //   this.daily = res.data
     // })
-    // setInterval(() => {
-    //     axios.get('/rpm').then((res) => {
-    //       this.rpm.engine_3 = res.data[0].engine_3
-    //     })
-    //     }, 2000)
+    setInterval(() => {
+      if (this.observingPosition) {
+        this.observingPosition = false
+        axios.get('/position').then((res) => {
+          this.sensorReadings.plane.x = res.data.x
+          this.sensorReadings.plane.y = res.data.y
+          this.sensorReadings.plane.z = res.data.z
+          this.observingPosition = true
+        })
+      }
+      // axios.get('/rpm').then((res) => {
+      //   this.rpm.engine_3 = res.data[0].engine_3
+      // })
+    }, 1000)
   },
   mounted() {
     axios.get('/get_packages').then((res) => {
@@ -259,6 +278,7 @@ export default {
         { date: "9-May-07", amount: 106.88 },
         { date: "10-May-07", amount: 107.34 },
       ],
+      observingPosition: false,
       selectedPackage: "",
       isPackageSelected: false,
       packageUploadInProgress: false,
@@ -306,17 +326,16 @@ export default {
       this.selectedPackage = p
       this.isPackageSelected = true
     },
-    getLifetimeInfo()
-    {
+    getLifetimeInfo () {
       axios.get(`/lifetime`).then((response) => {
         this.oshealth = response.data
       })
     },
-    fetchRPM() {
-    axios.get('/rpm').then((res) => {
+    fetchRPM () {
+          axios.get('/rpm').then((res) => {
            console.log(res);
            this.rpm.engine_3 = res.data.engine_3
-         })  
+         })
       //     axios.get('/rpm').then((res) => {
         //       this.rpm.engine_3 = res.data[0].engine_3
       // this.interval = setInterval(() => axios.get('/rpm').then((res) => {
@@ -333,6 +352,17 @@ export default {
     uploadPackage () {
       this.packageUploadInProgress = true
       axios.post(`/upload/${this.selectedPackage}`).then(() => {
+        this.packageUploadInProgress = false
+        this.selectedPackage = ""
+      })
+    },
+    reboot () {
+      axios.post(`/reboot`).then(() => {
+        this.getLifetimeInfo()
+      })
+    },
+    uploadI2c () {
+      axios.post(`/upload/i2c`).then(() => {
         this.packageUploadInProgress = false
         this.selectedPackage = ""
       })
