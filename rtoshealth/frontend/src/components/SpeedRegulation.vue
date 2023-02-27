@@ -108,9 +108,9 @@
                 <th>CPU Load</th>
                 <th>Bytes Reserved</th>
                 <th>Bytes Used</th>
-                <th>RAM utilisation</th>
-                <th>Tasks</th>
-                <th>Active Tasks</th>
+                <th>RAM Utilisation</th>
+                <th>Running Tasks</th>
+                <th>Waiting Tasks</th>
               </tr>
             </thead>
             <tbody>
@@ -120,8 +120,8 @@
                 <td> {{ oshealth.total_byte_used  }} </td>
                 <td> {{ (oshealth.total_byte_alloced / oshealth.ram_size) * 100 }} <i>%</i> </td>
                 <!-- <td> {{ oshealth.ram_size }} <i>%</i> </td> -->
-                <td> {{ oshealth.total_scheduled_tasks }} </td>
-                <td> {{ oshealth.total_scheduled_tasks - oshealth.waiting_tasks }} </td>
+                <td> {{ oshealth.running_tasks }} </td>
+                <td> {{ oshealth.waiting_tasks }} </td>
               </tr>
             </tbody>
           </table>
@@ -304,7 +304,7 @@ export default {
         os_data_end: 0,
         free_useable: 0,
         waiting_tasks: 0,
-        total_scheduled_tasks: 0,
+        running_tasks: 0,
         cpu_load: 0
       },
       rpm: {

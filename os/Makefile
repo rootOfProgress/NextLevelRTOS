@@ -16,7 +16,7 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = os
 all: $(TARGET)
 
-$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) link_objects clean_objects
+$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) build_non_os_src link_objects clean_objects
 
 ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1

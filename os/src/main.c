@@ -7,6 +7,7 @@
 #include "devices/tim2_5.h"
 #include "types.h"
 #include "devices/uart.h"
+#include "position.h"
 #include "memory.h"
 #include "test.h"
 #include "math.h"
@@ -54,10 +55,10 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) footask(
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
-    // block_current_task();
+    block_current_task();
     update_memory_statistic();
-    // volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
-    // uprint((unsigned int*) &t, STATISTIC);
+    volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
+    uprint((unsigned int*) &t, STATISTIC);
     SV_YIELD_TASK;
   };
 }
@@ -75,10 +76,10 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fetch_co
 
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
-  create_task(&foo_task,0);
+  
+
   while (1) {
     search_invalidate_tasks();
-    defrag();
     wakeup_pid(pid_of_foo);
     SV_YIELD_TASK;
   };
@@ -99,14 +100,13 @@ int __attribute__((optimize("O0"))) main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
-  init_i2c();
 
-  // always pid0
-  create_task(&idle, 0);
-  
-  pid_of_transferhandler = create_task(&transfer_handler, 0); // pid0
-  pid_of_mstat = create_task(&stat, 0); // pid1
-  //create_task(&fetch_coordinates, 0); //pid3
+  // init_i2c();
+
+  create_task(&idle, 0); // pid0
+  pid_of_transferhandler = create_task(&transfer_handler, 0); // pid1
+  pid_of_mstat = create_task(&stat, 0); // pid2
+  create_task(&fetch_coordinates, 0); //pid3
   init_isr();
   init_uart(t);
   run_scheduler();

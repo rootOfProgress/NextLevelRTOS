@@ -8,9 +8,7 @@ extern unsigned int read(unsigned int, unsigned int, unsigned int);
 void calculate_position(void);
 
 typedef struct readings {
-    signed int x;
-    signed int y;
-    signed int z;
+    unsigned int buffer[4];
 } readings_t;
 
 extern readings_t position_readings;

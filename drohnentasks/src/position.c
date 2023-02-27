@@ -28,16 +28,16 @@ void calculate_position(void)
     write(ADXL345, &payload, 2);
     // read(0x00, ADXL345, 1);
 
-    position_readings.x |= read(0x32, ADXL345, 1);
-    position_readings.x |= (read(0x33, ADXL345, 1) << 8);
-    position_readings.y |= read(0x34, ADXL345, 1);
-    position_readings.y |= (read(0x35, ADXL345, 1) << 8);
-    position_readings.z |= read(0x36, ADXL345, 1);
-    position_readings.z |= (read(0x37, ADXL345, 1) << 8);
+    // position_readings.x |= read(0x32, ADXL345, 1);
+    // position_readings.x |= (read(0x33, ADXL345, 1) << 8);
+    // position_readings.y |= read(0x34, ADXL345, 1);
+    // position_readings.y |= (read(0x35, ADXL345, 1) << 8);
+    // position_readings.z |= read(0x36, ADXL345, 1);
+    // position_readings.z |= (read(0x37, ADXL345, 1) << 8);
 
-    // 10 bit resolution
-    position_readings.x = complement(position_readings.x, 10, 'x');
-    position_readings.y = complement(position_readings.y, 10, 'y');
-    position_readings.z = complement(position_readings.z, 10, 'z');
+    // // 10 bit resolution
+    // position_readings.x = complement(position_readings.x, 10, 'x');
+    // position_readings.y = complement(position_readings.y, 10, 'y');
+    // position_readings.z = complement(position_readings.z, 10, 'z');
 
 }

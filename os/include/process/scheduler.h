@@ -43,7 +43,6 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
             isolate_node(waiting_tasks,q);
             move_node(running_tasks,q);
             ((Tcb_t*)q->data)->general.task_info.state = READY;
-            mstat.waiting_tasks--;
             return;
         }
         q = q->next;

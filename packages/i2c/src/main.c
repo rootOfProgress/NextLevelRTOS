@@ -300,7 +300,7 @@ void init_adxl345(void)
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {    
     i2c_regs = (I2C_Regs_t*) I2C1_BASE;
-    position_readings = (readings_t*) 0x20000044;
+    position_readings = (readings_t*) 0x2000004c;
 
     init_adxl345();
 

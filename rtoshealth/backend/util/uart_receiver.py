@@ -65,7 +65,7 @@ def process_result():
                     "os_data_end" : unpack('I', b''.join(result[28:32]))[0], 
                     "free_useable" : unpack('I', b''.join(result[32:36]))[0], 
                     "waiting_tasks" : unpack('I', b''.join(result[36:40]))[0], 
-                    "total_scheduled_tasks" : unpack('I', b''.join(result[40:44]))[0], 
+                    "running_tasks" : unpack('I', b''.join(result[40:44]))[0], 
                     "cpu_load" : unpack('I', b''.join(result[44:48]))[0],                
                 }
                 del result[:]

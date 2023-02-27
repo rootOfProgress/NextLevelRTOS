@@ -75,7 +75,6 @@ void block_current_task(void)
 
     currently_running = q;
     // enable_systick();
-    mstat.waiting_tasks++;
     SV_YIELD_TASK;
 }
 
