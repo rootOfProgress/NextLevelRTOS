@@ -2,14 +2,11 @@
 #define UART_H
 #include "gpio.h"
 
-const unsigned int USART1_BASEADRESS = 0x40011000;
+enum { Usart1Baseadress = 0x40011000 };
 
-#define USART1EN 4
-
-extern unsigned int UE;
-extern unsigned int RE;
-extern unsigned int TE;
-extern unsigned int RXNEIE;
+#define RCC_USART1EN 4
+#define TC 6
+#define TXE 7
 
 typedef struct UartRegisterMap {
     unsigned int sr;

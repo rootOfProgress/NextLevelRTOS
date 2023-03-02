@@ -50,10 +50,6 @@ typedef enum ModerTypes {
     AnalogMode,
 } ModerTypes_t;
 
-typedef enum OutputState {
-    On,
-    Off,
-} OutputState_t;
 
 typedef struct GpioObject {
     char port;

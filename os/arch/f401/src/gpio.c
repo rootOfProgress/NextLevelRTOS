@@ -9,19 +9,19 @@ void init_gpio(GpioObject_t* gpio_object)
     switch (gpio_object->port)
     {
     case 'A':
-        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 17));
+        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 0));
         gpio_object->base_adress = (unsigned int*) GPIO_A_BASE;
         break;
     case 'B':
-        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 18));
+        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 1));
         gpio_object->base_adress = (unsigned int*) GPIO_B_BASE;
         break;   
     case 'C':
-        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 19));
+        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 2));
         gpio_object->base_adress = (unsigned int*) GPIO_C_BASE;
         break;  
     case 'D':
-        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 20));
+        WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 3));
         gpio_object->base_adress = (unsigned int*) GPIO_D_BASE;
         break;  
     default:
