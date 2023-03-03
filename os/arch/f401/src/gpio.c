@@ -13,6 +13,7 @@ void init_gpio(GpioObject_t* gpio_object)
         gpio_object->base_adress = (unsigned int*) GPIO_A_BASE;
         break;
     case 'B':
+        // __asm("bkpt");
         WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 1));
         gpio_object->base_adress = (unsigned int*) GPIO_B_BASE;
         break;   
@@ -111,19 +112,20 @@ void set_otyper(GpioObject_t* t, OutputTypes_t otype)
 
 void set_pin_on(GpioObject_t* gpio) 
 {
+    
     GpioRegisters_t* gpio_regs = get_registers(gpio);
-    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) | (1 << gpio->port));
+    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) | (1 << gpio->pin));
 }
 void set_pin_off(GpioObject_t* gpio) 
 {
     GpioRegisters_t* gpio_regs = get_registers(gpio);
-    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) & ~(1 << gpio->port));
+    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) & ~(1 << gpio->pin));
 }
 
 unsigned int read_pin(GpioObject_t* gpio)
 {
     GpioRegisters_t* gpio_regs = get_registers(gpio);
-    return READ_REGISTER((unsigned int*) &gpio_regs->idr) & (1 << gpio->port);
+    return READ_REGISTER((unsigned int*) &gpio_regs->idr) & (1 << gpio->pin);
 }
 
 
