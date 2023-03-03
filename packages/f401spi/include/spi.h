@@ -12,7 +12,7 @@ enum { Spi1BaseAdress = 0x40013000};
 #define SSOE 2
 #define DFF 11
 #define LSBFIRST 7
-#define RXNE 1
+#define RXNE 0
 
 typedef struct
 {

@@ -94,13 +94,16 @@ void transfer(char data)
 
     unsigned short tx_data = ((unsigned short) data) << 8; 
     WRITE_REGISTER(&spi_regs->dr, tx_data);
-    while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) != 0) && !((READ_REGISTER(&(spi_regs)->sr) & (1 << RXNE)) != 1));
+    while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0)/*  || !((READ_REGISTER(&(spi_regs)->sr) & (1 << RXNE)) == 0) */);
     // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << TXE)) != 0) && !((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) != 1));
     // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << TXE)) != 0) && !((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) != 1));
     // WRITE_REGISTER(&spi_regs->dr, 0x2);
     // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << RXNE)) != 0));
 
     unsigned int foo = READ_REGISTER(&spi_regs->dr);
+    // __asm("bkpt");
+    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
+
 }
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
