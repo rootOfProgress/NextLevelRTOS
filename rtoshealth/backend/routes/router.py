@@ -53,14 +53,10 @@ def reboot():
     logging.print_info("set device into REBOOT state...")
     cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
-    time.sleep(1)
-    # receiver = Thread(target = uart_receiver.device_rx)
-    # receiver.start()
 
     logging.print_info("perform reboot...")
     cmd = "printf \"\\x06\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
-    # receiver.join()
     return {}    
 
 
@@ -165,6 +161,5 @@ def set_speed(speed):
 
 @app.route('/upload/<package_name>', methods=['POST'])
 def upload(package_name):
-    uart_receiver.flush()
     binary_loader.upload_binary(package_name)
     return 'data'
