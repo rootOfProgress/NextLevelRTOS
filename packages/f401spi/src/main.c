@@ -77,9 +77,11 @@ void init_spi_peripherial()
 //    
     SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
+    // clear register
+    WRITE_REGISTER(&spi_regs->cr1, ~0xFFFFFFFF);
 
-    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << DFF) | (7 << 3) | (1 << MSTR) | (1 << SSM) | (1 << SSI));
-    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << DFF) | (7 << 3) | (1 << MSTR));
+    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (0 << DFF) | (7 << 3) | (1 << MSTR) | (1 << SSM) | (1 << SSI));
+    // WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << DFF) | (7 << 3) | (1 << MSTR));
     // WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << SPE));
 
     WRITE_REGISTER(&spi_regs->cr2, READ_REGISTER(&spi_regs->cr2) | (1 << SSOE));
@@ -90,19 +92,24 @@ void init_spi_peripherial()
 void transfer(char data) 
 {
     SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
+    // __asm("bkpt");
+    // char payload[3] = {0x01, 0x02, 0x03};
+    char payload[3] = {0x01, 0x01, 0x01};
+    unsigned int bar = READ_REGISTER(&spi_regs->dr);
+
     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << SPE));
 
-    unsigned short tx_data = ((unsigned short) data) << 8; 
-    WRITE_REGISTER(&spi_regs->dr, tx_data);
-    while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0)/*  || !((READ_REGISTER(&(spi_regs)->sr) & (1 << RXNE)) == 0) */);
-    // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << TXE)) != 0) && !((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) != 1));
-    // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << TXE)) != 0) && !((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) != 1));
-    // WRITE_REGISTER(&spi_regs->dr, 0x2);
-    // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << RXNE)) != 0));
+    for (unsigned int t = 0; t < 3; t++)
+    {
+        // unsigned short tx_data = ((unsigned short) data) << 8; 
 
-    unsigned int foo = READ_REGISTER(&spi_regs->dr);
-    // __asm("bkpt");
+        WRITE_REGISTER(&spi_regs->dr, payload[t]);
+        while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
+        unsigned int foo = READ_REGISTER(&spi_regs->dr);
+    }
+    
     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
+    // __asm("bkpt");
 
 }
 
@@ -126,9 +133,6 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
 
 
     // WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
-
-    for (unsigned int i = 0; i < 2000; i++)
-    {}
     // set_pin_on(&t);
     
     // set_pin_off(&t);

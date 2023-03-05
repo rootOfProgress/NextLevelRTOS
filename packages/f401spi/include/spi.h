@@ -1,7 +1,7 @@
 #ifndef SPI_H
 #define SPI_H
 
-enum { Spi1BaseAdress = 0x40013000};
+enum { Spi1BaseAdress = 0x40013000 };
 
 #define SPE 6
 #define MSTR 2
