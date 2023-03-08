@@ -1,6 +1,8 @@
 #include "gpio.h"
 #include "rcc.h"
-#include "lang.h"
+
+#define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
+#define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
 void init_gpio(GpioObject_t* gpio_object)
 {
@@ -13,7 +15,6 @@ void init_gpio(GpioObject_t* gpio_object)
         gpio_object->base_adress = (unsigned int*) GPIO_A_BASE;
         break;
     case 'B':
-        // __asm("bkpt");
         WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 1));
         gpio_object->base_adress = (unsigned int*) GPIO_B_BASE;
         break;   
@@ -84,35 +85,40 @@ void into_af(GpioObject_t* t, unsigned int af_number)
     {
         // @todo: do not delete
         
-        // unsigned int pin  = t->pin - 8;
-        // WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) & ~(0xF << (pin * 4)));    
+        unsigned int pin  = t->pin - 8;
+        WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) & ~(0xF << (pin * 4)));    
+        WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) | (af_number << (pin * 4)));
 
         // @todo: WARNING HARDCODED!
-        // WRITE_REGISTER(&gpio_regs->afrh, af_number << (pin * 4));
-        WRITE_REGISTER(&gpio_regs->afrh, 0x00000770);
+        // WRITE_REGISTER(&gpio_regs->afrh, 0x00000770);
 
     }
+}
+
+void set_speed(GpioObject_t* t, SpeedModes_t speed)
+{
+    GpioRegisters_t* gpio_regs = get_registers(t);
+    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) & ~(11 << (t->pin)));    
+    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) | (speed << (t->pin)));    
+}
+
+
+void set_pupdr(GpioObject_t* t, OutputTypes_t otype)
+{
+    GpioRegisters_t* gpio_regs = get_registers(t);
+    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) & ~(11 << (t->pin)));    
+    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) | (otype << (t->pin)));    
 }
 
 void set_otyper(GpioObject_t* t, OutputTypes_t otype)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
-    switch (otype)
-    {
-    case PushPull:
-        WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) & ~(1 << (t->pin)));    
-        break;
-    case OpenDrain:
-        WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) | (1 << (t->pin)));    
-        break;
-    default:
-        break;
-    }
+    WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) & ~(otype << (t->pin)));
+    WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) | (otype << (t->pin)));
 }
 
 void set_pin_on(GpioObject_t* gpio) 
 {
-    
     GpioRegisters_t* gpio_regs = get_registers(gpio);
     WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) | (1 << gpio->pin));
 }
