@@ -16,7 +16,7 @@ void init_scheduler(void)
     running_tasks = new_queue();
     waiting_tasks = new_queue();
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
-    memset_byte((void*) process_stats, sizeof(ProcessStats_t*), 0);
+    memset_byte((void*) process_stats, sizeof(ProcessStats_t), 0);
     switch_task = policy_round_robin;
 }
 

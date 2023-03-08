@@ -50,6 +50,10 @@ __attribute__((used))  void uprint(volatile unsigned int* transfer_info __attrib
 {
   SV_PRINT;
 }
+__attribute__((used))  void execute_priviledged(unsigned int function_address)
+{
+  SV_EXEC_PRIV;
+}
 
 void __attribute__((optimize("O0"))) kprint()
 {
@@ -117,6 +121,17 @@ void __attribute__((optimize("O3"))) SVCall()
       );
     }
     return;
+  case EXEC_PRIV:
+    unsigned int function_adress;
+    __asm__("mov %0, r0" : "=r"(function_adress));
+    void (*priv_fn)() = (void (*)()) (function_adress | 1);
+    priv_fn();
+      __asm volatile (
+        "mrs r2, psp\n"
+        "ldmfd r2!, {r4-r11}\n"
+        "msr psp, r2\n"
+      );
+    return;     
   default:
     __builtin_unreachable();
     break;

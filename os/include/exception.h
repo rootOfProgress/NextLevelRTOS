@@ -28,10 +28,25 @@
                                   "mov r9, r0\n"\
                                   "svc 0\n")
                                   
-                                  
-__attribute__((used)) void uprint(volatile unsigned int* transfer_info, volatile unsigned int type);
+#define SV_EXEC_PRIV __asm volatile ("mov r6, 6\n" \
+                              "mov r9, r0\n"\
+                              "svc 0\n")
+
+__attribute__((used)) void uprint(volatile unsigned int*, volatile unsigned int);
+__attribute__((used)) void execute_priviledged(unsigned int);
 
 static inline __attribute__((always_inline)) void save_psp_if_threadmode(void)
+{
+  __asm (
+    "TST lr, #4\n"
+    "ITTT NE\n"
+    "MRSNE r2, PSP\n"
+    "STMDBNE r2!, {r4-r11}\n"
+    "MSRNE PSP, r2\n"
+  );
+}
+
+static inline __attribute__((always_inline)) void restore_psp(void)
 {
   __asm (
     "TST lr, #4\n"
@@ -53,7 +68,8 @@ typedef enum {
     YIELD_TASK,
     STD,
     STE,
-    RESET
+    RESET,
+    EXEC_PRIV
 } TrapType_t;
 
 void do_selfcheck_svc();

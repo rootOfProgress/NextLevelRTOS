@@ -218,7 +218,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
     lock_mutex((void*) &mutex);
     unsigned int next_useable_chunk = 0;
 
-    while ((size & 0x3) != 0) { size++; }
+    while ((size % 4) != 0) { size++; }
 
     /*
      *  CHUNK LIST LAYOUT
