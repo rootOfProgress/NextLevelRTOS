@@ -1,11 +1,7 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
-#include <stdint.h>
-#include "lang.h"
 
-#ifdef SELF_CHECK
-    // do_selfcheck_memory();
-#endif
+#include "lang.h"
 
 #define svc(code) asm volatile ("mov r6, %[immediate]\n" \
                                 " SVC \#0"::[immediate] "I" (code) \
@@ -45,22 +41,6 @@ static inline __attribute__((always_inline)) void save_psp_if_threadmode(void)
     "MSRNE PSP, r2\n"
   );
 }
-
-static inline __attribute__((always_inline)) void restore_psp(void)
-{
-  __asm (
-    "TST lr, #4\n"
-    "ITTT NE\n"
-    "MRSNE r2, PSP\n"
-    "STMDBNE r2!, {r4-r11}\n"
-    "MSRNE PSP, r2\n"
-  );
-}
-
-typedef enum {
-    RET_PSP_THREAD_NOFP = 0xFFFFFFFD,
-    RET_MSP_THREAD_NOFP = 0xFFFFFFF9,
-} ExcReturn_t;
 
 typedef enum {
     EXEC_PSP_TASK = 0,

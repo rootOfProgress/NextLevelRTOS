@@ -88,7 +88,6 @@ static inline __attribute__((always_inline)) void switch_task(void)
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
 {
-    disable_systick();
     Node_t *q = get_head_element(waiting_tasks);
     if (!q)
         return;
@@ -104,7 +103,15 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
         }
         q = q->next;
     }
-    enable_systick();
+}
+
+static inline __attribute__((always_inline)) void restore_psp()
+{
+      __asm volatile (
+        "mrs r2, psp\n"
+        "ldmfd r2!, {r4-r11}\n"
+        "msr psp, r2\n"
+      );
 }
 
 #endif
