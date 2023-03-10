@@ -9,6 +9,8 @@ Node_t* currently_running = NULL;
 Node_t* task_to_preserve = NULL;
 ProcessStats_t* process_stats = NULL;
 
+KernelPids_t kernel_pids;
+
 void (*switch_task)();
 
 void init_scheduler(void)
@@ -17,6 +19,8 @@ void init_scheduler(void)
     waiting_tasks = new_queue();
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
     memset_byte((void*) process_stats, sizeof(ProcessStats_t), 0);
+    memset_byte((void*) &kernel_pids, sizeof(KernelPids_t), -1);
+
     switch_task = policy_round_robin;
 }
 
@@ -56,28 +60,6 @@ void invalidate_current_task(void)
     ((Tcb_t*) (currently_running->data))->general.task_info.state = DEAD;
 }
 
-void block_current_task(void)
-{
-    // disable_systick();
-    ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
-
-    // On context switch, task->next is loaded. Jump back one task here ensures that next task is 
-    // in fact the successor of the one that gets blocked right now.
-    Node_t* q = currently_running->prev;
-
-    // SV_YIELD_TASK preserves the state of the currently running task. Currently running will be pointing to
-    // its predecor, so without repointing the Node_t a not-running task would be preserved.
-    task_to_preserve = currently_running;
-
-    // Delete currently_running from active queue und shift it into waiting queue.
-    isolate_node(running_tasks, currently_running);
-    move_node(waiting_tasks, currently_running);
-
-    currently_running = q;
-    // enable_systick();
-    SV_YIELD_TASK;
-}
-
 void run_scheduler(void)
 {
     if (!running_tasks)
@@ -87,7 +69,6 @@ void run_scheduler(void)
     task_to_preserve = currently_running;
     SV_EXEC_PSP_TASK;
 }
-
 
 void __attribute__ ((hot)) PendSV(void)
 {

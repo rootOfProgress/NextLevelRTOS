@@ -32,7 +32,7 @@
                               "mov r9, r0\n"\
                               "svc 0\n")
 
-__attribute__((used)) void uprint(volatile unsigned int*, volatile unsigned int);
+__attribute__((used)) void uprint(volatile unsigned int*);
 __attribute__((used)) void execute_priviledged(unsigned int);
 
 static inline __attribute__((always_inline)) void save_psp_if_threadmode(void)

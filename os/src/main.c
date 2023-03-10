@@ -103,10 +103,9 @@ int __attribute__((optimize("O0"))) main_init(void)
 
   // init_i2c();
 
-  create_task(&idle, 0); // pid0
-  pid_of_transferhandler = create_task(&transfer_handler, 0); // pid1
-  pid_of_mstat = create_task(&stat, 0); // pid2
-  create_task(&fetch_coordinates, 0); //pid3
+  kernel_pids.idle_task = create_task(&idle, 0); // pid0
+  kernel_pids.transfer_handler = create_task(&transfer_handler, 0); // pid1
+  kernel_pids.statistic_manager = create_task(&stat, 0); // pid2
   init_isr();
   init_uart(t);
   run_scheduler();

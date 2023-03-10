@@ -9,21 +9,11 @@
 #define MAGIC 0x123456
 #define BUFFERSIZE 4
 #define TX_LENGTH 64
-#define MAX_WAITING_TRANSFERS 10
-
-typedef enum transfer_types {
-    GENERIC = 0,
-    MEM_ADDRESS,
-    MEM_STAT,
-    STATISTIC,
-    RPM,
-    PLANEPOSITION,
-} TransferType_t;
+#define MAX_WAITING_TRANSFERS 5
 
 typedef struct transfer {
     void* start_adress;
     unsigned int length;
-    TransferType_t type;
 } TransferInfo_t;
 
 typedef enum {
@@ -44,7 +34,7 @@ extern void print(char*, unsigned int);
 extern void print_char(char);
 
 void init_isr(void);
-void setup_transfer(char*, unsigned int, TransferType_t);
+void setup_transfer(char*, unsigned int);
 void init_transfer_handler(void);
 void transfer_handler(void);
 unsigned int read_data_register(void);

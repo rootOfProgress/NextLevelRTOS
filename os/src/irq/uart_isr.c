@@ -7,94 +7,59 @@
 
 UartStates_t state;
 TaskInformation_t *tInfo = NULL;
-List_t *transfer_list = NULL;
+TransferInfo_t transfer_list[MAX_WAITING_TRANSFERS];
 
 unsigned int in_buffer;
 unsigned int byte_in_id;
 unsigned int bufferIndex;
-
+unsigned int num_of_waiting_transfers;
 char buffer[BUFFERSIZE];
 char *p;
 
 void init_transfer_handler(void)
 {
-    transfer_list = (List_t*) new_list();
+    num_of_waiting_transfers = 0;
+    
+    for (unsigned int i = 0; i < MAX_WAITING_TRANSFERS; i++)
+    {
+        transfer_list[i].length = 0;
+        transfer_list[i].start_adress = 0;
+    }
 }
 
-void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length, TransferType_t type)
+void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length)
 {
-    if (transfer_list->size > MAX_WAITING_TRANSFERS)
+    if (num_of_waiting_transfers == MAX_WAITING_TRANSFERS)
         return;
 
-    if (transfer_list->size == 0)
-        wakeup_pid(1);
-
-    TransferInfo_t* t = (TransferInfo_t*) allocate(sizeof(TransferInfo_t));
+    if (num_of_waiting_transfers == 0)
+        wakeup_pid(kernel_pids.transfer_handler);
     
-    if (!t)
-        invoke_panic(OUT_OF_MEMORY);
-    
-    t->start_adress = address;
-    t->length = length;
-    t->type = type;
-    push(transfer_list, (void*) t);
+    transfer_list[num_of_waiting_transfers].start_adress = address;
+    transfer_list[num_of_waiting_transfers].length = length;
+    num_of_waiting_transfers++;
 }
 
 void __attribute__((optimize("O0"))) transfer_handler(void)
 {
     SingleLinkedNode_t* node;
     init_transfer_handler();
+    unsigned int j = 0;
     while (1)
     {
-        if ((node = pop(transfer_list)))
+        if (num_of_waiting_transfers)
         {
-            unsigned int remaining = TX_LENGTH;
-            char *m;
-            TransferInfo_t* transfer = (TransferInfo_t*) node->data;
-            switch (transfer->type)
-            {
-            case GENERIC:
-                break;
-            case MEM_ADDRESS:
-                m = "AAAABBBB";
-                print(m, 8);
-                remaining -= 8;
-                break;
-            case STATISTIC:
-                m = "BBBBAAAA";
-                print(m, 8);
-                remaining -= 8;
-                break;
-            case RPM:
-                m = "CCCCAAAA";
-                print(m, 8);
-                remaining -= 8;
-                break;
-            case PLANEPOSITION:
-                m = "DDDDAAAA";
-                print(m, 8);
-                remaining -= 8;
-                break;
-            default:
-                break;
-            }
-            print(transfer->start_adress, transfer->length);
-            remaining -= transfer->length;
-
-            char zero = '1';
-            while (remaining-- != 0)
-                print(&zero, 1);
-
-            if (deallocate((unsigned int*) transfer) == 0)
-                invoke_panic(MEMORY_DEALLOC_FAILED);
-            if (deallocate((unsigned int*) node) == 0)
-                invoke_panic(MEMORY_DEALLOC_FAILED);
+            print(transfer_list[j].start_adress, transfer_list[j].length);
+            num_of_waiting_transfers--;
+            j++;
         }
         else
         {
-            block_current_task();
-            // SV_YIELD_TASK;
+            j = 0;
         }
+        // block_current_task();
+        SV_YIELD_TASK;
+        // @todo : wake up task on DMA finish
     }    
 }
 
@@ -106,26 +71,6 @@ void init_isr(void)
     in_buffer = 0;
     for (unsigned int i = 0; i < BUFFERSIZE; i++)
         buffer[i] = 0;
-}
-
-void send_number(unsigned int number, char converted[])
-{   
-    // unsigned int n = number;
-    int cnt = 8;
-    
-    if (number == 0)
-    {
-        converted[0] = 0 + 0x30;
-    }
-    else
-    {   
-        while (number > 0)
-        {   
-            converted[cnt] = (number % 10) + 0x30;
-            number /= 10;
-            cnt--;
-        }
-    }
 }
 
 void __attribute__((interrupt)) uart_isr_handler(void)
@@ -168,12 +113,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
             state = TRANSFER_TASK_BYTES;
 
             bufferIndex = 0;
-            char s1[9] = {0,0,0,0,0,0,0,0,0};
-            unsigned int start_addr = (unsigned int) tInfo->start_adress;
-            send_number(start_addr, s1);
-
-            // @todo: maybe wrong! replaced &s1 by s1
-            setup_transfer(s1, 9, MEM_ADDRESS);
+            setup_transfer((char*) &tInfo->start_adress, 4);
 
             for (unsigned int i = 0; i < BUFFERSIZE; i++)
                 buffer[i] = 0;
@@ -228,7 +168,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         }
         break; 
     case REQUEST_RPM:
-        wakeup_pid(TASK_RPM);
+        wakeup_pid(-1);
         state = RX_READY;
         unsigned int dummy1 = read_data_register();
         return;
