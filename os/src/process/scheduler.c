@@ -11,7 +11,7 @@ ProcessStats_t* process_stats = NULL;
 
 KernelPids_t kernel_pids;
 
-void (*switch_task)();
+// void (*switch_task)();
 
 void init_scheduler(void)
 {
@@ -21,7 +21,7 @@ void init_scheduler(void)
     memset_byte((void*) process_stats, sizeof(ProcessStats_t), 0);
     memset_byte((void*) &kernel_pids, sizeof(KernelPids_t), -1);
 
-    switch_task = policy_round_robin;
+    // switch_task = policy_round_robin;
 }
 
 void insert_scheduled_task(Tcb_t* tcb)
@@ -32,27 +32,6 @@ void insert_scheduled_task(Tcb_t* tcb)
 void reboot(void)
 {
     soft_reset();
-}
-
-void __attribute__ ((hot)) policy_round_robin(void)
-{   
-    if (!currently_running)
-    {
-        currently_running = (Node_t*) get_head_element(running_tasks);
-        return;
-    }
-
-
-    for (unsigned int j = 0; j < running_tasks->size; j++)
-    {
-        currently_running = currently_running->next;
-        Tcb_t* n = (Tcb_t*) currently_running->data;
-        if (n->general.task_info.state == READY)
-        {
-            task_to_preserve = currently_running;
-            return;
-        }
-    }
 }
 
 void invalidate_current_task(void)

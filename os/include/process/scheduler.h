@@ -31,8 +31,19 @@ extern Node_t* task_to_preserve;
 extern Queue_t* running_tasks;
 extern Queue_t* waiting_tasks;
 
-extern void (*switch_task)();
-
+void next_task(void);
+void policy_round_robin(void);
+void remove_current_task(void);
+void init_scheduler(void);
+void insert_scheduled_task(Tcb_t*);
+void remove_scheduled_task(void);
+void run_scheduler(void);
+void invalidate_current_task(void);
+void unblock_task(unsigned int);
+void reboot(void);
+void finish_task(void);
+void search_invalidate_tasks(void);
+void clean_up_task(Tcb_t*, Node_t*);
 
 static inline __attribute__((always_inline)) void block_current_task(void)
 {
@@ -52,6 +63,27 @@ static inline __attribute__((always_inline)) void block_current_task(void)
 
     currently_running = q;
     SV_YIELD_TASK;
+}
+
+static inline __attribute__((always_inline)) void switch_task(void)
+{
+    if (!currently_running)
+    {
+        currently_running = (Node_t*) get_head_element(running_tasks);
+        return;
+    }
+
+
+    for (unsigned int j = 0; j < running_tasks->size; j++)
+    {
+        currently_running = currently_running->next;
+        Tcb_t* n = (Tcb_t*) currently_running->data;
+        if (n->general.task_info.state == READY)
+        {
+            task_to_preserve = currently_running;
+            return;
+        }
+    }
 }
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
@@ -74,19 +106,5 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
     }
     enable_systick();
 }
-
-void next_task(void);
-void policy_round_robin(void);
-void remove_current_task(void);
-void init_scheduler(void);
-void insert_scheduled_task(Tcb_t*);
-void remove_scheduled_task(void);
-void run_scheduler(void);
-void invalidate_current_task(void);
-void unblock_task(unsigned int);
-void reboot(void);
-void finish_task(void);
-void search_invalidate_tasks(void);
-void clean_up_task(Tcb_t*, Node_t*);
 
 #endif
