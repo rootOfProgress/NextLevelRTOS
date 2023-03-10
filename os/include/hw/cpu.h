@@ -2,7 +2,6 @@
 #define CPU_H
 
 #include "../lang.h"
-// #define ICSR 0xE000ED04 
 
 typedef enum {
     Icsr = 0xE000ED04
@@ -54,6 +53,16 @@ static inline __attribute__((always_inline)) void enable_systick(void)
     WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) | 1);
 }
 
+static inline __attribute__((always_inline)) void soft_reset(void)
+{
+    __asm("dsb");
+    WRITE_REGISTER(AIRCR, 0x05FA0001);
+    __asm("dsb");
+
+    // reboot went wrong
+   __builtin_unreachable();
+}
+
 static inline __attribute__((always_inline)) void enable_irq(void)
 {
     __asm ("CPSIE I");
@@ -71,7 +80,6 @@ static inline __attribute__((always_inline)) void disable_systick(void)
 }
 
 void init_systick(unsigned int);
-void soft_reset(void);
 void sleep(void);
 
 #endif
