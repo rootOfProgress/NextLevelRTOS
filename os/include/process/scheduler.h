@@ -9,7 +9,7 @@
 #include "exception.h"
 
 typedef struct proc_stats {
-    unsigned int num_of_hardfaults;
+    unsigned int num_of_hardfaults : 4, num_of_finished_tasks : 4, clean_up_requests : 4, : 20;
     unsigned int num_of_systick_interrupts;
     unsigned int num_of_svcalls;
     unsigned int num_of_pendsv;
@@ -65,14 +65,13 @@ static inline __attribute__((always_inline)) void block_current_task(void)
     SV_YIELD_TASK;
 }
 
-static inline __attribute__((always_inline)) void switch_task(void)
+static inline __attribute__((always_inline)) int switch_task(void)
 {
     if (!currently_running)
     {
         currently_running = (Node_t*) get_head_element(running_tasks);
         return;
     }
-
 
     for (unsigned int j = 0; j < running_tasks->size; j++)
     {
@@ -81,9 +80,13 @@ static inline __attribute__((always_inline)) void switch_task(void)
         if (n->general.task_info.state == READY)
         {
             task_to_preserve = currently_running;
-            return;
+            return 1;
         }
     }
+    // wakeup_pid(0);
+    return 0;
+    // switch_task();
+    
 }
 
 static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)

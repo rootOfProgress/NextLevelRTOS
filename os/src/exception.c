@@ -65,8 +65,11 @@ void __attribute__((optimize("O3"))) SVCall()
   switch (svc_number)
   {
   case EXEC_PSP_TASK:
-    if (SYSTICK)
+    if (SYSTICK) 
+    {
       init_systick(1000);
+      enable_systick();
+    }
 
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
     __asm volatile ("mov r0, %[sp]" :: [sp] "r" (tcb_of_pid0->sp));
@@ -83,7 +86,7 @@ void __attribute__((optimize("O3"))) SVCall()
       Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
       tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;
     }
-    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+    set_pendsv();
     break;
   case STD:
     if (SYSTICK)

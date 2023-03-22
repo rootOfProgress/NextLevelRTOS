@@ -47,7 +47,7 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
 
 
     tcb->general.task_info.pid = running_tasks->size + waiting_tasks->size;
-    tcb->general.task_info.state = READY;
+    tcb->general.task_info.state =  !tcb->general.task_info.pid ? WAITING : READY;
     tcb->general.task_info.stack_size = STACK_SIZE;
 
     if (ram_location)

@@ -63,6 +63,11 @@ static inline __attribute__((always_inline)) void soft_reset(void)
    __builtin_unreachable();
 }
 
+static inline __attribute__((always_inline)) void set_pendsv(void)
+{
+    *(unsigned int*) Icsr = *(unsigned int*) Icsr | 1 << PendSVSet;
+}
+
 static inline __attribute__((always_inline)) void enable_irq(void)
 {
     __asm ("CPSIE I");

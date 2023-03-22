@@ -11,8 +11,6 @@ ProcessStats_t* process_stats = NULL;
 
 KernelPids_t kernel_pids;
 
-// void (*switch_task)();
-
 void init_scheduler(void)
 {
     running_tasks = new_queue();
@@ -20,13 +18,21 @@ void init_scheduler(void)
     process_stats = (ProcessStats_t*) allocate(sizeof(ProcessStats_t));
     memset_byte((void*) process_stats, sizeof(ProcessStats_t), 0);
     memset_byte((void*) &kernel_pids, sizeof(KernelPids_t), -1);
-
-    // switch_task = policy_round_robin;
 }
 
 void insert_scheduled_task(Tcb_t* tcb)
 {
-    enqueue_element(running_tasks, (Tcb_t*) tcb);
+    switch (tcb->general.task_info.state)
+    {
+    case READY:
+        enqueue_element(running_tasks, (Tcb_t*) tcb);
+        break;
+    case WAITING:
+        enqueue_element(waiting_tasks, (Tcb_t*) tcb);
+        break;
+    default:
+        break;
+    }
 }
 
 void reboot(void)
@@ -54,7 +60,10 @@ void __attribute__ ((hot)) PendSV(void)
     if (DEBUG)
         process_stats->num_of_pendsv++;
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
-    switch_task();
+    while (!switch_task())
+    {
+        wakeup_pid(0);
+    };
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm volatile (
       "ldmfd r2!, {r4-r11}\n"
@@ -89,7 +98,10 @@ void search_invalidate_tasks(void)
     {
         Tcb_t* t = (Tcb_t*) q->data;
         if (t->general.task_info.state == FINISHED || t->general.task_info.state == INVALID)
+        {
             clean_up_task(t, q);
+            process_stats->clean_up_requests--;
+        }
         q = q->next;
     }
 }
@@ -99,8 +111,12 @@ void finish_task(void)
     Tcb_t* n = (Tcb_t*) currently_running->data;
     n->general.task_info.state = FINISHED;
 
-    switch_task();
-
-    SV_EXEC_PSP_TASK;
+    if (DEBUG)
+        process_stats->num_of_finished_tasks++;
+    process_stats->clean_up_requests++;
+    set_pendsv();
+    // switch_task();
+    // SV_YIELD_TASK;
+    // SV_EXEC_PSP_TASK;
 }
 
