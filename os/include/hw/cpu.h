@@ -73,6 +73,11 @@ static inline __attribute__((always_inline)) void disable_irq(void)
     __asm ("CPSID I");
 }
 
+static inline __attribute__((always_inline)) void sleep(void)
+{
+    __asm ("wfi");
+}
+
 static inline __attribute__((always_inline)) void disable_systick(void)
 {
     SystickRegisters_t* stk = (SystickRegisters_t*) STK;

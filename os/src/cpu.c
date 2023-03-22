@@ -14,8 +14,3 @@ void init_systick(unsigned int period)
     WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) & ~0b111);
     WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) | 0b110);
 }
-
-void sleep(void)
-{
-    WRITE_REGISTER(SCR, READ_REGISTER(SCR) | 1 << 1);
-}

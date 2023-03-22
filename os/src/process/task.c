@@ -33,19 +33,20 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
 {
 
     unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
-    if (address == 0)
+    if (!address)
         invoke_panic(OUT_OF_MEMORY);
 
     CpuRegister_t *cpu_register = prepare_cpu_register(address, STACK_SIZE, task_function);
 
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
+
     if (!tcb)
         invoke_panic(OUT_OF_MEMORY);
 
     // memset_byte((void*) &tcb, sizeof(Tcb_t), 0); 
 
 
-    tcb->general.task_info.pid = running_tasks->size;
+    tcb->general.task_info.pid = running_tasks->size + waiting_tasks->size;
     tcb->general.task_info.state = READY;
     tcb->general.task_info.stack_size = STACK_SIZE;
 

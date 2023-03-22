@@ -57,8 +57,8 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
         {
             j = 0;
         }
-        // block_current_task();
-        SV_YIELD_TASK;
+        block_current_task();
+        // SV_YIELD_TASK;
         // @todo : wake up task on DMA finish
     }    
 }

@@ -11,8 +11,6 @@ volatile unsigned int svc_number = 0;
 
 void __attribute__((__noipa__)) SysTick()
 {
-  // disable_systick();
-  
   save_psp_if_threadmode();
 
   if (DEBUG)
@@ -24,23 +22,6 @@ void __attribute__((__noipa__)) SysTick()
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
     switch_task();
     unsigned int next = ((Tcb_t*) currently_running->data)->sp;
-    if (!next)
-    {
-      while (1)
-      {
-        /* code */
-      }
-      
-    }
-
-  // if (next < 0x200007a8)
-  // {
-
-  // while (1)
-  // {
-  //   /* code */
-  // }
-  // }
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
     __asm volatile (
       "ldmfd r2!, {r4-r11}\n"
@@ -85,10 +66,9 @@ void __attribute__((optimize("O3"))) SVCall()
   {
   case EXEC_PSP_TASK:
     if (SYSTICK)
-      init_systick(5);
+      init_systick(1000);
 
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
-
     __asm volatile ("mov r0, %[sp]" :: [sp] "r" (tcb_of_pid0->sp));
     __asm volatile ("ldmia.w  r0!, {r4-r11}");
     __asm volatile ("msr psp, r0");

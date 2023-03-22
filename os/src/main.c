@@ -1,16 +1,13 @@
-// #include "uart.h"
 #include "exception.h"
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "devices/gpio.h"
 #include "devices/i2c.h"
-#include "devices/tim2_5.h"
-#include "types.h"
 #include "devices/uart.h"
-#include "position.h"
 #include "memory.h"
 #include "test.h"
 #include "math.h"
+#include "runtime.h"
 
 // void enable_exti0_cpu_irq()
 // {
@@ -30,20 +27,6 @@ void setup_nvic_controller()
   *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
 }
 
-// static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) drohne_rpm(void)
-// {
-//   init_rpm_timer();
-//   block_current_task();
-//   SV_YIELD_TASK;
-
-//   while (1) {
-//     block_current_task();
-//     do_measurement();
-//     volatile TransferInfo_t t_rpm = {.length = sizeof(Rpm_t), .start_adress = &rpm_results};
-//     uprint((unsigned int*) &t_rpm, RPM);
-//   };
-// }
-
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) footask(void)
 {
   while (1) {
@@ -58,41 +41,41 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
     block_current_task();
     update_memory_statistic();
     volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
-    uprint((unsigned int*) &t, STATISTIC);
+    uprint((unsigned int*) &t);
     SV_YIELD_TASK;
   };
 }
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fetch_coordinates(void)
+int __attribute__((__noipa__))  __attribute__((optimize("O0"))) fibbonacci(int n)
 {
-  while (1) {
-    block_current_task();
-    // calculate_position();
-    // update_memory_statistic();
-    volatile TransferInfo_t t = {.length = sizeof(readings_t), .start_adress = &position_readings};
-    uprint((unsigned int*) &t, PLANEPOSITION);
-  };
+   if(n == 0){
+      return 0;
+   } else if(n == 1) {
+      return 1;
+   } else {
+      return (fibbonacci(n-1) + fibbonacci(n-2));
+   }
 }
 
-static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
-{
-  
-
-  while (1) {
-    search_invalidate_tasks();
-    wakeup_pid(pid_of_foo);
-    SV_YIELD_TASK;
-  };
-}
-
-void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop2(void)
 {
   // svc(0);
 
   while (1)
   {
-    // __trap(YIELD_TASK, 0);
+    fibbonacci(15);
+    SV_YIELD_TASK;
+    // fibbonacci(10);
     // float foo = powf((float) 2, (float) 4);
+  }
+}
+
+void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
+{
+
+  while (1)
+  {
+    __builtin_unreachable();
   }
 }
 
@@ -101,9 +84,8 @@ int __attribute__((optimize("O0"))) main_init(void)
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
 
-  // init_i2c();
 
-  kernel_pids.idle_task = create_task(&idle, 0); // pid0
+  kernel_pids.idle_task = create_task(&idle_runner, 0); // pid0
   kernel_pids.transfer_handler = create_task(&transfer_handler, 0); // pid1
   kernel_pids.statistic_manager = create_task(&stat, 0); // pid2
   init_isr();
