@@ -93,24 +93,8 @@ void set_prescaler(unsigned int tim_nr, unsigned int psc_value)
 
 unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
 {
-    unsigned int max_range;
-    switch (tim_nr)
-    {
-    case 2:
-    case 5:
-        max_range = 1 << 32;
-        break;
-    case 3:
-    case 4:
-        max_range = 1 << 16;
-    default:
-        break;
-    }
-
-
     unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f)));
     return (ahbFrequency / target_frequency) - 1;
-
 }
 
 
@@ -118,7 +102,6 @@ void timer_init(unsigned int tim_nr, unsigned int arr,  char *ccr, unsigned int 
 {
     // enable clock
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
-    // SET_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << tim_nr);
     WRITE_REGISTER(&rcc_regs->apb1enr, READ_REGISTER(&rcc_regs->apb1enr) | 1 << (tim_nr - 2));
     
     reset_timer(tim_nr);
