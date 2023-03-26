@@ -85,7 +85,7 @@ unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
 static inline __attribute__((always_inline)) void flush_counter(unsigned int tim_nr)
 {
     unsigned int tim_base = get_timx_base(tim_nr);
-    FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);    
+    FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
 }
 
 void set_ccr(unsigned int,unsigned int,unsigned int);

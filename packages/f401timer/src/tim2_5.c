@@ -21,6 +21,12 @@ void timer_stop(unsigned int tim_nr)
     CLEAR_BIT(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
 }
 
+void clear_udis(unsigned int tim_nr) 
+{
+    unsigned int tim_base = get_timx_base(tim_nr);   
+    WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->cr1, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cr1) & ~(1 << UDIS));    
+}
+
 void set_udis(unsigned int tim_nr) 
 {
     unsigned int tim_base = get_timx_base(tim_nr);   
@@ -32,6 +38,12 @@ unsigned int read_counter(unsigned int tim_nr)
     unsigned int tim_base = get_timx_base(tim_nr);
     return READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
 }
+
+// void flush_counter(unsigned int tim_nr)
+// {
+//     unsigned int tim_base = get_timx_base(tim_nr);
+//     FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
+// }
 
 void set_ccr(unsigned int tim_nr, unsigned int ccr_value, unsigned int ccr_nr)
 {
@@ -71,7 +83,7 @@ void set_prescaler(unsigned int tim_nr, unsigned int psc_value)
 
 unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
 {
-    unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f))) + 1;
+    unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f)));
     return (ahbFrequency / target_frequency) - 1;
 }
 
@@ -91,4 +103,5 @@ void timer_init(unsigned int tim_nr, unsigned int arr,  char *ccr, unsigned int 
         set_ccr(tim_nr, ccr[i], i);
     }
     flush_counter(tim_nr);
+
 }

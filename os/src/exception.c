@@ -5,7 +5,8 @@
 #include "process/task.h"
 #include "memory.h"
 #include "test.h"
-#include "devices/uart.h"
+#include "uart_common.h"
+#include "uart.h"
 #include "process/scheduler.h"
 
 volatile unsigned int svc_number = 0;

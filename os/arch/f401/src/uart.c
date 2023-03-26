@@ -33,7 +33,7 @@ void init_uart(GpioObject_t* obj)
     // page 981 table 136 entry 2:
     // baud: 104.1875 -> 104 | 16 * 0.1875 : 0d1667
     UartRegisterMap_t* uart_regs = (UartRegisterMap_t*) Usart1Baseadress;
-    // unsigned int baudrate_divisor = 8000000 / 9600;
+    // unsigned int baudrate_divisor = 16000000 / 9600;
 
     WRITE_REGISTER(&uart_regs->brr, 1667);
     WRITE_REGISTER(&uart_regs->cr1, READ_REGISTER(&uart_regs->cr1) | (0b1100) | (1 << 5));
@@ -41,20 +41,4 @@ void init_uart(GpioObject_t* obj)
 
 
     *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 1 << 5;
-}
-
-unsigned int read_data_register(void)
-{
-    return *((unsigned int*) (Usart1Baseadress | 0x04)) ;
-}
-
-void print(char* src, unsigned int length)
-{
-    for (unsigned int i = 0; i < length; i++)
-    {
-        while (!((READ_REGISTER(&((UartRegisterMap_t*) Usart1Baseadress)->sr) & (1 << TXE)) != 0));
-        WRITE_REGISTER(&((UartRegisterMap_t*) Usart1Baseadress)->dr,*src);
-        src++;
-    }
-    while (!(( READ_REGISTER(&((UartRegisterMap_t*) Usart1Baseadress)->sr) & (1 << TC)) != 0));
 }

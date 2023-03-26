@@ -1,4 +1,5 @@
-#include "devices/uart.h"
+#include "uart.h"
+#include "uart_common.h"
 #include "data/list.h"
 #include "memory.h"
 #include "exception.h"
