@@ -64,9 +64,15 @@ void into_af(GpioObject_t* t, unsigned int af_number)
     }
     else
     {
+        // @todo: do not delete
+        
         unsigned int pin  = t->pin - 8;
         WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) & ~(0xF << (pin * 4)));    
         WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) | (af_number << (pin * 4)));
+
+        // @todo: WARNING HARDCODED!
+        // WRITE_REGISTER(&gpio_regs->afrh, 0x00000770);
+
     }
 }
 

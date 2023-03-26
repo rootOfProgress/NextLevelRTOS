@@ -73,4 +73,17 @@ void into_af(GpioObject_t*, unsigned int);
 void toggle_output_pin(GpioObject_t*);
 void init_gpio(GpioObject_t*);
 
+static inline __attribute__((always_inline)) void set_pin_on(GpioObject_t* gpio) 
+{
+}
+
+static inline __attribute__((always_inline)) unsigned int read_pin(GpioObject_t* gpio) 
+{
+}
+
+static inline __attribute__((always_inline)) void set_pin_off(GpioObject_t* gpio) 
+{
+}
+
+
 #endif
