@@ -96,9 +96,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
 int __attribute__((optimize("O0"))) main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
-  init_gpio(t);
   init_scheduler();
-  // init_i2c();
 
   create_task(&idle, 0); // pid0
   pid_of_transferhandler = create_task(&transfer_handler, 0); // pid1
