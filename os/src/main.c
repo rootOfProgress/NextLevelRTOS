@@ -1,14 +1,21 @@
-// #include "uart.h"
+/*
+ * OS Core specific includes
+ */
 #include "exception.h"
 #include "process/scheduler.h"
 #include "process/task.h"
-#include "devices/gpio.h"
-#include "devices/i2c.h"
-#include "devices/tim2_5.h"
-#include "types.h"
-#include "devices/uart.h"
-// #include "position.h"
+#include "uart_common.h"
 #include "memory.h"
+
+/*
+ * Device specific includes
+ */
+#include "gpio.h"
+#include "i2c.h"
+#include "tim2_5.h"
+#include "types.h"
+#include "uart.h"
+
 #include "test.h"
 #include "math.h"
 
@@ -89,6 +96,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
 int __attribute__((optimize("O0"))) main_init(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
+  init_gpio(t);
   init_scheduler();
   // init_i2c();
 

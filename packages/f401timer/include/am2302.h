@@ -4,19 +4,19 @@
 #include "tim2_5.h"
 #include "gpio.h"
 
-typedef struct readings {
+typedef struct am2302_readings {
     unsigned short rh;
     unsigned short temp;
     char crc;
     char is_valid;
-} readings_t;
+} Am2302Readings_t;
 
 // all usec
 typedef enum hostTimings {
     HostPullsLow = 1000,
     HostPullsUp_Min = 20,
     HostPullsUp_Max = 40,
-} hostTimings_t;
+} HostTimings_t;
 
 // all usec
 typedef enum sensorTimings {
@@ -24,14 +24,14 @@ typedef enum sensorTimings {
     SensorPullsUp = 80,
     StartTransmitSignal = 50,
     SensorOutputZero = 30,
-} sensorTimings_t;
+} SensorTimings_t;
 
+extern Am2302Readings_t readings;
 extern GpioObject_t gpio;
 enum { timerNumber = 3 };
 
 static inline __attribute__((always_inline)) void am2302_send_host_init(void) 
 {
-
     set_pin_off(&gpio);
     timer_start(timerNumber);
     while (read_counter(timerNumber) < HostPullsLow) {}
@@ -46,7 +46,6 @@ static inline __attribute__((always_inline)) void am2302_send_host_init(void)
     set_pin_off(&gpio);
     timer_stop(timerNumber);
     flush_counter(timerNumber);
-
 }
 
 static inline __attribute__((always_inline)) void am2302_wait_for_sensor(void)
@@ -57,7 +56,7 @@ static inline __attribute__((always_inline)) void am2302_wait_for_sensor(void)
     while (read_pin(&gpio)) {}    
 }
 
-static inline __attribute__((always_inline)) void am2302_record(void)
+static inline __attribute__((always_inline)) Am2302Readings_t* am2302_record(void)
 {
     unsigned int prev_state = 0;
     unsigned int elapsed;
@@ -87,8 +86,8 @@ static inline __attribute__((always_inline)) void am2302_record(void)
             prev_state = read_pin(&gpio);
         }
     }
+    timer_stop(timerNumber);
 
-    readings_t readings;
     readings.rh = (unsigned short) (result >> 24);
     readings.temp = (unsigned short) (result >> 8) & 0xFFFF;
     readings.crc = (char) result & 0xFF;
@@ -97,10 +96,10 @@ static inline __attribute__((always_inline)) void am2302_record(void)
     if ((char)((readings.rh & 0xFF) + (readings.rh >> 8) + (readings.temp & 0xFF) + (readings.temp >> 8)) == readings.crc)
         readings.is_valid = 1;
 
-    asm("bkpt");
-    timer_stop(timerNumber);
+    return &readings;
 }
 
-void am2302_do_measurement(void);
+void am2302_init_peripherials(unsigned int, char); 
+Am2302Readings_t* am2302_do_measurement(void);
 
 #endif

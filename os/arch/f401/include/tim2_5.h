@@ -82,7 +82,12 @@ void timer_init(unsigned int tim_nr, unsigned int arr, char *ccr, unsigned int c
  */
 unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length);
 
-void flush_counter(unsigned int);
+static inline __attribute__((always_inline)) void flush_counter(unsigned int tim_nr)
+{
+    unsigned int tim_base = get_timx_base(tim_nr);
+    FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);    
+}
+
 void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void set_udis(unsigned int);

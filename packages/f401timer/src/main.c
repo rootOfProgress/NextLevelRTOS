@@ -9,6 +9,7 @@
 #include "am2302.h"
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
+    am2302_init_peripherials(0, 'A');
     am2302_do_measurement();
     // // char ccr[4] = {0,0,0,0};
 

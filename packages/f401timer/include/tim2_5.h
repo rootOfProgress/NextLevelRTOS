@@ -88,7 +88,6 @@ static inline __attribute__((always_inline)) void flush_counter(unsigned int tim
     FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
 }
 
-// void flush_counter(unsigned int);
 void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void set_udis(unsigned int);

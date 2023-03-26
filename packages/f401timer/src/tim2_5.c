@@ -5,19 +5,9 @@
 void reset_timer(unsigned int tim_nr)
 {
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
-    unsigned int bitfield = 0;
-    switch (tim_nr)
-    {
-    case 2:
-        bitfield = 0;
-        break;
-    default:
-        break;
-    }
-    SET_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << bitfield);    
-    CLEAR_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << bitfield);    
+    SET_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << (tim_nr - 2));    
+    CLEAR_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << (tim_nr - 2));    
 }
-
 
 void timer_start(unsigned int tim_nr)
 {

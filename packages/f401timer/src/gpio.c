@@ -54,25 +54,6 @@ void set_moder(GpioObject_t* t, ModerTypes_t moder)
     }
 }
 
-// GpioRegisters_t* get_registers(GpioObject_t* t)
-// {
-//     switch (t->port)
-//     {
-//     case 'A':
-//         return (GpioRegisters_t*) ((unsigned int*) GPIO_A_BASE);
-//     case 'B':
-//         return (GpioRegisters_t*) ((unsigned int*) GPIO_B_BASE);
-//     case 'C':
-//         return (GpioRegisters_t*) ((unsigned int*) GPIO_C_BASE);
-//     case 'D':
-//         return (GpioRegisters_t*) ((unsigned int*) GPIO_D_BASE);
-//     default:
-//         // dummy
-//         return (GpioRegisters_t*) ((unsigned int*) GPIO_A_BASE);
-//     }
-// }
-
-
 void into_af(GpioObject_t* t, unsigned int af_number)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
@@ -116,24 +97,6 @@ void set_otyper(GpioObject_t* t, OutputTypes_t otype)
     WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) & ~(otype << (t->pin)));
     WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) | (otype << (t->pin)));
 }
-
-// void set_pin_on(GpioObject_t* gpio) 
-// {
-//     GpioRegisters_t* gpio_regs = get_registers(gpio);
-//     WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) | (1 << gpio->pin));
-// }
-// void set_pin_off(GpioObject_t* gpio) 
-// {
-//     GpioRegisters_t* gpio_regs = get_registers(gpio);
-//     WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) & ~(1 << gpio->pin));
-// }
-
-// unsigned int read_pin(GpioObject_t* gpio)
-// {
-//     GpioRegisters_t* gpio_regs = get_registers(gpio);
-//     return READ_REGISTER((unsigned int*) &gpio_regs->idr) & (1 << gpio->pin);
-// }
-
 
 void toggle_output_pin(GpioObject_t* t)
 {
