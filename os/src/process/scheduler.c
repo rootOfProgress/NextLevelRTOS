@@ -47,8 +47,9 @@ void invalidate_current_task(void)
 
 void run_scheduler(void)
 {
-    if (!running_tasks)
-        invoke_panic(SCHEDULER_NOT_INITIALIZED);
+    if (running_tasks->size == 0)
+        if (!(wakeup_pid(kernel_pids.idle_task)))
+            invoke_panic(SCHEDULER_NOT_INITIALIZED);
 
     currently_running = (Node_t*) get_head_element(running_tasks);
     task_to_preserve = currently_running;
@@ -60,10 +61,7 @@ void __attribute__ ((hot)) PendSV(void)
     if (DEBUG)
         process_stats->num_of_pendsv++;
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
-    while (!switch_task())
-    {
-        wakeup_pid(0);
-    };
+    switch_task();
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm volatile (
       "ldmfd r2!, {r4-r11}\n"
@@ -115,8 +113,5 @@ void finish_task(void)
         process_stats->num_of_finished_tasks++;
     process_stats->clean_up_requests++;
     set_pendsv();
-    // switch_task();
-    // SV_YIELD_TASK;
-    // SV_EXEC_PSP_TASK;
 }
 

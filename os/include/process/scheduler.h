@@ -7,6 +7,7 @@
 #include "lang.h"
 #include "memory.h"
 #include "exception.h"
+#include "panic.h"
 
 typedef struct proc_stats {
     unsigned int num_of_hardfaults : 4, num_of_finished_tasks : 4, clean_up_requests : 4, : 20;
@@ -61,39 +62,15 @@ static inline __attribute__((always_inline)) void block_current_task(void)
     isolate_node(running_tasks, currently_running);
     move_node(waiting_tasks, currently_running);
 
-    currently_running = q;
+    currently_running = running_tasks->size > 0 ? q : NULL;
     SV_YIELD_TASK;
 }
 
-static inline __attribute__((always_inline)) int switch_task(void)
-{
-    if (!currently_running)
-    {
-        currently_running = (Node_t*) get_head_element(running_tasks);
-        return;
-    }
-
-    for (unsigned int j = 0; j < running_tasks->size; j++)
-    {
-        currently_running = currently_running->next;
-        Tcb_t* n = (Tcb_t*) currently_running->data;
-        if (n->general.task_info.state == READY)
-        {
-            task_to_preserve = currently_running;
-            return 1;
-        }
-    }
-    // wakeup_pid(0);
-    return 0;
-    // switch_task();
-    
-}
-
-static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
+static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
     Node_t *q = get_head_element(waiting_tasks);
     if (!q)
-        return;
+        return NULL;
 
     for (unsigned int i = 0; i < waiting_tasks->size; i++)
     {
@@ -102,9 +79,29 @@ static inline __attribute__((always_inline)) void wakeup_pid(unsigned int pid)
             isolate_node(waiting_tasks,q);
             move_node(running_tasks,q);
             ((Tcb_t*)q->data)->general.task_info.state = READY;
-            return;
+            return q;
         }
         q = q->next;
+    }
+    return NULL;
+}
+
+static inline __attribute__((always_inline)) void switch_task(void)
+{
+    if (!currently_running)
+    {
+        currently_running = wakeup_pid(kernel_pids.idle_task);
+        if (!currently_running)
+            invoke_panic(SCHEDULER_NOT_INITIALIZED);
+        task_to_preserve = currently_running;
+    }
+
+    for (unsigned int j = 0; j < running_tasks->size; j++)
+    {
+        currently_running = currently_running->next;
+        Tcb_t* n = (Tcb_t*) currently_running->data;
+        if (n->general.task_info.state == READY)
+            task_to_preserve = currently_running;
     }
 }
 
