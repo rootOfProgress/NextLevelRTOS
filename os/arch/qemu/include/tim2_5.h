@@ -64,16 +64,10 @@ void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void clear_udis(unsigned int);
 
-void clear_uif() {
-    *(unsigned int*) (TIM2_BASE | 0x10) = *(unsigned int*) (TIM2_BASE | 0x10) & !(0xF | 0b1 << 6); 
-}
+void clear_uif();
 
-void set_ug() {
-    *(unsigned int*) (TIM2_BASE | 0x14) = *(unsigned int*) (TIM2_BASE | 0x14) | 1; 
-}
+void set_ug();
 
-void enable_interrupt() {
-    *(unsigned int*) (TIM2_BASE | 0xC) = (*(unsigned int*) (TIM2_BASE | 0xC)) | (1 << 1); 
-}
+void enable_interrupt();
 
 #endif

@@ -1,5 +1,7 @@
 #ifndef UART_H
 #define UART_H
+#include "gpio.h"
+#include "lang.h"
 
 // #include <stdint.h>
 
@@ -16,28 +18,22 @@
 #define TE 3
 #define BUFFERSIZE 100
 
-// extern char buffer[];
-
-// uint32_t pow_base_16(uint32_t);
-// uint32_t hex2int(char);
-
-// typedef enum {
-//     RX_READY = 0x0,
-//     PREPARE_TASK_TRANSFER = 0x1,
-//     TRANSFER_TASK_BYTES = 0x2,
-// } UartStates_t;
-
-// void send_number(uint32_t);
-void init_uart(void);
-void print(char *, unsigned int);
+void init_uart(GpioObject_t*);
 void print_char(char c);
-unsigned int read_data_register(void);
+// unsigned int read_data_register(void);
 
-// unsigned int __attribute__ ((always_inline)) read_data_register(void)
-// {
-//     return *((unsigned int*) USART1_DR);
-// } 
+static inline __attribute__((always_inline)) unsigned int read_data_register(void)
+{
+    return *((char*) USART1_DR);
+}
 
-// void __attribute__((interrupt)) uart_isr_handler(void);
-
+static inline __attribute__((always_inline)) void print(char* src, unsigned int length)
+{
+    for (unsigned int i = 0; i < length; i++)
+    {
+        WRITE_REGISTER(USART1_DR,*src);
+        while (!((READ_REGISTER(USART1_SR) & 0x80) != 0));
+        src++;
+    }
+}
 #endif

@@ -7,7 +7,7 @@
 #include "panic.h"
 
 UartStates_t state;
-TaskInformation_t *tInfo = NULL;
+TaskInformation_t tInfo;
 List_t *transfer_list = NULL;
 
 unsigned int in_buffer;
@@ -109,149 +109,59 @@ void init_isr(void)
         buffer[i] = 0;
 }
 
-void send_number(unsigned int number, char converted[])
-{   
-    // unsigned int n = number;
-    int cnt = 8;
-    
-    if (number == 0)
-    {
-        converted[0] = 0 + 0x30;
-    }
-    else
-    {   
-        while (number > 0)
-        {   
-            converted[cnt] = (number % 10) + 0x30;
-            number /= 10;
-            cnt--;
-        }
-    }
-}
-
-void __attribute__((interrupt)) uart_isr_handler(void)
+static char bytes_received = 0;
+char uart_rx_buffer[4];
+void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
+    uart_rx_buffer[bytes_received++] = read_data_register();
+    if (bytes_received != 4)
+        return;
     switch (state)
     {
     case RX_READY:
-        unsigned int content = read_data_register();
-        in_buffer |= content << ((--byte_in_id) * 8);
-        if ((in_buffer & 0xFFFFFF) == MAGIC)
+        if ((*((unsigned int*)uart_rx_buffer) >> 8) == MAGIC)
         {
-            state = in_buffer >> 24;
-            in_buffer = 0;
-            byte_in_id = 4;
-        }
-        if (byte_in_id == 0)
-        {
-            in_buffer = 0;
-            byte_in_id = 4;
+            state = *((unsigned int*)uart_rx_buffer) & 0xFF;
         }
         break;
-    case PREPARE_TASK_TRANSFER:
-        buffer[bufferIndex++] = read_data_register();
-        if (bufferIndex == 4)
-        {
-            tInfo = (TaskInformation_t*) allocate(sizeof(TaskInformation_t));
-            if (!tInfo)
-                invoke_panic(OUT_OF_MEMORY);
-            
-            swap(buffer);
-            tInfo->task_size = (unsigned int) *((unsigned int*) buffer); 
-            tInfo->start_adress = (char*) allocate(tInfo->task_size); 
-            
-            if (!tInfo->start_adress)
-                invoke_panic(OUT_OF_MEMORY);
+    case PREPARE_TASK_TRANSFER:        
+        tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer); 
+        tInfo.start_adress = (char*) allocate(tInfo.task_size); 
+        
+        if (!tInfo.start_adress)
+            invoke_panic(OUT_OF_MEMORY);
 
-            // done because of pyserial testing to receive mem adress everytime!
-            // state = RX_READY;
-            
-            state = TRANSFER_TASK_BYTES;
+        setup_transfer(&tInfo.start_adress, 4, MEM_ADDRESS);
 
-            bufferIndex = 0;
-            char s1[9] = {0,0,0,0,0,0,0,0,0};
-            unsigned int start_addr = (unsigned int) tInfo->start_adress;
-            send_number(start_addr, s1);
-
-            // @todo: maybe wrong! replaced &s1 by s1
-            setup_transfer(s1, 9, MEM_ADDRESS);
-
-            for (unsigned int i = 0; i < BUFFERSIZE; i++)
-                buffer[i] = 0;
-
-            p = tInfo->start_adress;
-        }
+        state = RX_READY;
         break;
     case TRANSFER_TASK_BYTES:
-        os_memcpy(p++, read_data_register());
-        if (++bufferIndex == tInfo->task_size)
+        // set up dma RX
+        // os_memcpy(tInfo.start_adress++, rx_byte);
+        if (++bufferIndex == tInfo.task_size)
         {
-            deallocate((unsigned int*) tInfo);
-            create_task((void (*)()) tInfo->start_adress, (unsigned int) tInfo->start_adress);
+            create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
             state = RX_READY;
-            bufferIndex = 0;
         }
         break;
     case REQUEST_STATISTIC:
         wakeup_pid(2);
         state = RX_READY;
-        unsigned int dummy = read_data_register();
-        return;
-        // break;
-    case ALTER_SPEED:
-        buffer[bufferIndex++] = read_data_register();
-        if (bufferIndex == 4)
-        {
-            volatile unsigned int pwm_speed = (buffer[1] - 0x30) * 100 + (buffer[2] - 0x30) * 10 + (buffer[3] - 0x30);
-            volatile unsigned int engine_no = (buffer[0] - 0x30);
-            bufferIndex = 0;
-            state = RX_READY;
-
-            // should be moved into own function soon
-            switch (engine_no)
-            {
-            case 0:
-                // ccr1
-                WRITE_REGISTER(0x40000434, pwm_speed);
-                break;
-            case 1:
-                WRITE_REGISTER(0x40000438, pwm_speed);
-                break;
-            case 2:
-                WRITE_REGISTER(0x4000043C, pwm_speed);
-                break;
-            case 3:
-                WRITE_REGISTER(0x40000440, pwm_speed);
-                break;            
-            default:
-                break;
-            }
-        }
-        break; 
-    case REQUEST_RPM:
-        wakeup_pid(TASK_RPM);
-        state = RX_READY;
-        unsigned int dummy1 = read_data_register();
         return;
     case REBOOT:
         state = RX_READY;
-        unsigned int dummy2 = read_data_register();
         soft_reset();
         return;
     case REQUEST_TEST_RESULT:
-        unsigned int dummy3 = read_data_register();
         char *test = "DDDDEEEE";
         print(test, 8);
         print((char*) 0x20000000, 4);
         WRITE_REGISTER(0x20000000, 0);
         state = RX_READY;
         return;
-    case REQUEST_POSITION:
-        unsigned int dummy4 = read_data_register();
-        wakeup_pid(3);
-        state = RX_READY;
-        return;
     default:
         break;
     }
+    bytes_received = 0;
+
 }
