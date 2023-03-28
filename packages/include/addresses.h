@@ -1,5 +1,5 @@
 #ifndef OS_HEADER_H
 #define OS_HEADER_H
-#define allocate_addr 0x80010d5
-#define deallocate_addr 0x8001049
+#define allocate_addr 0x800162d
+#define deallocate_addr 0x80015a1
 #endif

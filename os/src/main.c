@@ -7,7 +7,6 @@
 #include "devices/tim2_5.h"
 #include "types.h"
 #include "devices/uart.h"
-#include "position.h"
 #include "memory.h"
 #include "test.h"
 #include "math.h"
@@ -30,28 +29,6 @@ void setup_nvic_controller()
   *((unsigned int*) 0x40013C0C) = *((unsigned int*) 0x40013C0C) << 6;
 }
 
-// static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) drohne_rpm(void)
-// {
-//   init_rpm_timer();
-//   block_current_task();
-//   SV_YIELD_TASK;
-
-//   while (1) {
-//     block_current_task();
-//     do_measurement();
-//     volatile TransferInfo_t t_rpm = {.length = sizeof(Rpm_t), .start_adress = &rpm_results};
-//     uprint((unsigned int*) &t_rpm, RPM);
-//   };
-// }
-
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) footask(void)
-{
-  while (1) {
-    block_current_task();
-  };
-}
-
-
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
@@ -63,24 +40,12 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   };
 }
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fetch_coordinates(void)
-{
-  while (1) {
-    block_current_task();
-    // calculate_position();
-    // update_memory_statistic();
-    volatile TransferInfo_t t = {.length = sizeof(readings_t), .start_adress = &position_readings};
-    uprint((unsigned int*) &t, PLANEPOSITION);
-  };
-}
-
 static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void)
 {
   
 
   while (1) {
     search_invalidate_tasks();
-    wakeup_pid(pid_of_foo);
     SV_YIELD_TASK;
   };
 }
@@ -106,7 +71,6 @@ int __attribute__((optimize("O0"))) main_init(void)
   create_task(&idle, 0); // pid0
   pid_of_transferhandler = create_task(&transfer_handler, 0); // pid1
   pid_of_mstat = create_task(&stat, 0); // pid2
-  create_task(&fetch_coordinates, 0); //pid3
   init_isr();
   init_uart(t);
   run_scheduler();
