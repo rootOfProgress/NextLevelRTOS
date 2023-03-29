@@ -44,18 +44,13 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
 {
     SingleLinkedNode_t* node;
     init_transfer_handler();
-    unsigned int j = 0;
+    // volatile unsigned int j = 0;
     while (1)
     {
         if (num_of_waiting_transfers)
         {
-            print(transfer_list[j].start_adress, transfer_list[j].length);
+            print(transfer_list[num_of_waiting_transfers - 1].start_adress, transfer_list[num_of_waiting_transfers - 1].length);
             num_of_waiting_transfers--;
-            j++;
-        }
-        else
-        {
-            j = 0;
         }
         block_current_task();
         // SV_YIELD_TASK;
