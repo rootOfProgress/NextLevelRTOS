@@ -2,10 +2,12 @@
 #include "rcc.h"
 #include "lang.h"
 #include "gpio.h"
-
+#include "dma.h"
 
 void init_uart(GpioObject_t* obj)
 {
+    dma_init();
+
     // tx
     obj->pin = 9;
     obj->port = 'A';
@@ -40,5 +42,6 @@ void init_uart(GpioObject_t* obj)
     WRITE_REGISTER(&uart_regs->cr1, READ_REGISTER(&uart_regs->cr1) | (0b1 << 13));
 
 
+    // enable uart interrupt
     *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 1 << 5;
 }

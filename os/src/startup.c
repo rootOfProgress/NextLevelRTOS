@@ -11,7 +11,7 @@ extern void uart_isr_handler(void);
 extern void SVCall(unsigned int, unsigned int);
 extern void PendSV(void);
 extern void SysTick(void);
-
+extern void dma2_stream5_ir_handler(void);
 extern unsigned int _sidata;
 extern unsigned int _sdata;
 extern unsigned int _edata;
