@@ -6,7 +6,7 @@
 
 void init_gpio(GpioObject_t* gpio_object)
 {
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
     switch (gpio_object->port)
     {
     case 'A':

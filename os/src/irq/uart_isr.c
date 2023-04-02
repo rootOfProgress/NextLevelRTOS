@@ -5,6 +5,7 @@
 #include "exception.h"
 #include "process/scheduler.h"
 #include "panic.h"
+#include "dma.h"
 
 UartStates_t state;
 TaskInformation_t tInfo;

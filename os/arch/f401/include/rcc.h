@@ -1,7 +1,8 @@
 #ifndef RCC_H
 #define RCC_H
 
-#define RCC_BASE 0x40023800
+enum { RccBaseAdress = 0x40023800 };
+
 #define I2C1EN 21
 
 typedef union rcc_cr

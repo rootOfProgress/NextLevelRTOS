@@ -7,6 +7,8 @@
 void init_uart(GpioObject_t* obj)
 {
     dma_init();
+    // dma 2 stream 5 isr: pos 68
+    *((unsigned int*) 0xE000E108) = *((unsigned int*) 0xE000E108) | 1 << 4;
 
     // tx
     obj->pin = 9;
@@ -26,7 +28,7 @@ void init_uart(GpioObject_t* obj)
 
 
 
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
 
     WRITE_REGISTER(&rcc_regs->apb2enr, READ_REGISTER(rcc_regs->apb2enr) | (1 << RCC_USART1EN));
 
