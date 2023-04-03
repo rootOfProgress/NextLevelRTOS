@@ -12,7 +12,7 @@ TransferInfo_t transfer_list[MAX_WAITING_TRANSFERS];
 unsigned int in_buffer;
 unsigned int byte_in_id;
 unsigned int bufferIndex;
-unsigned int num_of_waiting_transfers;
+volatile unsigned int num_of_waiting_transfers;
 char buffer[BUFFERSIZE];
 char *p;
 
@@ -127,7 +127,7 @@ void __attribute__((interrupt)) uart_isr_handler(void)
         }
         break;
     case REQUEST_STATISTIC:
-        wakeup_pid(2);
+        wakeup_pid(kernel_pids.statistic_manager);
         state = RX_READY;
         unsigned int dummy = read_data_register();
         return;

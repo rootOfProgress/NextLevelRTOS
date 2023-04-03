@@ -39,6 +39,7 @@
     "fstream": "c",
     "valarray": "c",
     "*.inc": "c",
-    "rcc.h": "c"
+    "rcc.h": "c",
+    "math.h": "c"
   }
 }

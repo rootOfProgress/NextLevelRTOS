@@ -1,12 +1,13 @@
 #ifndef QUEUE_H
 #define QUEUE_H
+#include "process/tcb.h"
 
 typedef struct Node Node_t;
 
 typedef struct Node {
     Node_t* next;
     Node_t* prev;
-    void* data;
+    Tcb_t* data;
 } Node_t;
 
 typedef struct Queue {

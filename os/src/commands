@@ -1,6 +1,7 @@
 p *(Node_t*)currently_running->data
 p *((Tcb_t*)currently_running->data)
 p *((Queue_t*) running_tasks)
+p *((Queue_t*) waiting_tasks)
 break scheduler.c:58
 delete breakpoints
 monitor reset halt
@@ -8,6 +9,7 @@ break gpio.c:85
 break uart.c:36
 break uart_isr.c:80
 break exception.c:60
+break exception.c:25
 break memory.c:98
 break main.c:98
 break mutex.s:14
