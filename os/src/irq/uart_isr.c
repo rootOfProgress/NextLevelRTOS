@@ -14,7 +14,8 @@ List_t *transfer_list = NULL;
 unsigned int in_buffer;
 unsigned int byte_in_id;
 unsigned int bufferIndex;
-
+unsigned char bytes_received;
+unsigned char uart_rx_buffer[4];
 char buffer[BUFFERSIZE];
 char *p;
 
@@ -106,12 +107,16 @@ void init_isr(void)
     state = RX_READY;
     bufferIndex = 0;
     in_buffer = 0;
+    bytes_received = 0;
     for (unsigned int i = 0; i < BUFFERSIZE; i++)
+    {
         buffer[i] = 0;
+        uart_rx_buffer[i] = 0;
+    }
 }
 
-static char bytes_received = 0;
-char uart_rx_buffer[4];
+
+
 void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
     uart_rx_buffer[bytes_received++] = read_data_register();
@@ -127,32 +132,39 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
         break;
     case PREPARE_TASK_TRANSFER:        
         tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer); 
-        tInfo.start_adress = (char*) allocate(tInfo.task_size); 
+        tInfo.start_adress = allocate(tInfo.task_size); 
         
         if (!tInfo.start_adress)
             invoke_panic(OUT_OF_MEMORY);
 
-        setup_transfer(&tInfo.start_adress, 4, MEM_ADDRESS);
+        // notify host to recompile with correct offset
+        setup_transfer((char*) &tInfo.start_adress, 4, MEM_ADDRESS);
 
+        DmaTransferSpecifics_t dt;
+    
+        dt.chsel = 4;
+        dt.minc = 1;
+        // dt.ndtr = 0x200;
+        dt.ndtr = tInfo.task_size;
+
+        // uart rx
+        dt.source_address = 0x40011004;
+        dt.destination_address = (unsigned int) tInfo.start_adress;
+        dt.stream_number = 5;
+        dt.tcie = 1;    
+        dt.dma_job_type = DmaWaitsForExternalTask;
+        dma_interrupt_action = DmaWaitsForExternalTask;
+        dma_transfer(&dt, PeripherialToMemory);
         state = RX_READY;
-        break;
-    case TRANSFER_TASK_BYTES:
-        // set up dma RX
-        // os_memcpy(tInfo.start_adress++, rx_byte);
-        if (++bufferIndex == tInfo.task_size)
-        {
-            create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
-            state = RX_READY;
-        }
         break;
     case REQUEST_STATISTIC:
         wakeup_pid(2);
         state = RX_READY;
-        return;
+        break;
     case REBOOT:
         state = RX_READY;
         soft_reset();
-        return;
+        break;
     case REQUEST_TEST_RESULT:
         char *test = "DDDDEEEE";
         print(test, 8);

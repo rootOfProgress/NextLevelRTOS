@@ -2,8 +2,11 @@
 #include "rcc.h"
 #include "lang.h"
 
+DmaJobType_t dma_interrupt_action;
+
 void dma_init(void)
 {
+    dma_interrupt_action = DmaIsIdle;
     RccRegisterMap_t* rcc_registers = (RccRegisterMap_t*) RccBaseAdress;
     WRITE_REGISTER(&rcc_registers->ahb1enr, READ_REGISTER(&rcc_registers->ahb1enr) | (1 << DMA2EN));
 }
@@ -22,8 +25,9 @@ void dma2_stream5_ir_handler(void)
     {
         switch (dma_interrupt_action)
         {
-        case DmaReceivesExternalTask:
-            dma_interrupt_action = DmaIsIdle;
+        case DmaWaitsForExternalTask:
+            dma_interrupt_action &= ~DmaWaitsForExternalTask;
+            dma_interrupt_action |= DmaTransferedExternalTask;
             // notify task_create
             
             // enable usart interrupt 

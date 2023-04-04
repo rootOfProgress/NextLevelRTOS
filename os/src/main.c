@@ -6,6 +6,7 @@
 #include "process/task.h"
 #include "uart_common.h"
 #include "memory.h"
+#include "dma.h"
 
 /*
  * Device specific includes
@@ -77,6 +78,12 @@ static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle(void
 
   while (1) {
     search_invalidate_tasks();
+    if (dma_interrupt_action & DmaTransferedExternalTask)
+    {
+      create_task((void (*)()) tInfo.start_adress, tInfo.task_size);
+      dma_interrupt_action = DmaIsIdle;
+    }
+    
     SV_YIELD_TASK;
   };
 }

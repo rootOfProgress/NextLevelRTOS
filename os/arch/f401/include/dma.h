@@ -1,6 +1,8 @@
 #ifndef DMA_H
 #define DMA_H
 
+#include "lang.h"
+
 // ISR dma2 stream 5 specifics
 enum {
     DmaHisrTeif5 = 9, // transfer error
@@ -8,7 +10,6 @@ enum {
 };
 
 enum { Dma1BaseAdress = 0x40026000, Dma2BaseAdress = 0x40026400 };
-
 
 
 #define USART1_DR 0x40011004
@@ -56,9 +57,10 @@ typedef enum DmaModes {
 
 // used for IR Handling later
 typedef enum DmaJobType {
-    DmaReceivesExternalTask = 1 << 0,
+    DmaIsIdle = 0,
+    DmaTransferedExternalTask = 1 << 0,
     DmaHadTransferError = 1 << 1,
-    DmaIsIdle = 1 << 2
+    DmaWaitsForExternalTask = 1 << 3
 } DmaJobType_t;
 
 typedef struct DmaTransferSpecifics {
@@ -70,7 +72,7 @@ typedef struct DmaTransferSpecifics {
 
 
 extern DmaTransferSpecifics_t dt;
-extern unsigned int dma_interrupt_action;
+extern DmaJobType_t dma_interrupt_action;
 
 static inline __attribute__((always_inline)) unsigned int get_stream_offset(unsigned int stream_no)
 {
@@ -109,9 +111,6 @@ static inline __attribute__((always_inline)) void dma_transfer(
         return;
         break;
     }
-
-    dma_interrupt_action = dma_transfer_config->dma_job_type;
-
     WRITE_REGISTER(&dma_streamX_register->dma_sXndtr, dma_transfer_config->ndtr);
 
     WRITE_REGISTER(&dma_streamX_register->dma_sXcr, 

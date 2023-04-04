@@ -22,9 +22,9 @@ void init_uart(GpioObject_t*);
 void print_char(char c);
 // unsigned int read_data_register(void);
 
-static inline __attribute__((always_inline)) unsigned int read_data_register(void)
+static inline __attribute__((always_inline)) char read_data_register(void)
 {
-    return *((char*) USART1_DR);
+    return (char) *((char*) USART1_DR);
 }
 
 static inline __attribute__((always_inline)) void print(char* src, unsigned int length)

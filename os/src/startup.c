@@ -230,8 +230,8 @@ uint32_t *isr_vectors[] =
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
+    (uint32_t *) dma2_stream5_ir_handler, // wrong?
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
-    (uint32_t *) dma2_stream5_ir_handler,
 };
