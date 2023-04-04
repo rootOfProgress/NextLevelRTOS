@@ -23,7 +23,7 @@ typedef struct KernelPids {
     char generic_printer;
 } KernelPids_t;
 
-extern ProcessStats_t* process_stats;
+extern ProcessStats_t process_stats;
 extern KernelPids_t kernel_pids;
 
 extern Node_t* currently_running;

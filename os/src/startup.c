@@ -69,7 +69,7 @@ void memfault_handler(void)
 
 void  __attribute__((optimize("O3"))) hardfault_handler(void)
 {
-    process_stats->num_of_hardfaults++;
+    process_stats.num_of_hardfaults++;
     // volatile uint32_t *USFR = (volatile uint32_t *)0xE000ED28;
     // volatile uint32_t foo = *USFR;
     unsigned int USFR = READ_REGISTER(0xE000ED28);

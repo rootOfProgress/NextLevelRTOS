@@ -17,7 +17,7 @@ void __attribute__((__noipa__)) SysTick()
   {
     Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
     tcb_of_current_task->lifetime_info[0].lifetime.forced_interrupts++;
-    process_stats->num_of_systick_interrupts++;
+    process_stats.num_of_systick_interrupts++;
   }
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
     switch_task();
@@ -57,7 +57,7 @@ void __attribute__((optimize("O3"))) SVCall()
     disable_systick();
 
   if (DEBUG)
-    process_stats->num_of_svcalls++;
+    process_stats.num_of_svcalls++;
   
   save_psp_if_threadmode();
   __asm__("mov %0, r6" : "=r"(svc_number));
