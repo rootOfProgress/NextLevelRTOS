@@ -6,9 +6,10 @@
 
 typedef struct {
     unsigned int task_size;
-    char* start_adress;
+    unsigned int* start_adress;
 } TaskInformation_t;
 
+extern TaskInformation_t tInfo;
 
 extern unsigned int pid_of_transferhandler;
 extern unsigned int pid_of_mstat;

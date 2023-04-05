@@ -69,7 +69,7 @@ void i2c_local_stop(void)
 
 void i2c_init(void)
 {
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
     WRITE_REGISTER(&rcc_regs->apb1enr, READ_REGISTER(&rcc_regs->apb1enr) | (1 << I2C1EN));
 
     i2c_regs = (i2cRegisterMap_t*) I2C1_BASE;

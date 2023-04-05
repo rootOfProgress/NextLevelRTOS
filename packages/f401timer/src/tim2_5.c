@@ -4,10 +4,9 @@
 
 void reset_timer(unsigned int tim_nr)
 {
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
-
-    SET_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));    
-    CLEAR_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));    
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
+    SET_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << (tim_nr - 2));    
+    CLEAR_BIT(&((RccRegisterMap_t*) RCC_BASE)->apb1rstr, 1 << (tim_nr - 2));    
 }
 
 void timer_start(unsigned int tim_nr)
@@ -22,6 +21,12 @@ void timer_stop(unsigned int tim_nr)
     CLEAR_BIT(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
 }
 
+void clear_udis(unsigned int tim_nr) 
+{
+    unsigned int tim_base = get_timx_base(tim_nr);   
+    WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->cr1, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cr1) & ~(1 << UDIS));    
+}
+
 void set_udis(unsigned int tim_nr) 
 {
     unsigned int tim_base = get_timx_base(tim_nr);   
@@ -33,6 +38,12 @@ unsigned int read_counter(unsigned int tim_nr)
     unsigned int tim_base = get_timx_base(tim_nr);
     return READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
 }
+
+// void flush_counter(unsigned int tim_nr)
+// {
+//     unsigned int tim_base = get_timx_base(tim_nr);
+//     FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
+// }
 
 void set_ccr(unsigned int tim_nr, unsigned int ccr_value, unsigned int ccr_nr)
 {
@@ -72,7 +83,7 @@ void set_prescaler(unsigned int tim_nr, unsigned int psc_value)
 
 unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
 {
-    unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f))) + 1;
+    unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f)));
     return (ahbFrequency / target_frequency) - 1;
 }
 
@@ -80,7 +91,7 @@ unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
 void timer_init(unsigned int tim_nr, unsigned int arr,  char *ccr, unsigned int cycle_length)
 {
     // enable clock
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
     WRITE_REGISTER(&rcc_regs->apb1enr, READ_REGISTER(&rcc_regs->apb1enr) | 1 << (tim_nr - 2));
     
     reset_timer(tim_nr);
@@ -92,4 +103,5 @@ void timer_init(unsigned int tim_nr, unsigned int arr,  char *ccr, unsigned int 
         set_ccr(tim_nr, ccr[i], i);
     }
     flush_counter(tim_nr);
+
 }

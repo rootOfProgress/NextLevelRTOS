@@ -11,7 +11,7 @@ extern void uart_isr_handler(void);
 extern void SVCall(unsigned int, unsigned int);
 extern void PendSV(void);
 extern void SysTick(void);
-
+extern void dma2_stream5_ir_handler(void);
 extern unsigned int _sidata;
 extern unsigned int _sdata;
 extern unsigned int _edata;
@@ -201,4 +201,37 @@ uint32_t *isr_vectors[] =
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) dma2_stream5_ir_handler, // wrong?
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler,
 };

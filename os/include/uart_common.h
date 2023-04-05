@@ -1,5 +1,5 @@
-#ifndef UART_H
-#define UART_H
+#ifndef UART_COMMON_H
+#define UART_COMMON_H
 
 #include "lang.h"
 #include "memory.h"
@@ -29,14 +29,9 @@ typedef enum {
     // UNKNOWN = 0x3,
 } UartStates_t;
 
-extern void init_uart(GpioObject_t*);
-extern void print(char*, unsigned int);
-extern void print_char(char);
-
 void init_isr(void);
 void setup_transfer(char*, unsigned int);
 void init_transfer_handler(void);
 void transfer_handler(void);
-unsigned int read_data_register(void);
 
 #endif

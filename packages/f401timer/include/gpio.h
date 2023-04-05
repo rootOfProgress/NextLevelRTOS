@@ -35,7 +35,7 @@ typedef enum SpeedModes {
 } SpeedModes_t;
 
 typedef enum PullTypes {
-    Nothing = 0,
+    Nothing,
     PullUp = 1,
     PullDown = 2,
 } PullTypes_t;
@@ -52,6 +52,7 @@ typedef enum ModerTypes {
     AnalogMode,
 } ModerTypes_t;
 
+
 typedef struct GpioObject {
     char port;
     unsigned int pin;
@@ -62,10 +63,14 @@ typedef struct GpioActions {
     GpioObject_t *gpio_object;
 } GpioActions_t;
 
+// GpioRegisters_t* get_registers(GpioObject_t*);
+
 void set_otyper(GpioObject_t*, OutputTypes_t);
 void set_moder(GpioObject_t*, ModerTypes_t);
 void into_af(GpioObject_t*, unsigned int);
 void toggle_output_pin(GpioObject_t*);
+// void set_pin_on(GpioObject_t*);
+// void set_pin_off(GpioObject_t*);
 void init_gpio(GpioObject_t*);
 void set_pupdr(GpioObject_t*, PullTypes_t);
 void set_speed(GpioObject_t*, SpeedModes_t);
@@ -83,6 +88,7 @@ static inline __attribute__((always_inline)) GpioRegisters_t* get_registers(Gpio
     case 'D':
         return (GpioRegisters_t*) ((unsigned int*) GPIO_D_BASE);
     default:
+        // dummy
         return (GpioRegisters_t*) ((unsigned int*) GPIO_A_BASE);
     }
 }

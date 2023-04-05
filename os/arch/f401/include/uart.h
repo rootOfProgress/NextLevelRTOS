@@ -19,8 +19,21 @@ typedef struct UartRegisterMap {
 } UartRegisterMap_t;
 
 void init_uart(GpioObject_t*);
-void print(char*, unsigned int);
-unsigned int read_data_register(void);
 
+static inline __attribute__((always_inline)) unsigned int read_data_register(void)
+{
+    return *((unsigned int*) (Usart1Baseadress | 0x04));
+}
+
+static inline __attribute__((always_inline)) void print(char* src, unsigned int length)
+{
+    for (unsigned int i = 0; i < length; i++)
+    {
+        while (!((READ_REGISTER(&((UartRegisterMap_t*) Usart1Baseadress)->sr) & (1 << TXE)) != 0));
+        WRITE_REGISTER(&((UartRegisterMap_t*) Usart1Baseadress)->dr,*src);
+        src++;
+    }
+    while (!(( READ_REGISTER(&((UartRegisterMap_t*) Usart1Baseadress)->sr) & (1 << TC)) != 0));
+}
 
 #endif

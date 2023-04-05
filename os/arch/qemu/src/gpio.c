@@ -2,6 +2,7 @@
 #include "rcc.h"
 #define NULL ( (void *) 0)
 
+const unsigned int* GPIO_A_BASE = (unsigned int*) 0x48000000;
 
 
 void init_gpio(GpioObject_t* t)

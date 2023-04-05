@@ -6,7 +6,7 @@
 
 void init_gpio(GpioObject_t* gpio_object)
 {
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RCC_BASE;
     switch (gpio_object->port)
     {
     case 'A':
@@ -14,7 +14,6 @@ void init_gpio(GpioObject_t* gpio_object)
         gpio_object->base_adress = (unsigned int*) GPIO_A_BASE;
         break;
     case 'B':
-        // __asm("bkpt");
         WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 1));
         gpio_object->base_adress = (unsigned int*) GPIO_B_BASE;
         break;   
@@ -65,9 +64,15 @@ void into_af(GpioObject_t* t, unsigned int af_number)
     }
     else
     {
+        // @todo: do not delete
+        
         unsigned int pin  = t->pin - 8;
         WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) & ~(0xF << (pin * 4)));    
         WRITE_REGISTER(&gpio_regs->afrh, READ_REGISTER(&gpio_regs->afrh) | (af_number << (pin * 4)));
+
+        // @todo: WARNING HARDCODED!
+        // WRITE_REGISTER(&gpio_regs->afrh, 0x00000770);
+
     }
 }
 

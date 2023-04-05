@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 NON_OS_SRC := ../drohnentasks
-INC = -Iinclude -I$(NON_OS_SRC)/include/
+INC = -Iinclude -I$(NON_OS_SRC)/include/ -I./arch/$(ARCH)/include/
 LINK = link.ld
 
 CFLAGS = -O3  \

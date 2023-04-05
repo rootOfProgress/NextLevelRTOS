@@ -2,7 +2,8 @@
 #include "lang.h"
 #include "test.h"
 #include "process/scheduler.h"
-#include "devices/uart.h"
+#include "uart.h"
+#include "uart_common.h"
 #include "data/quicksort.h"
 
 static unsigned int* MEM_TABLE_START = 0;

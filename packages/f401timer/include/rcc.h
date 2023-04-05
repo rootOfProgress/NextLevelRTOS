@@ -1,9 +1,11 @@
 #ifndef RCC_H
 #define RCC_H
 
-enum { RccBaseAdress = 0x40023800 };
-
+#define RCC_BASE 0x40023800
 #define I2C1EN 21
+#define SPI1EN 12
+
+enum { RccBaseAdress = 0x40023800 };
 
 typedef union rcc_cr
 {
@@ -42,8 +44,8 @@ typedef union rcc_pllcfgr
 } rcc_pllcfgr_t;
 
 typedef struct Rcc {
-    rcc_cr_t cr;
-    rcc_pllcfgr_t pllcfgr;
+    unsigned int cr;
+    unsigned int pllcfgr;
     unsigned int cfgr;
     unsigned int cir; // 0x0c
     unsigned int ahb1rstr;
