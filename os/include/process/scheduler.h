@@ -95,6 +95,7 @@ static inline __attribute__((always_inline)) void switch_task(void)
         if (!currently_running)
             invoke_panic(SCHEDULER_NOT_INITIALIZED);
         task_to_preserve = currently_running;
+        return;
     }
 
     if (dma_interrupt_action & DmaTransferedExternalTask)
@@ -105,7 +106,10 @@ static inline __attribute__((always_inline)) void switch_task(void)
         currently_running = currently_running->next;
         Tcb_t* n = (Tcb_t*) currently_running->data;
         if (n->general.task_info.state == READY)
+        {
             task_to_preserve = currently_running;
+            return;
+        }
     }
 }
 

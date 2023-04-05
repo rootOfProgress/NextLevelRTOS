@@ -25,32 +25,44 @@ def flush_rx_buffer():
 def flush():
     serial_device.read(42)
 
-
-def process_result():
-    bts = result[0:8].decode("utf-8")
-    print(bts)
-    match bts:
+def process_result(result_type = ""):
+    # bts = result[0:8].decode("utf-8")
+    # print(bts)
+    match result_type:
         case "AAAABBBB": #memadress
             start_adress_bin = result[8:17]
             start_adress = int(start_adress_bin.decode("utf-8"))
             logging.print_success("Got memory response from device, Startadress is : " + hex(start_adress))
             return start_adress
-        case "BBBBAAAA":
+        case "lifetime":
+            print(result[20:24])
+            print(len(result))
+
             logging.print_success("Got device response for Lifetime!")
             response = {
-                "num_of_allocs" : unpack('I', result[8:12])[0],
-                "num_of_deallocs" : unpack('I', result[12:16])[0], 
-                "ram_size" : unpack('I', result[16:20])[0], 
-                "total_byte_alloced" : unpack('I', result[20:24])[0], 
-                "total_byte_used" : unpack('I', result[24:28])[0], 
-                "os_data_end" : unpack('I', result[28:32])[0], 
-                "free_useable" : unpack('I', result[32:36])[0], 
-                "waiting_tasks" : unpack('I', result[36:40])[0], 
-                "running_tasks" : unpack('I', result[40:44])[0], 
-                "cpu_load" : unpack('I', result[44:48])[0],                
+                "num_of_allocs" : unpack('I', result[0:4])[0],
+                "num_of_deallocs" : unpack('I', result[4:8])[0], 
+                "ram_size" : unpack('I', result[8:12])[0], 
+                "total_byte_alloced" : unpack('I', result[12:16])[0], 
+                "total_byte_used" : unpack('I', result[16:20])[0], 
+                "os_data_end" : unpack('I', result[20:24])[0], 
+                "free_useable" : unpack('I', result[24:28])[0], 
+                "waiting_tasks" : unpack('I', result[28:32])[0], 
+                "running_tasks" : unpack('I', result[32:36])[0], 
+                "cpu_load" : 0,              
             }
-            # result = b''
-            # del result[:]
+            # response = {
+            #     "num_of_allocs" : unpack('I', result[0:4])[0],
+            #     "num_of_deallocs" : unpack('I', result[4:8])[0], 
+            #     "ram_size" : unpack('I', result[8:12])[0], 
+            #     "total_byte_alloced" : unpack('I', result[12:16])[0], 
+            #     "total_byte_used" : unpack('I', result[16:20])[0], 
+            #     "os_data_end" : unpack('I', result[20:24])[0], 
+            #     "free_useable" : unpack('I', result[24:28])[0], 
+            #     "waiting_tasks" : unpack('I', result[28:32])[0], 
+            #     "running_tasks" : unpack('I', result[32:36])[0], 
+            #     "cpu_load" : unpack('I', result[36:40])[0],                
+            # }
             return response
         case "CCCCAAAA":
             logging.print_success("Got device response!")
@@ -88,7 +100,8 @@ def process_result():
             receiver.start()
             receiver.join()
             flush()
-def device_rx(expected = 64):
+
+def device_rx(expected = 1):
     global result
     global mutex
     global is_busy

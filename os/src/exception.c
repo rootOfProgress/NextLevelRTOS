@@ -45,15 +45,21 @@ __attribute__((used))  void execute_priviledged(unsigned int function_address)
   SV_EXEC_PRIV;
 }
 
-void __attribute__((optimize("O0"))) kprint()
+void __attribute__((optimize("O0"))) kprint(unsigned int source_adress)
 {
-  volatile TransferInfo_t* t;
-  __asm__("mov %0, r0" : "=r"(t));
+  volatile unsigned int general_service_register;
+  __asm__("mov %0, r9" : "=r"(general_service_register));
+
+  volatile TransferInfo_t* t = (TransferInfo_t*) general_service_register;
   setup_transfer((char*) t->start_adress, t->length);
 }
 
 void __attribute__((optimize("O3"))) SVCall()
 {
+  // destroys r0!!
+  // volatile unsigned int general_service_register;
+  __asm__("mov r9, r0");// : "=r"(general_service_register));
+
   if (SYSTICK)
     disable_systick();
 
@@ -80,7 +86,8 @@ void __attribute__((optimize("O3"))) SVCall()
     __asm volatile ("str r1, [sp, #4]");
     return;
   case PRINT_MSG:
-    kprint();
+    // kprint(general_service_register);
+    kprint(0);
   case YIELD_TASK:
     if (DEBUG && currently_running)
     {

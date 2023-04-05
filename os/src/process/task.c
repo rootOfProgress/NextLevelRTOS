@@ -56,6 +56,13 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
     tcb->sp = (unsigned int) &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int)address;
     tcb->code_section = ram_location;
+    
+    if (DEBUG)
+    {
+        tcb->lifetime_info->lifetime.voluntary_interrupts;
+        tcb->lifetime_info->lifetime.forced_interrupts;
+        tcb->lifetime_info->lifetime.cpu_time;
+    }
 //@leave it
 //     volatile unsigned int *shcsr = (void *)0xE000ED24;
 //     *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);

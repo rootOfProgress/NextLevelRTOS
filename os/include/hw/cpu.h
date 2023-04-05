@@ -83,7 +83,7 @@ static inline __attribute__((always_inline)) void sleep(void)
     __asm ("wfi");
 }
 
-static inline __attribute__((always_inline)) void disable_systick(void)
+static inline void disable_systick(void)
 {
     SystickRegisters_t* stk = (SystickRegisters_t*) STK;
     WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) & ~1);

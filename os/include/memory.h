@@ -20,7 +20,7 @@ typedef union MemoryEntry
     unsigned int raw;
 } MemoryEntry_t;
 
-
+// 40 byte
 typedef struct MemoryStatistic {
     unsigned int num_of_allocs;
     unsigned int num_of_deallocs;
