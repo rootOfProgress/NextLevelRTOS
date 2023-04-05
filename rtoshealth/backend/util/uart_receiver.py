@@ -35,21 +35,23 @@ def process_result(result_type = ""):
             logging.print_success("Got memory response from device, Startadress is : " + hex(start_adress))
             return start_adress
         case "lifetime":
-            print(result[20:24])
+            print(result)
+            print(result[24:28])
+            print(unpack('I', result[24:28])[0])
             print(len(result))
 
             logging.print_success("Got device response for Lifetime!")
             response = {
-                "num_of_allocs" : unpack('I', result[0:4])[0],
-                "num_of_deallocs" : unpack('I', result[4:8])[0], 
-                "ram_size" : unpack('I', result[8:12])[0], 
-                "total_byte_alloced" : unpack('I', result[12:16])[0], 
-                "total_byte_used" : unpack('I', result[16:20])[0], 
+                "num_of_allocs" : unpack('<I', result[0:4])[0],
+                "num_of_deallocs" : unpack('<I', result[4:8])[0], 
+                "ram_size" : unpack('<I', result[8:12])[0], 
+                "total_byte_alloced" : unpack('<I', result[12:16])[0], 
+                "total_byte_used" : unpack('<I', result[16:20])[0], 
                 "os_data_end" : unpack('I', result[20:24])[0], 
                 "free_useable" : unpack('I', result[24:28])[0], 
-                "waiting_tasks" : unpack('I', result[28:32])[0], 
-                "running_tasks" : unpack('I', result[32:36])[0], 
-                "cpu_load" : 0,              
+                "waiting_tasks" : unpack('<I', result[28:32])[0], 
+                "running_tasks" : unpack('<I', result[32:36])[0], 
+                "cpu_load" : unpack('I', result[36:40])[0],              
             }
             # response = {
             #     "num_of_allocs" : unpack('I', result[0:4])[0],

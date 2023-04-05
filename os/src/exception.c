@@ -28,7 +28,7 @@ void __attribute__((__noipa__)) SysTick()
       "ldmfd r2!, {r4-r11}\n"
       "msr psp, r2\n"
       "mrs r1, msp\n"
-      "add sp, sp, #16\n"
+      "add sp, sp, #32\n"
       "bx lr\n"
     );
     

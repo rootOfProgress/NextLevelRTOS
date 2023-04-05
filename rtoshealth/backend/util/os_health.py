@@ -18,7 +18,7 @@ def get_lifetime():
     cmd = "printf \"\\x03\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
-    receiver = Thread(target = uart_receiver.device_rx, args=(20,))
+    receiver = Thread(target = uart_receiver.device_rx, args=(40,))
     receiver.start()
 
     logging.print_info("trigger update...")
