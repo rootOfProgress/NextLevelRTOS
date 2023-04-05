@@ -16,7 +16,7 @@
 #define RXNEIE 5
 #define RE 2
 #define TE 3
-#define BUFFERSIZE 100
+#define BUFFERSIZE 4
 
 void init_uart(GpioObject_t*);
 void print_char(char c);

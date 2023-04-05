@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "exception.h"
 #include "panic.h"
+#include "dma.h"
 
 typedef struct proc_stats {
     unsigned int num_of_hardfaults : 4, num_of_finished_tasks : 4, clean_up_requests : 4, : 20;
@@ -95,6 +96,9 @@ static inline __attribute__((always_inline)) void switch_task(void)
             invoke_panic(SCHEDULER_NOT_INITIALIZED);
         task_to_preserve = currently_running;
     }
+
+    if (dma_interrupt_action & DmaTransferedExternalTask)
+        wakeup_pid(kernel_pids.idle_task);
 
     for (unsigned int j = 0; j < running_tasks->size; j++)
     {

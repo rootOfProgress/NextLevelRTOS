@@ -14,7 +14,7 @@ void __attribute__((__noipa__)) SysTick()
 {
   save_psp_if_threadmode();
 
-  if (DEBUG)
+  if (DEBUG && currently_running)
   {
     Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
     tcb_of_current_task->lifetime_info[0].lifetime.forced_interrupts++;
@@ -68,7 +68,7 @@ void __attribute__((optimize("O3"))) SVCall()
   case EXEC_PSP_TASK:
     if (SYSTICK) 
     {
-      init_systick(1000);
+      init_systick(200);
       enable_systick();
     }
 
@@ -82,7 +82,7 @@ void __attribute__((optimize("O3"))) SVCall()
   case PRINT_MSG:
     kprint();
   case YIELD_TASK:
-    if (DEBUG)
+    if (DEBUG && currently_running)
     {
       Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
       tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;
