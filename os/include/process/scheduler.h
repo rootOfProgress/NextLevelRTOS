@@ -9,6 +9,7 @@
 #include "exception.h"
 #include "panic.h"
 #include "dma.h"
+#include "tim2_5.h"
 
 typedef struct proc_stats {
     unsigned int num_of_hardfaults : 4, num_of_finished_tasks : 4, clean_up_requests : 4, : 20;
@@ -24,6 +25,10 @@ typedef struct KernelPids {
     char generic_printer;
 } KernelPids_t;
 
+
+enum { ResolutionForSysLogging = 5 };    // <! Task runtimes are measured in 5 usec ticks 
+enum { TimerForSysLogging = 5 };         // <! Task runtimes are tracked by timer 5
+
 extern ProcessStats_t process_stats;
 extern KernelPids_t kernel_pids;
 
@@ -33,15 +38,12 @@ extern Node_t* task_to_preserve;
 extern Queue_t* running_tasks;
 extern Queue_t* waiting_tasks;
 
-void next_task(void);
 void policy_round_robin(void);
 void remove_current_task(void);
 void init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
-void remove_scheduled_task(void);
 void run_scheduler(void);
 void invalidate_current_task(void);
-void unblock_task(unsigned int);
 void reboot(void);
 void finish_task(void);
 void search_invalidate_tasks(void);

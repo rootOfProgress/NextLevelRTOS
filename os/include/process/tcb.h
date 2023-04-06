@@ -35,6 +35,4 @@ typedef struct Tcb {
     TaskLifetimeData_t lifetime_info[DEBUG ? 1 : 0];
 } Tcb_t;
 
-Tcb_t* new_tcb(unsigned int,unsigned int,unsigned int,unsigned int);
-
 #endif

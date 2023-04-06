@@ -60,7 +60,11 @@ static inline __attribute__((always_inline)) unsigned int get_timx_base(unsigned
     }        
 }
 
-unsigned int read_counter(unsigned int);
+static inline unsigned int timer_read_counter(unsigned int tim_nr)
+{
+    unsigned int tim_base = get_timx_base(tim_nr);
+    return READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
+}
 
 void timer_start(unsigned int);
 void timer_stop(unsigned int);
@@ -82,7 +86,7 @@ void timer_init(unsigned int tim_nr, unsigned int arr, char *ccr, unsigned int c
  */
 unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length);
 
-static inline __attribute__((always_inline)) void flush_counter(unsigned int tim_nr)
+static inline __attribute__((always_inline)) void timer_flush_counter(unsigned int tim_nr)
 {
     unsigned int tim_base = get_timx_base(tim_nr);
     FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);    

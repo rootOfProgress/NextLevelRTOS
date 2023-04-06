@@ -1,6 +1,5 @@
 #include "panic.h"
 
-
 void invoke_panic(PanicTypes_t panic_type)
 {
     switch (panic_type)

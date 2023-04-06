@@ -43,9 +43,6 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
     if (!tcb)
         invoke_panic(OUT_OF_MEMORY);
 
-    // memset_byte((void*) &tcb, sizeof(Tcb_t), 0); 
-
-
     tcb->general.task_info.pid = running_tasks->size + waiting_tasks->size;
     tcb->general.task_info.state =  !tcb->general.task_info.pid ? WAITING : READY;
     tcb->general.task_info.stack_size = STACK_SIZE;
@@ -59,9 +56,9 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
     
     if (DEBUG)
     {
-        tcb->lifetime_info->lifetime.voluntary_interrupts;
-        tcb->lifetime_info->lifetime.forced_interrupts;
-        tcb->lifetime_info->lifetime.cpu_time;
+        tcb->lifetime_info->lifetime.voluntary_interrupts = 0;
+        tcb->lifetime_info->lifetime.forced_interrupts = 0;
+        tcb->lifetime_info->lifetime.cpu_time = 0;
     }
 //@leave it
 //     volatile unsigned int *shcsr = (void *)0xE000ED24;

@@ -20,32 +20,34 @@ void __attribute__((__noipa__)) SysTick()
     tcb_of_current_task->lifetime_info[0].lifetime.forced_interrupts++;
     process_stats.num_of_systick_interrupts++;
   }
-    __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
-    switch_task();
-    unsigned int next = ((Tcb_t*) currently_running->data)->sp;
-    __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
-    __asm volatile (
-      "ldmfd r2!, {r4-r11}\n"
-      "msr psp, r2\n"
-      "mrs r1, msp\n"
-      "add sp, sp, #32\n"
-      "bx lr\n"
-    );
-    
-  
+
+  __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
+
+  switch_task();
+
+  unsigned int next = ((Tcb_t*) currently_running->data)->sp;
+
+  __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
+  __asm volatile (
+    "ldmfd r2!, {r4-r11}\n"
+    "msr psp, r2\n"
+    "mrs r1, msp\n"
+    "add sp, sp, #32\n"
+    "bx lr\n"
+  );
 }
 
-__attribute__((used))  void uprint(volatile unsigned int* transfer_info __attribute__((unused)))
+__attribute__((used)) void uprint(volatile unsigned int* transfer_info __attribute__((unused)))
 {
   SV_PRINT;
 }
 
-__attribute__((used))  void execute_priviledged(unsigned int function_address)
+__attribute__((used)) void execute_priviledged(unsigned int function_address)
 {
   SV_EXEC_PRIV;
 }
 
-void __attribute__((optimize("O0"))) kprint(unsigned int source_adress)
+void __attribute__((optimize("O0"))) kprint(void)
 {
   volatile unsigned int general_service_register;
   __asm__("mov %0, r9" : "=r"(general_service_register));
@@ -56,15 +58,17 @@ void __attribute__((optimize("O0"))) kprint(unsigned int source_adress)
 
 void __attribute__((optimize("O3"))) SVCall()
 {
-  // destroys r0!!
-  // volatile unsigned int general_service_register;
-  __asm__("mov r9, r0");// : "=r"(general_service_register));
+  // r0 must be preserved, it could be used by e.g. disable_systick()
+  __asm__("mov r9, r0");
 
   if (SYSTICK)
     disable_systick();
 
-  if (DEBUG)
+  if (DEBUG == 2)
+  {
+    timer_stop(TimerForSysLogging);
     process_stats.num_of_svcalls++;
+  }
   
   save_psp_if_threadmode();
   __asm__("mov %0, r6" : "=r"(svc_number));
@@ -86,13 +90,12 @@ void __attribute__((optimize("O3"))) SVCall()
     __asm volatile ("str r1, [sp, #4]");
     return;
   case PRINT_MSG:
-    // kprint(general_service_register);
-    kprint(0);
+    kprint();
   case YIELD_TASK:
     if (DEBUG && currently_running)
     {
       Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
-      tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;
+      tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;      
     }
     set_pendsv();
     break;
@@ -112,7 +115,7 @@ void __attribute__((optimize("O3"))) SVCall()
     return;
   case EXEC_PRIV:
     unsigned int function_adress;
-    __asm__("mov %0, r0" : "=r"(function_adress));
+    __asm__("mov %0, r9" : "=r"(function_adress));
     void (*priv_fn)() = (void (*)()) (function_adress | 1);
     priv_fn();
     restore_psp();

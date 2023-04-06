@@ -28,12 +28,6 @@ void set_udis(unsigned int tim_nr)
     WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->cr1, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cr1) | 1 << UDIS);    
 }
 
-unsigned int read_counter(unsigned int tim_nr)
-{
-    unsigned int tim_base = get_timx_base(tim_nr);
-    return READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
-}
-
 void set_ccr(unsigned int tim_nr, unsigned int ccr_value, unsigned int ccr_nr)
 {
     unsigned int tim_base = get_timx_base(tim_nr);
@@ -91,5 +85,5 @@ void timer_init(unsigned int tim_nr, unsigned int arr,  char *ccr, unsigned int 
     {
         set_ccr(tim_nr, ccr[i], i);
     }
-    flush_counter(tim_nr);
+    timer_flush_counter(tim_nr);
 }

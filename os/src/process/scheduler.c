@@ -47,6 +47,11 @@ void invalidate_current_task(void)
 
 void run_scheduler(void)
 {
+    if (DEBUG == 2)
+    {
+        timer_init(TimerForSysLogging, 0, (char[4]) {0,0,0,0}, ResolutionForSysLogging);
+    }
+
     if (running_tasks->size == 0)
         if (!(wakeup_pid(kernel_pids.idle_task)))
             invoke_panic(SCHEDULER_NOT_INITIALIZED);
@@ -59,9 +64,24 @@ void run_scheduler(void)
 void __attribute__ ((hot)) PendSV(void)
 {
     if (DEBUG)
+    {
         process_stats.num_of_pendsv++;
+        Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
+
+        if (DEBUG == 2)
+        {
+            tcb_of_current_task->lifetime_info[0].lifetime.cpu_time += timer_read_counter(TimerForSysLogging); 
+        }
+    }
+
     __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
     switch_task();
+
+    if (DEBUG == 2)
+    {
+        timer_flush_counter(TimerForSysLogging);
+        timer_start(TimerForSysLogging);
+    }
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm volatile (
       "ldmfd r2!, {r4-r11}\n"
