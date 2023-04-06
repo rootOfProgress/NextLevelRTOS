@@ -19,12 +19,21 @@ void __attribute__((__noipa__)) SysTick()
     Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
     tcb_of_current_task->lifetime_info[0].lifetime.forced_interrupts++;
     process_stats.num_of_systick_interrupts++;
+
+    if (DEBUG == 2)
+    {
+        tcb_of_current_task->lifetime_info[0].lifetime.cpu_time += timer_read_counter(TimerForSysLogging); 
+    }
   }
 
   __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
 
   switch_task();
-
+  if (DEBUG == 2)
+  {
+      timer_flush_counter(TimerForSysLogging);
+      timer_start(TimerForSysLogging);
+  }
   unsigned int next = ((Tcb_t*) currently_running->data)->sp;
 
   __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
