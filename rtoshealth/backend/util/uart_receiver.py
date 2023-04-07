@@ -29,9 +29,8 @@ def process_result(result_type = ""):
     # bts = result[0:8].decode("utf-8")
     # print(bts)
     match result_type:
-        case "AAAABBBB": #memadress
-            start_adress_bin = result[8:17]
-            start_adress = int(start_adress_bin.decode("utf-8"))
+        case "memadress": 
+            start_adress = unpack('<I', result[0:4])[0]
             logging.print_success("Got memory response from device, Startadress is : " + hex(start_adress))
             return start_adress
         case "lifetime":

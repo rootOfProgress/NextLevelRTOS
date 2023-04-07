@@ -39,16 +39,16 @@ def upload_binary(package_name):
         logging.print_fail("Could not read filesize!")
 
     text_file = open(path_suffix + "packages/" + package_name + "/prepare", "wb")
-    text_file.write(size.to_bytes(4,'big'))
+    text_file.write(size.to_bytes(4,'little'))
     text_file.close()
 
     logging.print_info("set device into receiving state...")
-    cmd = "printf \"\\x01\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
+    cmd = "printf \"\\x01\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
     # time.sleep(1)
     thread_return = False
-    receiver = Thread(target = uart_receiver.device_rx)
+    receiver = Thread(target = uart_receiver.device_rx, args=(4,))
     receiver.start()
 
     logging.print_info("send binary size to device...")
@@ -65,7 +65,7 @@ def upload_binary(package_name):
     stop = time.time()
     logging.print_info("Took " + str(stop - start) + " ms")
 
-    start_adress = uart_receiver.process_result()
+    start_adress = uart_receiver.process_result("memadress")
     recompile_binary(start_adress, package_name, size)
     # time.sleep(1)
 
