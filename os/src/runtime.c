@@ -14,7 +14,7 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
 
         if (dma_interrupt_action & DmaTransferedExternalTask)
         {
-            create_task((void (*)()) tInfo.start_adress, tInfo.task_size);
+            create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
             dma_interrupt_action = DmaIsIdle;
         }
 

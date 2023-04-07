@@ -32,7 +32,7 @@ typedef struct Tcb {
     unsigned int sp;
     unsigned int memory_lower_bound;
     unsigned int code_section;
-    TaskLifetimeData_t lifetime_info[DEBUG ? 1 : 0];
+    TaskLifetimeData_t lifetime_info[(DEBUG == 1 || DEBUG == 2)? 1 : 0];
 } Tcb_t;
 
 #endif

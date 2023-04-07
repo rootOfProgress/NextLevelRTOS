@@ -138,6 +138,11 @@ void  __attribute__((optimize("O0"))) usage_fault(void)
 }
 
 
+void busfault_handler(void)
+{
+    while (1);
+}
+
 void bar_handler(void)
 {
     while (1);
@@ -151,7 +156,7 @@ uint32_t *isr_vectors[] =
     (uint32_t *) nmi_handler,
     (uint32_t *) hardfault_handler,
     (uint32_t *) memfault_handler,
-    (uint32_t *) bar_handler,
+    (uint32_t *) busfault_handler,
     (uint32_t *) usage_fault,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,

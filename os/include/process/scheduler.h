@@ -27,7 +27,7 @@ typedef struct KernelPids {
 
 
 enum { ResolutionForSysLogging = 5 };    // <! Task runtimes are measured in 5 usec ticks 
-enum { TimerForSysLogging = 5 };         // <! Task runtimes are tracked by timer 5
+enum { TimerForSysLogging = 3 };         // <! Task runtimes are tracked by timer 5
 
 extern ProcessStats_t process_stats;
 extern KernelPids_t kernel_pids;
@@ -113,6 +113,11 @@ static inline __attribute__((always_inline)) void switch_task(void)
             return;
         }
     }
+
+    currently_running = wakeup_pid(kernel_pids.idle_task);
+    if (!currently_running)
+        invoke_panic(SCHEDULER_NOT_INITIALIZED);
+    task_to_preserve = currently_running;
 }
 
 static inline __attribute__((always_inline)) void restore_psp()

@@ -36,12 +36,15 @@ void __attribute__((__noipa__)) SysTick()
   }
   unsigned int next = ((Tcb_t*) currently_running->data)->sp;
 
+  unsigned int ram_upperbound = mstat.ram_size + RAM_START;
+
   __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
+  __asm volatile ("mov r3, %[ram_top]":: [ram_top] "r" (ram_upperbound));
+
   __asm volatile (
     "ldmfd r2!, {r4-r11}\n"
     "msr psp, r2\n"
-    "mrs r1, msp\n"
-    "add sp, sp, #32\n"
+    "msr msp, r3\n"
     "bx lr\n"
   );
 }

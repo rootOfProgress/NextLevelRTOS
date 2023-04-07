@@ -26,6 +26,8 @@ endif
 
 ifeq (1,$(DEBUG))
 CFLAGS += -DDEBUG=1
+else ifeq (2,$(DEBUG))
+CFLAGS += -DDEBUG=2
 else
 CFLAGS += -DDEBUG=0
 endif

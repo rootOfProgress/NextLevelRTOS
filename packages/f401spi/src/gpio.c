@@ -98,16 +98,16 @@ void into_af(GpioObject_t* t, unsigned int af_number)
 void set_speed(GpioObject_t* t, SpeedModes_t speed)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
-    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) & ~(11 << (t->pin)));    
-    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) | (speed << (t->pin)));    
+    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) & ~(11 << (t->pin * 2)));    
+    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) | (speed << (t->pin * 2)));    
 }
 
 
-void set_pupdr(GpioObject_t* t, OutputTypes_t otype)
+void set_pupdr(GpioObject_t* t, PullTypes_t pull_type)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
-    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) & ~(11 << (t->pin)));    
-    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) | (otype << (t->pin)));    
+    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) & ~(11 << (t->pin * 2)));    
+    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) | (pull_type << (t->pin * 2)));    
 }
 
 void set_otyper(GpioObject_t* t, OutputTypes_t otype)

@@ -91,7 +91,7 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
             invoke_panic(OUT_OF_MEMORY);
 
         // notify host to recompile with correct offset
-        setup_transfer((char*) &tInfo.start_adress, sizeof(int));
+        setup_transfer((char*) &tInfo.start_adress, 4);
 
         DmaTransferSpecifics_t dt;
     

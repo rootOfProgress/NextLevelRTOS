@@ -39,8 +39,8 @@ typedef enum SpeedModes {
 
 typedef enum PullTypes {
     Nothing,
-    PullUp,
-    PullDown,
+    PullUp = 1,
+    PullDown = 2,
 } PullTypes_t;
 
 typedef enum ModerTypes {
@@ -70,5 +70,7 @@ void toggle_output_pin(GpioObject_t*);
 void set_pin_on(GpioObject_t*);
 void set_pin_off(GpioObject_t*);
 void init_gpio(GpioObject_t*);
+void set_pupdr(GpioObject_t*, PullTypes_t);
+void set_speed(GpioObject_t*, SpeedModes_t);
 
 #endif
