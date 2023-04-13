@@ -11,6 +11,7 @@ extern void uart_isr_handler(void);
 extern void SVCall(unsigned int, unsigned int);
 extern void PendSV(void);
 extern void SysTick(void);
+extern void tim3_isr_handler(void);
 extern void dma2_stream5_ir_handler(void);
 extern unsigned int _sidata;
 extern unsigned int _sdata;
@@ -33,6 +34,9 @@ void reset_handler(void)
     {
         WRITE_REGISTER(0x20000000, 0);
     }
+
+    // enable external interrupt sources for tim2/3
+    *((unsigned int*) 0xE000E100) = *((unsigned int*) 0xE000E100) | 1 << 28 | 1 << 29;
 
     // CCR DIV_0_TRP , UNALIGN_ TRP
     WRITE_REGISTER(0xE000ED14, READ_REGISTER(0xE000ED14) | 3 << 3);
@@ -167,7 +171,7 @@ uint32_t *isr_vectors[] =
     (uint32_t *) bar_handler,
     (uint32_t *) PendSV,
     (uint32_t *) SysTick,
-    (uint32_t *) bar_handler,
+    (uint32_t *) bar_handler, // Pos0
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
@@ -195,6 +199,8 @@ uint32_t *isr_vectors[] =
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
+    (uint32_t *) (void(*)()) (0x20005000 | 1), // tim2 isr
+    (uint32_t *) tim3_isr_handler, // tim3 isr
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
@@ -204,8 +210,6 @@ uint32_t *isr_vectors[] =
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
     (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
@@ -235,7 +239,7 @@ uint32_t *isr_vectors[] =
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
-    (uint32_t *) dma2_stream5_ir_handler, // wrong?
+    (uint32_t *) dma2_stream5_ir_handler, // position_68
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,
     (uint32_t *) bar_handler,

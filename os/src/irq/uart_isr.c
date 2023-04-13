@@ -72,6 +72,12 @@ void init_isr(void)
 
 void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
+    if (READ_REGISTER(USART1_sr) & (1 << 3))
+    {
+        read_data_register();
+        return;
+    }
+
     uart_rx_buffer[bytes_received++] = read_data_register();
     if (bytes_received != BUFFERSIZE)
         return;

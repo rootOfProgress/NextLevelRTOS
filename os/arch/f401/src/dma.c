@@ -39,8 +39,8 @@ void dma2_stream5_ir_handler(void)
     }
     // clear all stream 5 specifics
     WRITE_REGISTER(Dma2BaseAdress | 0x0C, READ_REGISTER(Dma2BaseAdress | 0x0C) | (0xF << 8));
+    // dma disable
     WRITE_REGISTER(USART1_cr3, READ_REGISTER(USART1_cr3) & ~(1 << 6));
-    // ir disable
-    WRITE_REGISTER(USART1_cr1, READ_REGISTER(USART1_cr1) | (1 << 5));
     // enable usart ir again
+    WRITE_REGISTER(USART1_cr1, READ_REGISTER(USART1_cr1) | (1 << 5));
 }

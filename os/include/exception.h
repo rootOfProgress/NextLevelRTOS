@@ -23,6 +23,10 @@
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
                                   "mov r9, r0\n"\
                                   "svc 0\n")
+
+#define SV_SLEEP __asm volatile ("mov r6, 5\n" \
+                                  "mov r9, r0\n"\
+                                  "svc 0\n")
                                   
 #define SV_EXEC_PRIV __asm volatile ("mov r6, 6\n" \
                               "mov r9, r0\n"\
@@ -49,7 +53,8 @@ typedef enum {
     STD,
     STE,
     RESET,
-    EXEC_PRIV
+    EXEC_PRIV,
+    SLEEP
 } TrapType_t;
 
 void do_selfcheck_svc();

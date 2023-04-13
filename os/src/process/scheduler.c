@@ -10,6 +10,7 @@ Node_t* task_to_preserve = NULL;
 
 ProcessStats_t process_stats;
 KernelPids_t kernel_pids;
+TaskSleepRequest_t task_sleep_request;
 
 void init_scheduler(void)
 {
@@ -47,10 +48,15 @@ void invalidate_current_task(void)
 
 void run_scheduler(void)
 {
+    
     if (DEBUG == 2)
     {
         timer_init(TimerForSysLogging, 0, (char[4]) {0,0,0,0}, ResolutionForSysLogging);
     }
+
+    // set up task planer
+    timer_init(TimerForTaskSleep, 0, (char[4]) {0,0,0,0}, ResolutionForSleepFunction);
+    enable_ccx_ir(TimerForTaskSleep, 1);
 
     if (running_tasks->size == 0)
         if (!(wakeup_pid(kernel_pids.idle_task)))
@@ -135,3 +141,11 @@ void finish_task(void)
     set_pendsv();
 }
 
+void task_sleep(unsigned int requested_time_to_sleep)
+{
+    task_sleep_request.pid_of_sleeping_task = ((Tcb_t*) currently_running->data)->general.task_info.pid;
+    set_ccr(TimerForTaskSleep, requested_time_to_sleep, 1);
+    timer_flush_counter(TimerForTaskSleep);
+    timer_start(TimerForTaskSleep);
+    block_current_task();
+}

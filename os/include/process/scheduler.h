@@ -25,9 +25,17 @@ typedef struct KernelPids {
     char generic_printer;
 } KernelPids_t;
 
+enum { ResolutionForSysLogging = 5 };       // <! Task runtimes are measured in 5 usec ticks 
+enum { ResolutionForSleepFunction = 1000 }; // <! Task sleep unit is 1 msec
+enum { TimerForSysLogging = 3 };            // <! Task runtimes are tracked by timer 5
+enum { TimerForTaskSleep = 3 };             // <! Task runtimes are tracked by timer 5
 
-enum { ResolutionForSysLogging = 5 };    // <! Task runtimes are measured in 5 usec ticks 
-enum { TimerForSysLogging = 3 };         // <! Task runtimes are tracked by timer 5
+typedef struct TaskSleepRequest
+{
+    unsigned int pid_of_sleeping_task;
+} TaskSleepRequest_t;
+
+extern TaskSleepRequest_t task_sleep_request;
 
 extern ProcessStats_t process_stats;
 extern KernelPids_t kernel_pids;
@@ -48,6 +56,7 @@ void reboot(void);
 void finish_task(void);
 void search_invalidate_tasks(void);
 void clean_up_task(Tcb_t*, Node_t*);
+void task_sleep(unsigned int);
 
 static inline __attribute__((always_inline)) void block_current_task(void)
 {

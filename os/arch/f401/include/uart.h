@@ -7,6 +7,9 @@ enum { Usart1Baseadress = 0x40011000 };
 #define RCC_USART1EN 4
 #define TC 6
 #define TXE 7
+#define USART1_sr 0x40011000
+#define USART1_cr1 0x4001100C
+#define USART1_cr3 0x40011014
 
 typedef struct UartRegisterMap {
     unsigned int sr;

@@ -131,7 +131,11 @@ void __attribute__((optimize("O3"))) SVCall()
     void (*priv_fn)() = (void (*)()) (function_adress | 1);
     priv_fn();
     restore_psp();
-    return;     
+    return;    
+  case SLEEP:
+    // block task
+    // set timer
+    // yield baby
   default:
     __builtin_unreachable();
     break;

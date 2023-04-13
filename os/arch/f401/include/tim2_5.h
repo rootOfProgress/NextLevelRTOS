@@ -76,7 +76,7 @@ void timer_stop(unsigned int);
  * @param cycle_length duration of 1 cnt value, given in microseconds
  * @param ccr* 
  */
-void timer_init(unsigned int tim_nr, unsigned int arr, char *ccr, unsigned int cycle_length);
+void timer_init(unsigned int tim_nr, unsigned int arr, unsigned int *ccr, unsigned int cycle_length);
 
 /*
  *
@@ -95,5 +95,8 @@ static inline __attribute__((always_inline)) void timer_flush_counter(unsigned i
 void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void set_udis(unsigned int);
+void enable_ccx_ir(unsigned int,unsigned int);
+unsigned int timer_get_sr(unsigned int);
+void timer_set_sr(unsigned int,unsigned int);
 
 #endif
