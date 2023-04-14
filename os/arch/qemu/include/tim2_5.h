@@ -5,7 +5,11 @@
 #include "lang.h"
 
 
-#define TIM2_BASE 0x40000000
+enum { tim2Base = 0x40000000, tim3Base = 0x40000400 };
+
+// 16 mhz
+enum { ahbFrequency = 16000000 };
+
 #define TIM3_BASE 0x40000400
 #define TIM4_BASE 0x40000800
 #define TIM5_BASE 0x40000C00
@@ -48,26 +52,51 @@ static inline __attribute__((always_inline)) unsigned int get_timx_base(unsigned
     switch (tim_nr)
     {
     case 2:
-        return TIM2_BASE;
+        return tim2Base;
+    case 3:
+        return tim3Base;
     default:
         return 0;
     }        
 }
 
-unsigned int read_counter(unsigned int);
+static inline unsigned int timer_read_counter(unsigned int tim_nr)
+{
+    unsigned int tim_base = get_timx_base(tim_nr);
+    return READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);
+}
 
-void start(unsigned int);
-void stop(unsigned int);
-void init_timer(unsigned int ,unsigned int ,unsigned int ,unsigned int *);
-void flush_counter(unsigned int);
+void timer_start(unsigned int);
+void timer_stop(unsigned int);
+
+/*
+ *
+ * @param tim_nr number of timer 
+ * @param arr auto reload value
+ * @param cycle_length duration of 1 cnt value, given in microseconds
+ * @param ccr* 
+ */
+void timer_init(unsigned int tim_nr, unsigned int arr, unsigned int *ccr, unsigned int cycle_length);
+
+/*
+ *
+ * @tim_nr number of timer 
+ * @param cycle_length of 1 cnt value, given in microseconds
+ * 
+ */
+unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length);
+
+static inline __attribute__((always_inline)) void timer_flush_counter(unsigned int tim_nr)
+{
+    unsigned int tim_base = get_timx_base(tim_nr);
+    FLUSH_REGISTER(&((timer25RegisterMap_t*) tim_base)->cnt);    
+}
+
 void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
-void clear_udis(unsigned int);
-
-void clear_uif();
-
-void set_ug();
-
-void enable_interrupt();
+void set_udis(unsigned int);
+void enable_ccx_ir(unsigned int,unsigned int);
+unsigned int timer_get_sr(unsigned int);
+void timer_set_sr(unsigned int,unsigned int);
 
 #endif
