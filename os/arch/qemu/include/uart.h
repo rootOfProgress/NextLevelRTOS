@@ -10,6 +10,7 @@
 // #define WRITE_REGISTER64(addr, val) ((*(volatile uint64_t *) (addr)) = (uint64_t) (val))
 
 #define USART1_SR 0x40011000
+#define USART1_sr 0x40011000
 #define USART1_DR 0x40011004
 #define USART1_CR 0x4001100C
 #define UE 13

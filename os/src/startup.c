@@ -1,5 +1,4 @@
 #include <stdint.h>
-// #include "../include/reg.h"
 #include "memory.h"
 #include "../include/exception.h"
 #include "process/scheduler.h"

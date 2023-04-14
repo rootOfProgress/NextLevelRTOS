@@ -1,0 +1,7 @@
+{
+    "os_api_functions": [
+        "allocate",
+        "deallocate",
+        "create_task"
+    ]
+}
