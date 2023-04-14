@@ -3,7 +3,12 @@ import sys
 
 
 path_prefix = '../build/memmap.'
-public_functions = ['allocate', 'deallocate', 'create_task']
+public_functions = [
+    'allocate',
+    'deallocate', 
+    'create_task',
+    'timer_init'
+]
 arch = list(sys.argv)[1]
 header = ""
 
@@ -21,5 +26,6 @@ if __name__ == '__main__':
     with open("addresses.h", "w") as adress_file:
         adress_file.write(header)
         adress_file.close()
-    os.system("mv addresses.h ../../packages/include")
+    os.system("cp addresses.h ../../packages/include")
+    os.system("cp addresses.h ../../modules/")
     

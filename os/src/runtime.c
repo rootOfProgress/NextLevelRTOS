@@ -5,8 +5,18 @@
 #include "dma.h"
 #include "process/task.h"
 
+#include "externals.h"
+
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {
+    SV_STD;
+    
+    // execute non-os modules
+    for (unsigned int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
+        create_task(func_ptr[i], 0);
+
+    SV_STE;
+
     while (1)
     {
         if (process_stats.clean_up_requests)
