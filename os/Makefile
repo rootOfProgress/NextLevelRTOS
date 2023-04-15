@@ -1,6 +1,6 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
-NON_OS_SRC := ../drohnentasks
+NON_OS_SRC := ../modules
 INC = -Iinclude -I$(NON_OS_SRC)/include/ -I./arch/$(ARCH)/include/
 LINK = link.ld
 
@@ -16,7 +16,12 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = os
 all: $(TARGET)
 
-$(TARGET): clean build_kernel compile_as build_platform_$(ARCH) link_objects clean_objects
+$(TARGET): 	clean \
+			build_non_os_src \
+			build_base_kernel \
+			compile_asm build_platform_$(ARCH) \
+			link_objects \
+			clean_objects
 
 ifeq (1,$(SYSTICK))
 CFLAGS += -DSYSTICK=1
@@ -55,24 +60,29 @@ build_platform_$(ARCH):
 	make -C arch/$(ARCH) HWFP=$(HWFP)
 
 build_non_os_src:
-	make -C $(NON_OS_SRC) HWFP=$(HWFP)
+# stage1: check for necessary modules
+	python $(NON_OS_SRC)/collect_activated_modules.py $(CURDIR)
+# stage2: build sources from results
+#	make -C $(NON_OS_SRC) ARCH=$(ARCH) HWFP=$(HWFP)
+	make -C $(NON_OS_SRC)
+
+stage_export_os_api:
 
 move_objects:
 	mv *.o ./build
 
-build_kernel: $(SRC)
+build_base_kernel: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
 	mv *.o ./build
 
-compile_as: $(SRC_AS)
+compile_asm: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
 
 link_objects: 
 	make -C ./buildscripts
 
-
 clean:
-	rm -f ./build/*.o *.$(ARCH) memmap.$(ARCH)
+	rm -f ./build/*.o ./build/*.$(ARCH) ./build/memmap.$(ARCH)
 
 clean_objects:
 	rm -f ./build/*.o
