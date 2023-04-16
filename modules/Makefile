@@ -1,4 +1,4 @@
-PACKAGES= template1 template2
+PACKAGES=
 .PHONY: all clean
 all: 
 	for p in $(PACKAGES); do \
