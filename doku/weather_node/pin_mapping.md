@@ -26,3 +26,9 @@
 |CH2   |  MISO  |  
 |CH3   |  MOSI  |  
 |CH4   |  CE    |  
+
+**uart**
+|PIN   |Function|
+|------|--------|
+|PA9   |  TX    |  
+|PA10  |  RX    | 
