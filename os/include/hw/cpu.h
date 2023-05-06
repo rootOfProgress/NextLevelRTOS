@@ -31,9 +31,20 @@ typedef enum {
     PendSVSet = 28,
 } Icsr_t;
 
-#define STK 0xE000E010
+enum { 
+    NVIC_ISER0 = 0xE000E100, 
+    NVIC_ISER1 = 0xE000E104, 
+    NVIC_ISER2 = 0xE000E108, 
+    NVIC_ISER3 = 0xE000E10C, 
+    NVIC_ISER4 = 0xE000E110, 
+    NVIC_ISER5 = 0xE000E114, 
+    NVIC_ISER6 = 0xE000E118, 
+    NVIC_ISER7 = 0xE000E11C, 
+};
+
+enum { STK = 0xE000E010 };
+
 #define AIRCR 0xE000ED0C
-#define SCR 0xE000ED10
 
 #define CTRL 0x00
 #define LOAD 0x04

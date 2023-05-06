@@ -1,24 +1,33 @@
-#include <stdint.h>
-#include "memory.h"
-#include "../include/exception.h"
-#include "process/scheduler.h"
+/*!
+ *
+ * @author: Benjamin Wilhelm
+ * 
+ * 
+ *
+ */
+
+#include "exception.h"
 #include "hw/cpu.h"
+#include "memory.h"
+#include "process/scheduler.h"
+
 void reset_handler(void);
-extern void main_init(void);
-extern void hostIfISR(void);
-extern void uart_isr_handler(void);
-extern void SVCall(unsigned int, unsigned int);
-extern void PendSV(void);
-extern void SysTick(void);
-extern void tim3_isr_handler(void);
-extern void dma2_stream5_ir_handler(void);
-extern unsigned int _sidata;
-extern unsigned int _sdata;
+
+extern void dma2_stream5_ir_handler(void);           //!< */
+extern void main_init(void);                         //!< */
+extern void pendsv_isr(void);                        //!< */
+extern void svcall_isr(unsigned int, unsigned int);  //!< */
+extern void systick_isr(void);                       //!< */
+extern void tim3_isr_handler(void);                  //!< */
+extern void uart_isr_handler(void);                  //!< */
+
 extern unsigned int _edata;
-extern unsigned int _sbss;
+extern unsigned int _sdata;
 extern unsigned int _ebss;
-extern unsigned int stack_top;
+extern unsigned int _sbss;
+extern unsigned int _sidata;
 extern unsigned int ram_size;
+extern unsigned int stack_top;
 
 void reset_handler(void)
 {
@@ -27,15 +36,11 @@ void reset_handler(void)
         max = (unsigned int) &_edata;
     if ((unsigned int) &_sidata > max)
         max = (unsigned int) &_sidata; 
+
     init_allocator( max , (unsigned int*) &ram_size );
 
-    if (TEST)
-    {
-        WRITE_REGISTER(0x20000000, 0);
-    }
-
     // enable external interrupt sources for tim2/3
-    *((unsigned int*) 0xE000E100) = *((unsigned int*) 0xE000E100) | 1 << 28 | 1 << 29;
+    *((unsigned int*) NVIC_ISER0) = *((unsigned int*) NVIC_ISER0) | 1 << 28 | 1 << 29;
 
     // CCR DIV_0_TRP , UNALIGN_ TRP
     WRITE_REGISTER(0xE000ED14, READ_REGISTER(0xE000ED14) | 3 << 3);
@@ -55,8 +60,9 @@ void reset_handler(void)
             "ISB\n"
         );
     }
-    // WRITE_REGISTER(0xE000EF34, READ_REGISTER(0xE000EF34) & ~(1 << 30));
-    main_init();
+
+    __asm__("ldr r0, =main_init\n"
+            "mov pc,r0");
 }
 
 void nmi_handler(void)
@@ -126,7 +132,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 }
 
-void  __attribute__((optimize("O0"))) usage_fault(void)
+void  __attribute__((optimize("O0"))) usage_fault_handler(void)
 {
     unsigned int UFSR = READ_REGISTER(0xE000ED28) >> 16;
     if (UFSR & 1 << 2) // invpc
@@ -146,100 +152,95 @@ void busfault_handler(void)
     while (1);
 }
 
-void bar_handler(void)
-{
-    while (1);
-}
-
 __attribute((section(".isr_vector")))
-uint32_t *isr_vectors[] =
+unsigned int *isr_vectors[] =
 {
-    (uint32_t *) &stack_top,
-    (uint32_t *) reset_handler,
-    (uint32_t *) nmi_handler,
-    (uint32_t *) hardfault_handler,
-    (uint32_t *) memfault_handler,
-    (uint32_t *) busfault_handler,
-    (uint32_t *) usage_fault,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) SVCall,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) PendSV,
-    (uint32_t *) SysTick,
-    (uint32_t *) bar_handler, // Pos0
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) (void(*)()) (0x20005000 | 1), // tim2 isr
-    (uint32_t *) tim3_isr_handler, // tim3 isr
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) dma2_stream5_ir_handler, // position_68
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
+    (unsigned int *) &stack_top,
+    (unsigned int *) reset_handler,
+    (unsigned int *) nmi_handler,
+    (unsigned int *) hardfault_handler,
+    (unsigned int *) memfault_handler,
+    (unsigned int *) busfault_handler,
+    (unsigned int *) usage_fault_handler,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) svcall_isr,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) pendsv_isr,
+    (unsigned int *) systick_isr,
+    (unsigned int *) NULL, // Pos0
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr
+    (unsigned int *) tim3_isr_handler, // tim3 isr
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) dma2_stream5_ir_handler, // position_68
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
 };

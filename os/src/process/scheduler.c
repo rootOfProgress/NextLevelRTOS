@@ -67,7 +67,7 @@ void run_scheduler(void)
     SV_EXEC_PSP_TASK;
 }
 
-void __attribute__ ((hot)) PendSV(void)
+void __attribute__ ((hot)) pendsv_isr(void)
 {
     if (DEBUG)
     {
