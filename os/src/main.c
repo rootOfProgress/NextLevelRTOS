@@ -90,21 +90,19 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) main_loop(void)
   }
 }
 
-int __attribute__((optimize("O0"))) main_init(void)
+void setup_kernel_runtime(void)
 {
-  GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
   init_scheduler();
-
   kernel_pids.idle_task = create_task(&idle_runner, 0); // pid0
   kernel_pids.transfer_handler = create_task(&transfer_handler, 0); // pid1
   kernel_pids.statistic_manager = create_task(&stat, 0); // pid2
-  init_isr();
-  init_uart(t);
   run_scheduler();
-  
-  __asm__("ldr r0, =main_loop\n"
-          "mov pc,r0");
-  return 0;
 }
 
+void setup_devices(void)
+{
+  GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
+  init_isr();
+  init_uart(t);
+}
 

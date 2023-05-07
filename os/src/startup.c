@@ -5,7 +5,7 @@
  * 
  *
  */
-
+#include <stdint.h>
 #include "exception.h"
 #include "hw/cpu.h"
 #include "memory.h"
@@ -14,8 +14,9 @@
 void reset_handler(void);
 
 extern void dma2_stream5_ir_handler(void);           //!< */
-extern void main_init(void);                         //!< */
 extern void pendsv_isr(void);                        //!< */
+extern void setup_kernel_runtime(void);                         //!< */
+extern void setup_devices(void);                         //!< */
 extern void svcall_isr(unsigned int, unsigned int);  //!< */
 extern void systick_isr(void);                       //!< */
 extern void tim3_isr_handler(void);                  //!< */
@@ -38,16 +39,14 @@ void reset_handler(void)
         max = (unsigned int) &_sidata; 
 
     init_allocator( max , (unsigned int*) &ram_size );
-
     // enable external interrupt sources for tim2/3
-    *((unsigned int*) NVIC_ISER0) = *((unsigned int*) NVIC_ISER0) | 1 << 28 | 1 << 29;
+    *((unsigned int*) CPU_NVIC_ISER0) = *((unsigned int*) CPU_NVIC_ISER0) | 1 << 28 | 1 << 29;
 
     // CCR DIV_0_TRP , UNALIGN_ TRP
-    WRITE_REGISTER(0xE000ED14, READ_REGISTER(0xE000ED14) | 3 << 3);
+    WRITE_REGISTER(CPU_SCB_CCR, READ_REGISTER(CPU_SCB_CCR) | 3 << 3);
 
     // enable memfaults etc.
-    volatile unsigned int *shcsr = (void *)0xE000ED24;
-    *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
+    WRITE_REGISTER(CPU_SCB_SHCSR, READ_REGISTER(CPU_SCB_SHCSR) | (0x1 << 16) | (0x1 << 17) | (0x1 << 18));
 
     if (HWFP)
     {
@@ -61,8 +60,15 @@ void reset_handler(void)
         );
     }
 
-    __asm__("ldr r0, =main_init\n"
-            "mov pc,r0");
+    setup_kernel_runtime();
+    setup_devices();
+    __asm volatile ("mov r2, %[stack_top]":: [stack_top] "r" ((unsigned int) &stack_top));
+    __asm__(\
+        "msr msp, r2\n"\
+    );
+    // "ldr r0, =main_init+6\n"\
+    // "mov pc,r0"
+    SV_EXEC_PSP_TASK;
 }
 
 void nmi_handler(void)
@@ -152,6 +158,13 @@ void busfault_handler(void)
     while (1);
 }
 
+void dummy(void)
+{
+    while (1)
+    {}
+    
+}
+
 __attribute((section(".isr_vector")))
 unsigned int *isr_vectors[] =
 {
@@ -162,36 +175,36 @@ unsigned int *isr_vectors[] =
     (unsigned int *) memfault_handler,
     (unsigned int *) busfault_handler,
     (unsigned int *) usage_fault_handler,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
     (unsigned int *) svcall_isr,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
     (unsigned int *) pendsv_isr,
     (unsigned int *) systick_isr,
-    (unsigned int *) NULL, // Pos0
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
+    (unsigned int *) dummy, // Pos0
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,
@@ -210,35 +223,35 @@ unsigned int *isr_vectors[] =
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
-    (unsigned int *) NULL,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
     (unsigned int *) dma2_stream5_ir_handler, // position_68
     (unsigned int *) NULL,
     (unsigned int *) NULL,

@@ -116,14 +116,14 @@ void __attribute__((optimize("O3"))) svcall_isr()
     {
       disable_systick();
     }
-      restore_psp();
+    restore_psp();
     return;
   case STE:
     if (SYSTICK)
     {
       enable_systick();
     }
-      restore_psp();
+    restore_psp();
     return;
   case EXEC_PRIV:
     unsigned int function_adress;

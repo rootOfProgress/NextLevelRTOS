@@ -48,7 +48,6 @@ void invalidate_current_task(void)
 
 void run_scheduler(void)
 {
-    
     if (DEBUG == 2)
     {
         timer_init(TimerForSysLogging, 0, (char[4]) {0,0,0,0}, ResolutionForSysLogging);
@@ -64,7 +63,7 @@ void run_scheduler(void)
 
     currently_running = (Node_t*) get_head_element(running_tasks);
     task_to_preserve = currently_running;
-    SV_EXEC_PSP_TASK;
+    // SV_EXEC_PSP_TASK;
 }
 
 void __attribute__ ((hot)) pendsv_isr(void)
