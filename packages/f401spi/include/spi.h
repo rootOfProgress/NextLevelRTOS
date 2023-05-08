@@ -29,8 +29,6 @@ typedef struct
     unsigned int i2spr;
 } SpiRegisterMap_t;
 
-// void spi_write(char, char *, unsigned int);
-// void spi_read(char, char *, unsigned int);
 void init_spi(void);
 void spi_write_single(char);
 void spi_write(char preamble, char *data, unsigned int length, char *receive_buffer);

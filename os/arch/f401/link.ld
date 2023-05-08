@@ -1,7 +1,7 @@
 ram_size = 64K;
 ram_start = 0x20000000;
-EXTERN(reset_handler)
-ENTRY(reset_handler)
+EXTERN(bootstrap)
+ENTRY(bootstrap)
 
 MEMORY
 {
@@ -39,6 +39,6 @@ SECTIONS
 	} >RAM
 
 	stack_top = ORIGIN(RAM) + LENGTH(RAM);
-  _sidata = LOADADDR(.data);
+    _sidata = LOADADDR(.data);
 
 }

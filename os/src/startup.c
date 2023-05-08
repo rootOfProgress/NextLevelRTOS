@@ -1,48 +1,50 @@
+/*!
+ *
+ * @author: Benjamin Wilhelm
+ * 
+ * 
+ *
+ */
 #include <stdint.h>
-#include "memory.h"
-#include "../include/exception.h"
-#include "process/scheduler.h"
+#include "exception.h"
 #include "hw/cpu.h"
-void reset_handler(void);
-extern void main_init(void);
-extern void hostIfISR(void);
-extern void uart_isr_handler(void);
-extern void SVCall(unsigned int, unsigned int);
-extern void PendSV(void);
-extern void SysTick(void);
-extern void tim3_isr_handler(void);
-extern void dma2_stream5_ir_handler(void);
-extern unsigned int _sidata;
-extern unsigned int _sdata;
-extern unsigned int _edata;
-extern unsigned int _sbss;
-extern unsigned int _ebss;
-extern unsigned int stack_top;
-extern unsigned int ram_size;
+#include "memory.h"
+#include "process/scheduler.h"
+#include "runtime.h"
 
-void reset_handler(void)
+extern void dma2_stream5_ir_handler(void);              //!< Interrupt service routine for DMA2 Controller */
+extern void pendsv_isr(void);                           //!< Interrupt service routine for pending SV Call */
+extern KernelErrorCodes_t setup_kernel_runtime(void);   //!< Init function to load mandatory kernel modules */ 
+extern void setup_devices(void);                        //!< Prepares the UART device for basic host communication */
+extern void svcall_isr(unsigned int, unsigned int);     //!< Interrupt service routine for the CortexM4 supervisor call */
+extern void systick_isr(void);                          //!< Interrupt service routine for the CortexM4 systick interrupt */
+extern void tim3_isr_handler(void);                     //!< Interrupt service routine for the tim3 device */
+extern void uart_isr_handler(void);                     //!< Interrupt service routine for the usart1 device */
+
+extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
+extern unsigned int _ebss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
+extern unsigned int _sidata;                            //!< Defined in linker script. Containts address */
+extern unsigned int ram_size;                           //!< Defined in linker script. Needed for internal statistic purposes */
+extern unsigned int stack_top;                          //!< Defined in linker script. Needed to reset main stack pointer after bootstrapping system */
+
+void bootstrap(void)
 {
     unsigned int max = (unsigned int) &_ebss;
     if ((unsigned int) &_edata > max)
         max = (unsigned int) &_edata;
     if ((unsigned int) &_sidata > max)
         max = (unsigned int) &_sidata; 
+
     init_allocator( max , (unsigned int*) &ram_size );
 
-    if (TEST)
-    {
-        WRITE_REGISTER(0x20000000, 0);
-    }
-
     // enable external interrupt sources for tim2/3
-    *((unsigned int*) 0xE000E100) = *((unsigned int*) 0xE000E100) | 1 << 28 | 1 << 29;
+    WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
 
     // CCR DIV_0_TRP , UNALIGN_ TRP
-    WRITE_REGISTER(0xE000ED14, READ_REGISTER(0xE000ED14) | 3 << 3);
+    WRITE_REGISTER(CPU_SCB_CCR, READ_REGISTER(CPU_SCB_CCR) | 3 << 3);
 
     // enable memfaults etc.
-    volatile unsigned int *shcsr = (void *)0xE000ED24;
-    *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
+    WRITE_REGISTER(CPU_SCB_SHCSR, READ_REGISTER(CPU_SCB_SHCSR) | (0x1 << 16) | (0x1 << 17) | (0x1 << 18));
 
     if (HWFP)
     {
@@ -55,8 +57,36 @@ void reset_handler(void)
             "ISB\n"
         );
     }
-    // WRITE_REGISTER(0xE000EF34, READ_REGISTER(0xE000EF34) & ~(1 << 30));
-    main_init();
+
+    KernelErrorCodes_t kernel_err;
+    kernel_err = setup_kernel_runtime();
+
+    switch (kernel_err)
+    {
+        case SCHEDULER_INIT_FAILED:
+            while (1)
+            {
+                /* code */
+            }
+            
+            break;
+        case TASK_CREATION_FAILED:
+            while (1)
+            {
+                /* code */
+            }
+        case KERNEL_INIT_SUCCEDED:
+        default:
+            break;
+    }
+
+    setup_devices();
+
+    __asm volatile ("mov r2, %[stack_top]":: [stack_top] "r" ((unsigned int) &stack_top));
+    __asm__(\
+        "msr msp, r2\n"\
+    );
+    SV_EXEC_PSP_TASK;
 }
 
 void nmi_handler(void)
@@ -126,7 +156,7 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 }
 
-void  __attribute__((optimize("O0"))) usage_fault(void)
+void  __attribute__((optimize("O0"))) usage_fault_handler(void)
 {
     unsigned int UFSR = READ_REGISTER(0xE000ED28) >> 16;
     if (UFSR & 1 << 2) // invpc
@@ -146,100 +176,102 @@ void busfault_handler(void)
     while (1);
 }
 
-void bar_handler(void)
+void dummy(void)
 {
-    while (1);
+    while (1)
+    {}
+    
 }
 
 __attribute((section(".isr_vector")))
-uint32_t *isr_vectors[] =
+unsigned int *isr_vectors[] =
 {
-    (uint32_t *) &stack_top,
-    (uint32_t *) reset_handler,
-    (uint32_t *) nmi_handler,
-    (uint32_t *) hardfault_handler,
-    (uint32_t *) memfault_handler,
-    (uint32_t *) busfault_handler,
-    (uint32_t *) usage_fault,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) SVCall,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) PendSV,
-    (uint32_t *) SysTick,
-    (uint32_t *) bar_handler, // Pos0
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) (void(*)()) (0x20005000 | 1), // tim2 isr
-    (uint32_t *) tim3_isr_handler, // tim3 isr
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) uart_isr_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) dma2_stream5_ir_handler, // position_68
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
-    (uint32_t *) bar_handler,
+    (unsigned int *) &stack_top,
+    (unsigned int *) bootstrap,
+    (unsigned int *) nmi_handler,
+    (unsigned int *) hardfault_handler,
+    (unsigned int *) memfault_handler,
+    (unsigned int *) busfault_handler,
+    (unsigned int *) usage_fault_handler,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) svcall_isr,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) pendsv_isr,
+    (unsigned int *) systick_isr,
+    (unsigned int *) dummy, // Pos0
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr
+    (unsigned int *) tim3_isr_handler, // tim3 isr
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dma2_stream5_ir_handler, // position_68
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
 };

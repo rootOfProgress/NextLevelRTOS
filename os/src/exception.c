@@ -10,7 +10,7 @@
 
 volatile unsigned int svc_number = 0;
 
-void __attribute__((__noipa__)) SysTick()
+void __attribute__((__noipa__)) systick_isr()
 {
   save_psp_if_threadmode();
 
@@ -68,7 +68,7 @@ void __attribute__((optimize("O0"))) kprint(void)
   setup_transfer((char*) t->start_adress, t->length);
 }
 
-void __attribute__((optimize("O3"))) SVCall()
+void __attribute__((optimize("O3"))) svcall_isr()
 {
   // r0 must be preserved, it could be used by e.g. disable_systick()
   __asm__("mov r9, r0");
@@ -116,14 +116,14 @@ void __attribute__((optimize("O3"))) SVCall()
     {
       disable_systick();
     }
-      restore_psp();
+    restore_psp();
     return;
   case STE:
     if (SYSTICK)
     {
       enable_systick();
     }
-      restore_psp();
+    restore_psp();
     return;
   case EXEC_PRIV:
     unsigned int function_adress;
