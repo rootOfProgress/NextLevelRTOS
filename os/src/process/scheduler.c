@@ -12,13 +12,22 @@ ProcessStats_t process_stats;
 KernelPids_t kernel_pids;
 TaskSleepRequest_t task_sleep_request;
 
-void init_scheduler(void)
+int init_scheduler(void)
 {
     running_tasks = new_queue();
+    
+    if (running_tasks == NULL)
+        return -1;
+
     waiting_tasks = new_queue();
     
+    if (waiting_tasks == NULL)
+        return -1;
+
     memset_byte((void*) &process_stats, sizeof(ProcessStats_t), 0);
     memset_byte((void*) &kernel_pids, sizeof(KernelPids_t), -1);
+
+    return 0;
 }
 
 void insert_scheduled_task(Tcb_t* tcb)
@@ -46,7 +55,7 @@ void invalidate_current_task(void)
     ((Tcb_t*) (currently_running->data))->general.task_info.state = DEAD;
 }
 
-void run_scheduler(void)
+int run_scheduler(void)
 {
     if (DEBUG == 2)
     {
@@ -58,12 +67,25 @@ void run_scheduler(void)
     enable_ccx_ir(TimerForTaskSleep, 1);
 
     if (running_tasks->size == 0)
+    {
         if (!(wakeup_pid(kernel_pids.idle_task)))
+        {
             invoke_panic(SCHEDULER_NOT_INITIALIZED);
+            return -1;
+        }
+    }
 
     currently_running = (Node_t*) get_head_element(running_tasks);
+
+    if (!currently_running)
+    {
+        invoke_panic(SCHEDULER_NOT_INITIALIZED);
+        return -1;
+    }
+
     task_to_preserve = currently_running;
-    // SV_EXEC_PSP_TASK;
+    
+    return 0;
 }
 
 void __attribute__ ((hot)) pendsv_isr(void)

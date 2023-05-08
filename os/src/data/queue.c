@@ -62,7 +62,10 @@ Queue_t* new_queue(void)
 {
     Queue_t* queue = (Queue_t*) allocate(sizeof(Queue_t));
     if (queue == NULL)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return NULL;
+    }
     queue->size = 0;
     queue->head = NULL;
     queue->tail = NULL;

@@ -16,6 +16,7 @@ typedef struct proc_stats {
     unsigned int num_of_systick_interrupts;
     unsigned int num_of_svcalls;
     unsigned int num_of_pendsv;
+    PanicTypes_t panic_state;
 } ProcessStats_t;
 
 typedef struct KernelPids {
@@ -48,9 +49,9 @@ extern Queue_t* waiting_tasks;
 
 void policy_round_robin(void);
 void remove_current_task(void);
-void init_scheduler(void);
+int init_scheduler(void);
 void insert_scheduled_task(Tcb_t*);
-void run_scheduler(void);
+int run_scheduler(void);
 void invalidate_current_task(void);
 void reboot(void);
 void finish_task(void);

@@ -10,27 +10,24 @@
 #include "hw/cpu.h"
 #include "memory.h"
 #include "process/scheduler.h"
+#include "runtime.h"
 
-void reset_handler(void);
+extern void dma2_stream5_ir_handler(void);              //!< Interrupt service routine for DMA2 Controller */
+extern void pendsv_isr(void);                           //!< Interrupt service routine for pending SV Call */
+extern KernelErrorCodes_t setup_kernel_runtime(void);   //!< Init function to load mandatory kernel modules */ 
+extern void setup_devices(void);                        //!< Prepares the UART device for basic host communication */
+extern void svcall_isr(unsigned int, unsigned int);     //!< Interrupt service routine for the CortexM4 supervisor call */
+extern void systick_isr(void);                          //!< Interrupt service routine for the CortexM4 systick interrupt */
+extern void tim3_isr_handler(void);                     //!< Interrupt service routine for the tim3 device */
+extern void uart_isr_handler(void);                     //!< Interrupt service routine for the usart1 device */
 
-extern void dma2_stream5_ir_handler(void);           //!< */
-extern void pendsv_isr(void);                        //!< */
-extern void setup_kernel_runtime(void);                         //!< */
-extern void setup_devices(void);                         //!< */
-extern void svcall_isr(unsigned int, unsigned int);  //!< */
-extern void systick_isr(void);                       //!< */
-extern void tim3_isr_handler(void);                  //!< */
-extern void uart_isr_handler(void);                  //!< */
+extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
+extern unsigned int _ebss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
+extern unsigned int _sidata;                            //!< Defined in linker script. Containts address */
+extern unsigned int ram_size;                           //!< Defined in linker script. Needed for internal statistic purposes */
+extern unsigned int stack_top;                          //!< Defined in linker script. Needed to reset main stack pointer after bootstrapping system */
 
-extern unsigned int _edata;
-extern unsigned int _sdata;
-extern unsigned int _ebss;
-extern unsigned int _sbss;
-extern unsigned int _sidata;
-extern unsigned int ram_size;
-extern unsigned int stack_top;
-
-void reset_handler(void)
+void bootstrap(void)
 {
     unsigned int max = (unsigned int) &_ebss;
     if ((unsigned int) &_edata > max)
@@ -39,8 +36,9 @@ void reset_handler(void)
         max = (unsigned int) &_sidata; 
 
     init_allocator( max , (unsigned int*) &ram_size );
+
     // enable external interrupt sources for tim2/3
-    *((unsigned int*) CPU_NVIC_ISER0) = *((unsigned int*) CPU_NVIC_ISER0) | 1 << 28 | 1 << 29;
+    WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
 
     // CCR DIV_0_TRP , UNALIGN_ TRP
     WRITE_REGISTER(CPU_SCB_CCR, READ_REGISTER(CPU_SCB_CCR) | 3 << 3);
@@ -60,14 +58,34 @@ void reset_handler(void)
         );
     }
 
-    setup_kernel_runtime();
+    KernelErrorCodes_t kernel_err;
+    kernel_err = setup_kernel_runtime();
+
+    switch (kernel_err)
+    {
+        case SCHEDULER_INIT_FAILED:
+            while (1)
+            {
+                /* code */
+            }
+            
+            break;
+        case TASK_CREATION_FAILED:
+            while (1)
+            {
+                /* code */
+            }
+        case KERNEL_INIT_SUCCEDED:
+        default:
+            break;
+    }
+
     setup_devices();
+
     __asm volatile ("mov r2, %[stack_top]":: [stack_top] "r" ((unsigned int) &stack_top));
     __asm__(\
         "msr msp, r2\n"\
     );
-    // "ldr r0, =main_init+6\n"\
-    // "mov pc,r0"
     SV_EXEC_PSP_TASK;
 }
 
@@ -169,7 +187,7 @@ __attribute((section(".isr_vector")))
 unsigned int *isr_vectors[] =
 {
     (unsigned int *) &stack_top,
-    (unsigned int *) reset_handler,
+    (unsigned int *) bootstrap,
     (unsigned int *) nmi_handler,
     (unsigned int *) hardfault_handler,
     (unsigned int *) memfault_handler,
