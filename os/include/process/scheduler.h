@@ -50,7 +50,7 @@ extern Queue_t* waiting_tasks;
 void policy_round_robin(void);
 void remove_current_task(void);
 int init_scheduler(void);
-void insert_scheduled_task(Tcb_t*);
+int insert_scheduled_task(Tcb_t*);
 int run_scheduler(void);
 void invalidate_current_task(void);
 void reboot(void);
@@ -82,6 +82,7 @@ static inline __attribute__((always_inline)) void block_current_task(void)
 static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
     Node_t *q = get_head_element(waiting_tasks);
+    
     if (!q)
         return NULL;
 

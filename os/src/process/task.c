@@ -13,11 +13,13 @@ unsigned int pid_of_foo;
 
 CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_size, void (*task_function)())
 {
-    // @todo
     CpuRegister_t* cpu_register =  (CpuRegister_t*) ((unsigned int) address + (unsigned int) buffer_size - (unsigned int) sizeof(CpuRegister_t));
 
     if (!cpu_register)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return NULL;
+    }
 
     memset_byte((void*) cpu_register, sizeof(CpuRegister_t), 0);
     memset_byte((void*) address, STACK_SIZE - sizeof(CpuRegister_t), 0xA5);
@@ -32,11 +34,18 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 int create_task(void (*task_function)(), unsigned int ram_location)
 {
 
-    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
-    if (!address)
+    unsigned int task_start_address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
+    
+    if (!task_start_address)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return -1;
+    }
 
-    CpuRegister_t *cpu_register = prepare_cpu_register(address, STACK_SIZE, task_function);
+    CpuRegister_t *cpu_register = prepare_cpu_register(task_start_address, STACK_SIZE, task_function);
+    
+    if (!cpu_register)
+        return -1;
 
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
 
@@ -54,7 +63,7 @@ int create_task(void (*task_function)(), unsigned int ram_location)
         tcb->general.task_info.is_external = IsExternalTask;
 
     tcb->sp = (unsigned int) &cpu_register->r4;
-    tcb->memory_lower_bound = (unsigned int)address;
+    tcb->memory_lower_bound = (unsigned int) task_start_address;
     tcb->code_section = ram_location;
     
     if (DEBUG)
@@ -75,6 +84,9 @@ int create_task(void (*task_function)(), unsigned int ram_location)
 //     *mpu_rasr = (0b000 << 24) | (0b000110 << 16) | (4 << 1) | 0x1;
 //     volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
 //     *mpu_ctrl = 0x5;
-    insert_scheduled_task((Tcb_t*) tcb);
+    if (insert_scheduled_task((Tcb_t*) tcb) == -1)
+    {
+        return -1;
+    }
     return tcb->general.task_info.pid;
 }

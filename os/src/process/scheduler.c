@@ -30,19 +30,23 @@ int init_scheduler(void)
     return 0;
 }
 
-void insert_scheduled_task(Tcb_t* tcb)
+int insert_scheduled_task(Tcb_t* tcb)
 {
     switch (tcb->general.task_info.state)
     {
     case READY:
-        enqueue_element(running_tasks, (Tcb_t*) tcb);
+        if (enqueue_element(running_tasks, (Tcb_t*) tcb) < 0)
+            return -1;
         break;
     case WAITING:
-        enqueue_element(waiting_tasks, (Tcb_t*) tcb);
+        if (enqueue_element(waiting_tasks, (Tcb_t*) tcb) < 0)
+            return -1;
         break;
     default:
+        return -1;
         break;
     }
+    return 1;
 }
 
 void reboot(void)
