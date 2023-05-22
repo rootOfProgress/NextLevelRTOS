@@ -11,6 +11,7 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) template2(void)
     while (1)
     {
         /* code */
+        SV_YIELD_TASK;
     }
     
 }

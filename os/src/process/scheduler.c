@@ -92,6 +92,26 @@ int run_scheduler(void)
     return 0;
 }
 
+// workaround
+void force_pid0_into_running(void)
+{
+    Node_t *q = get_head_element(running_tasks);
+    
+    if (!q)
+        return NULL;
+
+    for (unsigned int i = 0; i < running_tasks->size; i++)
+    {
+        if (((Tcb_t*)q->data)->general.task_info.pid == 0)
+        {
+            ((Tcb_t*)q->data)->general.task_info.state = READY;
+            currently_running, task_to_preserve = q;
+            break;
+        }
+        q = q->next;
+    }
+}
+
 void __attribute__ ((hot)) pendsv_isr(void)
 {
     if (DEBUG)

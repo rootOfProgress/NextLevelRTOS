@@ -59,6 +59,10 @@ void search_invalidate_tasks(void);
 void clean_up_task(Tcb_t*, Node_t*);
 void task_sleep(unsigned int);
 
+// workaround
+void force_pid0_into_running(void);
+
+
 static inline __attribute__((always_inline)) void block_current_task(void)
 {
     ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
@@ -97,6 +101,7 @@ static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid
         }
         q = q->next;
     }
+    
     return NULL;
 }
 
@@ -106,7 +111,10 @@ static inline __attribute__((always_inline)) void switch_task(void)
     {
         currently_running = wakeup_pid(kernel_pids.idle_task);
         if (!currently_running)
-            invoke_panic(SCHEDULER_NOT_INITIALIZED);
+        {
+            force_pid0_into_running();
+        }
+        
         task_to_preserve = currently_running;
         return;
     }
@@ -125,10 +133,14 @@ static inline __attribute__((always_inline)) void switch_task(void)
         }
     }
 
-    currently_running = wakeup_pid(kernel_pids.idle_task);
+    currently_running, task_to_preserve = wakeup_pid(kernel_pids.idle_task);
+
+    // @todo Workaround if systick=1
+    // Not yet resolved: Pid0 is not ready and not yet moved to waiting queue
     if (!currently_running)
-        invoke_panic(SCHEDULER_NOT_INITIALIZED);
-    task_to_preserve = currently_running;
+    {
+        force_pid0_into_running();
+    }
 }
 
 static inline __attribute__((always_inline)) void restore_psp()
