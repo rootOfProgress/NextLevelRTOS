@@ -107,7 +107,8 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
         dt.ndtr = tInfo.task_size;
 
         // uart rx
-        dt.source_address = 0x40011004;
+        dt.source_address = &((UartRegisterMap_t*) Usart1Baseadress)->dr;
+        // dt.source_address = 0x40011004;
         dt.destination_address = (unsigned int) tInfo.start_adress;
         dt.stream_number = 5;
         dt.tcie = 1;    
