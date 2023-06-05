@@ -140,6 +140,62 @@ void __attribute__ ((hot)) pendsv_isr(void)
     );
 }
 
+void collect_os_statistics(char* statistic)
+{
+    // collect os statistics
+    unsigned int num_of_all_tasks = 0;
+    unsigned int i = 0;
+    num_of_all_tasks += running_tasks->size;
+    num_of_all_tasks += waiting_tasks->size;
+
+    statistic = (char*) allocate(sizeof(Tcb_t) * num_of_all_tasks + sizeof(ProcessStats_t));
+
+    Node_t *q = running_tasks->head;
+
+    *statistic = running_tasks->size;
+    statistic += (char) 4;
+
+    // copy into buffer
+    for (i; i < running_tasks->size; i++)
+    {
+        char *src = (char*) q->data;
+        for (char j = 0; j < sizeof(Tcb_t); j++)
+        {
+            *(statistic) = *(src+j);
+            statistic += j + i * sizeof(Tcb_t);
+        }
+
+        q = q->next;
+    }
+
+    q = waiting_tasks->head;
+
+    *statistic = waiting_tasks->size;
+    statistic += (char) 4;
+
+    // copy into buffer
+    for (i = 0; i < waiting_tasks->size; i++)
+    {
+        char *src = (char*) q->data;
+        for (char j = 0; j < sizeof(Tcb_t); j++)
+        {
+            statistic += j + i * sizeof(Tcb_t);
+            *(statistic) = *(src+j);
+        }
+
+        q = q->next;
+    }
+
+    char *p = &process_stats;
+
+    for (i = 0; i < sizeof(ProcessStats_t); i++)
+    {
+        statistic += (char) i;
+        *(statistic) = *(p+i);
+    }
+}
+
+
 void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
 {
     if (!deallocate((unsigned int*) t->memory_lower_bound))

@@ -190,6 +190,11 @@ void __attribute__ ((cold)) update_memory_statistic(void)
     }    
     Node_t* q = running_tasks->head;
     mstat.total_byte_used = 0;
+
+    char *memory;
+
+    collect_os_statistics(memory);
+    deallocate(memory);
     
     #define BUG
     #ifndef BUG

@@ -10,10 +10,10 @@
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
-    block_current_task();
+    // block_current_task();
     update_memory_statistic();
-    volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
-    uprint((unsigned int*) &t);
+    // volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
+    // uprint((unsigned int*) &t);
     SV_YIELD_TASK;
   };
 }

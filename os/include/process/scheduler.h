@@ -58,6 +58,7 @@ void finish_task(void);
 void search_invalidate_tasks(void);
 void clean_up_task(Tcb_t*, Node_t*);
 void task_sleep(unsigned int);
+void collect_os_statistics(char*);
 
 // workaround
 void force_pid0_into_running(void);
@@ -101,7 +102,7 @@ static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid
         }
         q = q->next;
     }
-    
+
     return NULL;
 }
 
