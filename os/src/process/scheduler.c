@@ -30,19 +30,23 @@ int init_scheduler(void)
     return 0;
 }
 
-void insert_scheduled_task(Tcb_t* tcb)
+int insert_scheduled_task(Tcb_t* tcb)
 {
     switch (tcb->general.task_info.state)
     {
     case READY:
-        enqueue_element(running_tasks, (Tcb_t*) tcb);
+        if (enqueue_element(running_tasks, (Tcb_t*) tcb) < 0)
+            return -1;
         break;
     case WAITING:
-        enqueue_element(waiting_tasks, (Tcb_t*) tcb);
+        if (enqueue_element(waiting_tasks, (Tcb_t*) tcb) < 0)
+            return -1;
         break;
     default:
+        return -1;
         break;
     }
+    return 1;
 }
 
 void reboot(void)
@@ -88,6 +92,26 @@ int run_scheduler(void)
     return 0;
 }
 
+// workaround
+void force_pid0_into_running(void)
+{
+    Node_t *q = get_head_element(running_tasks);
+    
+    if (!q)
+        return NULL;
+
+    for (unsigned int i = 0; i < running_tasks->size; i++)
+    {
+        if (((Tcb_t*)q->data)->general.task_info.pid == 0)
+        {
+            ((Tcb_t*)q->data)->general.task_info.state = READY;
+            currently_running, task_to_preserve = q;
+            break;
+        }
+        q = q->next;
+    }
+}
+
 void __attribute__ ((hot)) pendsv_isr(void)
 {
     if (DEBUG)
@@ -115,6 +139,62 @@ void __attribute__ ((hot)) pendsv_isr(void)
       "msr psp, r2\n"
     );
 }
+
+void collect_os_statistics(char* statistic)
+{
+    // collect os statistics
+    unsigned int num_of_all_tasks = 0;
+    unsigned int i = 0;
+    num_of_all_tasks += running_tasks->size;
+    num_of_all_tasks += waiting_tasks->size;
+
+    statistic = (char*) allocate(sizeof(Tcb_t) * num_of_all_tasks + sizeof(ProcessStats_t));
+
+    Node_t *q = running_tasks->head;
+
+    *statistic = running_tasks->size;
+    statistic += (char) 4;
+
+    // copy into buffer
+    for (i; i < running_tasks->size; i++)
+    {
+        char *src = (char*) q->data;
+        for (char j = 0; j < sizeof(Tcb_t); j++)
+        {
+            *(statistic) = *(src+j);
+            statistic += j + i * sizeof(Tcb_t);
+        }
+
+        q = q->next;
+    }
+
+    q = waiting_tasks->head;
+
+    *statistic = waiting_tasks->size;
+    statistic += (char) 4;
+
+    // copy into buffer
+    for (i = 0; i < waiting_tasks->size; i++)
+    {
+        char *src = (char*) q->data;
+        for (char j = 0; j < sizeof(Tcb_t); j++)
+        {
+            statistic += j + i * sizeof(Tcb_t);
+            *(statistic) = *(src+j);
+        }
+
+        q = q->next;
+    }
+
+    char *p = &process_stats;
+
+    for (i = 0; i < sizeof(ProcessStats_t); i++)
+    {
+        statistic += (char) i;
+        *(statistic) = *(p+i);
+    }
+}
+
 
 void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
 {

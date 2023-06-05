@@ -10,10 +10,10 @@
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
-    block_current_task();
+    // block_current_task();
     update_memory_statistic();
-    volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
-    uprint((unsigned int*) &t);
+    // volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
+    // uprint((unsigned int*) &t);
     SV_YIELD_TASK;
   };
 }
@@ -40,7 +40,8 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
         }
 
         // this check is if the idle runner is woken up by dma isr to create incoming task.
-        // if there are other tasks to be scheduled it would make no sense to set the system
+        // if there are other tasks to be scheduled (i.e. task count > 1, because 1 is the idle_runner)
+        // it would make no sense to set the system
         // in sleep mode. in this case, the system would freezen for the systick interval.
         // now, os enters sleep only if the idle runner is the only one in line.
         if (running_tasks->size == 1)
