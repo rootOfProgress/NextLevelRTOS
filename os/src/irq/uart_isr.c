@@ -102,7 +102,6 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
     
         dt.chsel = 4;
         dt.minc = 1;
-        // dt.ndtr = 0x200;
         dt.ndtr = tInfo.task_size;
 
         // uart rx
@@ -121,15 +120,14 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
         state = RX_READY;
         break;
     case REBOOT:
-        state = RX_READY;
         soft_reset();
+        state = RX_READY;
         break;
     case REQUEST_TEST_RESULT:
         char *test = "DDDDEEEE";
         print(test, 8);
         print((char*) 0x20000000, 4);
         WRITE_REGISTER(0x20000000, 0);
-        state = RX_READY;
         return;
     default:
         break;

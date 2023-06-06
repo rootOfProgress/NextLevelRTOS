@@ -57,6 +57,10 @@ typedef enum {
     SLEEP
 } TrapType_t;
 
+typedef struct UsageFaultStatus {
+  unsigned int undefinstr : 1, invstate : 1, invpc : 1,  nocp : 1,  : 4, unaligned : 1, divbyzero : 1, : 6, : 16;
+} UsageFaultStatus_t;
+
 void do_selfcheck_svc();
 
 #endif

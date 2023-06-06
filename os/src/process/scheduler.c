@@ -56,7 +56,8 @@ void reboot(void)
 
 void invalidate_current_task(void)
 {
-    ((Tcb_t*) (currently_running->data))->general.task_info.state = DEAD;
+    ((Tcb_t*) (currently_running->data))->general.task_info.state = INVALID;
+    process_stats.clean_up_requests++;
 }
 
 int run_scheduler(void)

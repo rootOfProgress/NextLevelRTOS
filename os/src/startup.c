@@ -6,12 +6,13 @@
  *
  */
 
-#include <stdint.h>
+// #include <stdint.h>
 #include "exception.h"
 #include "hw/cpu.h"
 #include "memory.h"
 #include "process/scheduler.h"
 #include "runtime.h"
+#include "lang.h"
 
 extern void dma2_stream5_ir_handler(void);              //!< Interrupt service routine for DMA2 Controller */
 extern void pendsv_isr(void);                           //!< Interrupt service routine for pending SV Call */
@@ -157,18 +158,39 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
     }
 }
 
-void  __attribute__((optimize("O0"))) usage_fault_handler(void)
+void ISR usage_fault_handler(void)
 {
-    unsigned int UFSR = READ_REGISTER(0xE000ED28) >> 16;
-    if (UFSR & 1 << 2) // invpc
+    // unsigned int UFSR = READ_REGISTER(0xE000ED2A);
+
+    UsageFaultStatus_t* usagefault_status = (UsageFaultStatus_t*) ((unsigned int*) 0xE000ED2A);
+
+    if (usagefault_status->divbyzero)
     {
-        while (1)
-        {
-            /* code */
-        }
-        
+        invalidate_current_task();
+        set_pendsv();
+    } else {
+
+    while (1)
+    {
+        /* code */
     }
-    while (1);
+    }
+
+    // if (usagefault_status->invpc)
+    // {
+
+    // }
+
+    
+    // if (UFSR)
+    // if (UFSR & 1 << 2) // invpc
+    // {
+        // while (1)
+        // {
+            // /* code */
+        // }
+        // 
+    // }
 }
 
 
