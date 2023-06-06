@@ -10,11 +10,10 @@
 
 volatile unsigned int svc_number = 0;
 
-void __attribute__ ((interrupt ("IRQ"))) systick_isr()
+void ISR systick_isr()
 {
   save_psp_if_threadmode();
   set_pendsv();
-
 
   if (DEBUG && currently_running)
   {
@@ -29,17 +28,17 @@ void __attribute__ ((interrupt ("IRQ"))) systick_isr()
   }
 }
 
-__attribute__((used)) void uprint(volatile unsigned int* transfer_info __attribute__((unused)))
+USED void uprint(UNUSED volatile unsigned int* transfer_info )
 {
   SV_PRINT;
 }
 
-__attribute__((used)) void execute_priviledged(__attribute__((unused)) unsigned int function_address)
+USED void execute_priviledged(UNUSED unsigned int function_address)
 {
   SV_EXEC_PRIV;
 }
 
-void __attribute__((optimize("O0"))) kprint(void)
+void NO_OPT kprint(void)
 {
   volatile unsigned int general_service_register;
   __asm__("mov %0, r9" : "=r"(general_service_register));
@@ -48,7 +47,7 @@ void __attribute__((optimize("O0"))) kprint(void)
   setup_transfer((char*) t->start_adress, t->length);
 }
 
-void __attribute__((optimize("O3"))) svcall_isr()
+void svcall_isr()
 {
   // r0 must be preserved, it could be used by e.g. disable_systick()
   __asm__("mov r9, r0");
@@ -111,11 +110,7 @@ void __attribute__((optimize("O3"))) svcall_isr()
     void (*priv_fn)() = (void (*)()) (function_adress | 1);
     priv_fn();
     restore_psp();
-    return;    
-  case SLEEP:
-    // block task
-    // set timer
-    // yield baby
+    return;
   default:
     __builtin_unreachable();
     break;
