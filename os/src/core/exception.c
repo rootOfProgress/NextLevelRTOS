@@ -10,9 +10,11 @@
 
 volatile unsigned int svc_number = 0;
 
-void __attribute__((__noipa__)) systick_isr()
+void __attribute__ ((interrupt ("IRQ"))) systick_isr()
 {
   save_psp_if_threadmode();
+  set_pendsv();
+
 
   if (DEBUG && currently_running)
   {
@@ -25,28 +27,6 @@ void __attribute__((__noipa__)) systick_isr()
         tcb_of_current_task->lifetime_info[0].lifetime.cpu_time += timer_read_counter(TimerForSysLogging); 
     }
   }
-
-  __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
-
-  switch_task();
-  if (DEBUG == 2)
-  {
-      timer_flush_counter(TimerForSysLogging);
-      timer_start(TimerForSysLogging);
-  }
-  unsigned int next = ((Tcb_t*) currently_running->data)->sp;
-
-  unsigned int ram_upperbound = mstat.ram_size + RAM_START;
-
-  __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
-  __asm volatile ("mov r3, %[ram_top]":: [ram_top] "r" (ram_upperbound));
-
-  __asm volatile (
-    "ldmfd r2!, {r4-r11}\n"
-    "msr psp, r2\n"
-    "msr msp, r3\n"
-    "bx lr\n"
-  );
 }
 
 __attribute__((used)) void uprint(volatile unsigned int* transfer_info __attribute__((unused)))
