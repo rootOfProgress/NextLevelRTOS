@@ -20,10 +20,10 @@ typedef struct proc_stats {
 } ProcessStats_t;
 
 typedef struct KernelPids {
-    char idle_task;
-    char transfer_handler;
-    char statistic_manager;
-    char generic_printer;
+    signed char idle_task;
+    signed char transfer_handler;
+    signed char statistic_manager;
+    signed char generic_printer;
 } KernelPids_t;
 
 enum { ResolutionForSysLogging = 5 };       // <! Task runtimes are measured in 5 usec ticks 
@@ -134,8 +134,8 @@ static inline __attribute__((always_inline)) void switch_task(void)
         }
     }
 
-    currently_running, task_to_preserve = wakeup_pid(kernel_pids.idle_task);
-
+    currently_running = wakeup_pid(kernel_pids.idle_task);
+    task_to_preserve = currently_running;
     // @todo Workaround if systick=1
     // Not yet resolved: Pid0 is not ready and not yet moved to waiting queue
     if (!currently_running)

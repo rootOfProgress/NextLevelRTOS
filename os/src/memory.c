@@ -188,12 +188,12 @@ void __attribute__ ((cold)) update_memory_statistic(void)
         if ((entry & 1) == 1)
             mstat.total_byte_alloced += (entry & 0xFFFE) >> 1;
     }    
-    Node_t* q = running_tasks->head;
+    // Node_t* q = running_tasks->head;
     mstat.total_byte_used = 0;
 
-    char *memory;
+    unsigned int *memory = NULL;
 
-    collect_os_statistics(memory);
+    collect_os_statistics((char*)memory);
     deallocate(memory);
     
     #define BUG

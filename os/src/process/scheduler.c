@@ -63,11 +63,11 @@ int run_scheduler(void)
 {
     if (DEBUG == 2)
     {
-        timer_init(TimerForSysLogging, 0, (char[4]) {0,0,0,0}, ResolutionForSysLogging);
+        timer_init(TimerForSysLogging, 0, (unsigned int[4]) {0,0,0,0}, ResolutionForSysLogging);
     }
 
     // set up task planer
-    timer_init(TimerForTaskSleep, 0, (char[4]) {0,0,0,0}, ResolutionForSleepFunction);
+    timer_init(TimerForTaskSleep, 0, (unsigned int[4]) {0,0,0,0}, ResolutionForSleepFunction);
     enable_ccx_ir(TimerForTaskSleep, 1);
 
     if (running_tasks->size == 0)
@@ -96,16 +96,14 @@ int run_scheduler(void)
 void force_pid0_into_running(void)
 {
     Node_t *q = get_head_element(running_tasks);
-    
-    if (!q)
-        return NULL;
 
     for (unsigned int i = 0; i < running_tasks->size; i++)
     {
         if (((Tcb_t*)q->data)->general.task_info.pid == 0)
         {
             ((Tcb_t*)q->data)->general.task_info.state = READY;
-            currently_running, task_to_preserve = q;
+            currently_running = q; 
+            task_to_preserve = currently_running;
             break;
         }
         q = q->next;
@@ -144,7 +142,7 @@ void collect_os_statistics(char* statistic)
 {
     // collect os statistics
     unsigned int num_of_all_tasks = 0;
-    unsigned int i = 0;
+    unsigned int i;
     num_of_all_tasks += running_tasks->size;
     num_of_all_tasks += waiting_tasks->size;
 
@@ -156,7 +154,7 @@ void collect_os_statistics(char* statistic)
     statistic += (char) 4;
 
     // copy into buffer
-    for (i; i < running_tasks->size; i++)
+    for (i = 0; i < running_tasks->size; i++)
     {
         char *src = (char*) q->data;
         for (char j = 0; j < sizeof(Tcb_t); j++)
@@ -186,7 +184,7 @@ void collect_os_statistics(char* statistic)
         q = q->next;
     }
 
-    char *p = &process_stats;
+    char *p = (char*) &process_stats;
 
     for (i = 0; i < sizeof(ProcessStats_t); i++)
     {

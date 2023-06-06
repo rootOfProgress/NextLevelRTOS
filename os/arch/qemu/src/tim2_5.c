@@ -2,52 +2,54 @@
 #include "rcc.h"
 #define BREAK asm("bkpt") 
 
-void reset_timer(unsigned int tim_nr)
+void reset_timer(__attribute__((unused)) unsigned int tim_nr)
 {   
 }
 
-void timer_start(unsigned int tim_nr)
+void timer_start(__attribute__((unused)) unsigned int tim_nr)
 {
 }
 
-void timer_stop(unsigned int tim_nr)
+void timer_stop(__attribute__((unused)) unsigned int tim_nr)
 {
 }
 
-void set_udis(unsigned int tim_nr) 
+void set_udis(__attribute__((unused)) unsigned int tim_nr) 
 {
 }
 
-void set_ccr(unsigned int tim_nr, unsigned int ccr_value, unsigned int ccr_nr)
+void set_ccr(__attribute__((unused)) unsigned int tim_nr, __attribute__((unused)) unsigned int ccr_value, __attribute__((unused)) unsigned int ccr_nr)
 {
 }
 
-void generate_ue(unsigned int tim_nr)
+void generate_ue(__attribute__((unused)) unsigned int tim_nr)
 {
 }
 
-
-void set_prescaler(unsigned int tim_nr, unsigned int psc_value)
-{
-}
-
-void set_sr(unsigned int tim_nr, unsigned int updated_value)
-{
-}
-
-unsigned int get_sr(unsigned int tim_nr)
-{
-}
-
-unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
+void timer_set_sr(__attribute__((unused)) unsigned int tim_nr,__attribute__((unused))  unsigned int updated_value)
 {
 }
 
 
-void timer_init(unsigned int tim_nr, unsigned int arr, unsigned int *ccr, unsigned int cycle_length)
+void set_prescaler(__attribute__((unused)) unsigned int tim_nr, __attribute__((unused))  unsigned int psc_value)
 {
 }
 
-void enable_ccx_ir(unsigned int tim_nr, unsigned int ccr_nr)
+unsigned int timer_get_sr(__attribute__((unused)) unsigned int tim_nr)
+{
+    return 0;
+}
+
+unsigned int timer_get_prescaler(__attribute__((unused)) unsigned int tim_nr, __attribute__((unused)) unsigned int cycle_length)
+{
+    return 0;
+}
+
+
+void timer_init(__attribute__((unused)) unsigned int tim_nr, __attribute__((unused)) unsigned int arr, __attribute__((unused)) unsigned int *ccr, __attribute__((unused)) unsigned int cycle_length)
+{
+}
+
+void enable_ccx_ir(__attribute__((unused)) unsigned int tim_nr, __attribute__((unused)) unsigned int ccr_nr)
 {
 }

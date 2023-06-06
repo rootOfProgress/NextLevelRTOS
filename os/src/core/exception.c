@@ -54,7 +54,7 @@ __attribute__((used)) void uprint(volatile unsigned int* transfer_info __attribu
   SV_PRINT;
 }
 
-__attribute__((used)) void execute_priviledged(unsigned int function_address)
+__attribute__((used)) void execute_priviledged(__attribute__((unused)) unsigned int function_address)
 {
   SV_EXEC_PRIV;
 }

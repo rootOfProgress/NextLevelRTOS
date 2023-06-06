@@ -56,7 +56,7 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
     if (init_scheduler() == -1)
         return SCHEDULER_INIT_FAILED;
 
-    if ((kernel_pids.idle_task = create_task(&idle_runner, 0) == -1))
+    if ((kernel_pids.idle_task = create_task(&idle_runner, 0)) == -1)
         return TASK_CREATION_FAILED;
 
     if ((kernel_pids.transfer_handler = create_task(&transfer_handler, 0)) == -1)

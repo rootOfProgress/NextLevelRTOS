@@ -34,7 +34,7 @@ void i2c_write(char* payload, char num_of_bytes, char recipient)
     
 }
 
-char i2c_read_single(char target_register, char num_of_bytes, char recipient)
+char i2c_read_single(__attribute__((unused)) char target_register, __attribute__((unused)) char num_of_bytes, char recipient)
 {
     // enable rx mode, page 481 ref man
     recipient |= 1;

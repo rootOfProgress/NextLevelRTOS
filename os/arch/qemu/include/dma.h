@@ -82,8 +82,8 @@ static inline __attribute__((always_inline)) unsigned int get_stream_offset(unsi
 void dma_init(void);
 
 static inline __attribute__((always_inline)) void dma_transfer(
-    DmaTransferSpecifics_t *dma_transfer_config,
-    DmaModes_t dma_mode)
+    __attribute__((unused)) DmaTransferSpecifics_t *dma_transfer_config,
+    __attribute__((unused)) DmaModes_t dma_mode)
 {
 }
 

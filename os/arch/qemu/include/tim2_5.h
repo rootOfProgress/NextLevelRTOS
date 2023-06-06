@@ -48,7 +48,6 @@ typedef struct timer25RegisterMap
 
 static inline __attribute__((always_inline)) unsigned int get_timx_base(unsigned int tim_nr)
 {
-    unsigned int tim_base;
     switch (tim_nr)
     {
     case 2:
