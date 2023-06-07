@@ -93,16 +93,22 @@ static inline __attribute__((always_inline)) void set_pin_on(GpioObject_t* gpio)
     WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) | (1 << gpio->pin));
 }
 
-static inline __attribute__((always_inline)) unsigned int read_pin(GpioObject_t* gpio) 
-{
-    GpioRegisters_t* gpio_regs = get_registers(gpio);
-    return READ_REGISTER(&gpio_regs->idr) & (1 << gpio->pin);
-}
-
 static inline __attribute__((always_inline)) void set_pin_off(GpioObject_t* gpio) 
 {
     GpioRegisters_t* gpio_regs = get_registers(gpio);
     WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) & ~(1 << gpio->pin));
+}
+
+static inline __attribute__((always_inline)) void set_pin_bulk(GpioObject_t* gpio, unsigned int mask) 
+{
+    GpioRegisters_t* gpio_regs = get_registers(gpio);
+    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, mask);
+}
+
+static inline __attribute__((always_inline)) unsigned int read_pin(GpioObject_t* gpio) 
+{
+    GpioRegisters_t* gpio_regs = get_registers(gpio);
+    return READ_REGISTER(&gpio_regs->idr) & (1 << gpio->pin);
 }
 
 #endif

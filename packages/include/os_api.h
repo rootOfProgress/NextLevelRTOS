@@ -6,7 +6,7 @@
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
-unsigned int* (*allocate)(unsigned int) = (unsigned int* (*)(unsigned int size)) allocate_addr;
+unsigned int* (*allocate)(unsigned int) = (unsigned int* (*)(unsigned int size)) 0x8001679;
 unsigned int (*deallocate)(unsigned int*) = (unsigned int (*)(unsigned int* address)) deallocate_addr;
 
 #endif

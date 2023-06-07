@@ -19,12 +19,12 @@ else
 CFLAGS += -mfloat-abi=soft
 endif
 
-
 move_objects:
 	if ! [ -d "./build" ]; then \
         mkdir build; \
     fi
-	mv ./*.o ../../build
+	cp ./*.o ../../build
+	mv ./*.o ./build
 
 compile_platform: $(SRC)
 	$(CC) $(CFLAGS) $(INC) $^ -c 

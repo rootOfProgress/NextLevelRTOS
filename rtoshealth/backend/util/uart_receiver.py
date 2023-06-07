@@ -10,7 +10,7 @@ from struct import pack, unpack
 from flask import request
 from random import randrange
 import datetime, timedelta
-# import logging as logging
+
 serial_device = None
 result = b''
 device_address = ""
@@ -26,8 +26,6 @@ def flush():
     serial_device.read(42)
 
 def process_result(result_type = ""):
-    # bts = result[0:8].decode("utf-8")
-    # print(bts)
     match result_type:
         case "memadress": 
             start_adress = unpack('<I', result[0:4])[0]
@@ -52,18 +50,6 @@ def process_result(result_type = ""):
                 "running_tasks" : unpack('<I', result[32:36])[0], 
                 "cpu_load" : unpack('I', result[36:40])[0],              
             }
-            # response = {
-            #     "num_of_allocs" : unpack('I', result[0:4])[0],
-            #     "num_of_deallocs" : unpack('I', result[4:8])[0], 
-            #     "ram_size" : unpack('I', result[8:12])[0], 
-            #     "total_byte_alloced" : unpack('I', result[12:16])[0], 
-            #     "total_byte_used" : unpack('I', result[16:20])[0], 
-            #     "os_data_end" : unpack('I', result[20:24])[0], 
-            #     "free_useable" : unpack('I', result[24:28])[0], 
-            #     "waiting_tasks" : unpack('I', result[28:32])[0], 
-            #     "running_tasks" : unpack('I', result[32:36])[0], 
-            #     "cpu_load" : unpack('I', result[36:40])[0],                
-            # }
             return response
         case "CCCCAAAA":
             logging.print_success("Got device response!")
@@ -106,6 +92,10 @@ def device_rx(expected = 1):
     global result
     global mutex
     global is_busy
+
+    flush_rx_buffer()
+    result = b''
+    
     mutex.acquire()
     incoming_data = serial_device.read(expected)
     result = incoming_data

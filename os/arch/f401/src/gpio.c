@@ -7,6 +7,7 @@
 void init_gpio(GpioObject_t* gpio_object)
 {
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
+
     switch (gpio_object->port)
     {
     case 'A':
@@ -14,7 +15,6 @@ void init_gpio(GpioObject_t* gpio_object)
         gpio_object->base_adress = (unsigned int*) GPIO_A_BASE;
         break;
     case 'B':
-        // __asm("bkpt");
         WRITE_REGISTER(&rcc_regs->ahb1enr, READ_REGISTER(&rcc_regs->ahb1enr) | (1 << 1));
         gpio_object->base_adress = (unsigned int*) GPIO_B_BASE;
         break;   
@@ -74,7 +74,7 @@ void into_af(GpioObject_t* t, unsigned int af_number)
 void set_speed(GpioObject_t* t, SpeedModes_t speed)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
-    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) & ~(11 << (t->pin * 2)));    
+    WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) & ~(0b11 << (t->pin * 2)));    
     WRITE_REGISTER(&gpio_regs->ospeedr, READ_REGISTER(&gpio_regs->ospeedr) | (speed << (t->pin * 2)));    
 }
 
@@ -82,14 +82,14 @@ void set_speed(GpioObject_t* t, SpeedModes_t speed)
 void set_pupdr(GpioObject_t* t, PullTypes_t pull_type)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
-    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) & ~(11 << (t->pin * 2)));    
+    WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) & ~(0b11 << (t->pin * 2)));    
     WRITE_REGISTER(&gpio_regs->pupdr, READ_REGISTER(&gpio_regs->pupdr) | (pull_type << (t->pin * 2)));    
 }
 
 void set_otyper(GpioObject_t* t, OutputTypes_t otype)
 {
     GpioRegisters_t* gpio_regs = get_registers(t);
-    WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) & ~(otype << (t->pin)));
+    WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) & ~(0b11 << (t->pin)));
     WRITE_REGISTER(&gpio_regs->otyper, READ_REGISTER(&gpio_regs->otyper) | (otype << (t->pin)));
 }
 

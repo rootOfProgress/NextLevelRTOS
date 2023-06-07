@@ -260,6 +260,8 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
             if (remaining > 0)
             {
                 unsigned int j = index;
+
+                // @todo: leads to BUSFAULT because may be an infinite loop!
                 while (*(MEM_TABLE_START + j) != 0x0000FFFE) { j++; };
                 *(MEM_TABLE_START + j) = (((memory_entry->raw >> 16) + size) << 16) | remaining << 1 | 0; 
                 // mstat.num_of_fractial_allocs++;

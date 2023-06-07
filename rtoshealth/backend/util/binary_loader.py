@@ -46,7 +46,6 @@ def upload_binary(package_name):
     cmd = "printf \"\\x01\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
-    # time.sleep(1)
     thread_return = False
     receiver = Thread(target = uart_receiver.device_rx, args=(4,))
     receiver.start()
@@ -54,7 +53,6 @@ def upload_binary(package_name):
     logging.print_info("send binary size to device...")
     cmd = "dd if=" + path_suffix + "packages/" + package_name + "/prepare of=/dev/" + uart_receiver.device_address + " iflag=direct,skip_bytes"
     os.system(cmd)
-    # time.sleep(1)
 
     bytes_read = 0
     logging.print_info("waiting for device response...")
