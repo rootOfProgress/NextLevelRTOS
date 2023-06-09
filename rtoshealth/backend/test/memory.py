@@ -28,8 +28,8 @@ def prepare_device():
 def test_alloc_speed():
     global result
     prepare_device()
-    binary_loader.upload_binary("gpios")
-    receiver = Thread(target = uart_receiver.device_rx, args=(3,))
+    binary_loader.upload_binary("memory_benchmark")
+    receiver = Thread(target = uart_receiver.device_rx, args=(128,))
     receiver.start()
     logging.print_info("waiting for MEMORY response...")
     start = time.time()
@@ -37,7 +37,23 @@ def test_alloc_speed():
 
     stop = time.time()
     logging.print_info("Took " + str(stop - start) + " ms")
-    print(uart_receiver.get_rx())
+    response = uart_receiver.get_rx()
+    results_as_array = []
+    for i in range(0,128,4):
+        results_as_array.append(unpack('<I', response[i:i+4])[0])
+    
+    response_to_client = {
+        "min": min(results_as_array),
+        "avg": sum(results_as_array) / len(results_as_array),
+        "max": max(results_as_array),
+        "raw": results_as_array
+    }
+    return response_to_client
+
+        # print(unpack('<I', response[i:i+4])[0])
+    # print(unpack('<I', response[0:4])[0])
+    # print(unpack('<I', response[4:8])[0])
+    # print(unpack('<I', response[8:12])[0])
 
 def test_memory_api():
     logging.print_info("Reboot OS...")

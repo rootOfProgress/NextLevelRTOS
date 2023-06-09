@@ -19,6 +19,10 @@ void spin()
         
 }
 
+typedef struct MeasurementResults {
+    unsigned int results[16]; 
+} MeasurementResults_t;
+
 void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(GpioObject_t* obj, unsigned int alloc_size)
 {
     unsigned int* (*baz)(unsigned int) = (unsigned int* (*)(unsigned int size)) (0x8001621);
@@ -75,6 +79,5 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
         benchmark(&gpio_b, (r1 >> 24) & 0xFF);
     }
     
-    print(&"hey", 3);
-    
+    print(&"hey", 3);  
 }
