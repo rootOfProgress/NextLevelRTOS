@@ -22,23 +22,20 @@ typedef struct MeasurementResults {
     unsigned int results[32]; 
 } MeasurementResults_t;
 
-void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(GpioObject_t* obj, unsigned int alloc_size)
+void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(unsigned int alloc_size, MeasurementResults_t *measurements, unsigned int round)
 {
-    unsigned int* (*baz)(unsigned int) = (unsigned int* (*)(unsigned int size)) (0x8001621);
-    set_pin_bulk(obj, 2);
-    baz(alloc_size);
-    set_pin_bulk(obj, 5);
-    for (int i = 0; i < 2000; i++)
-    {
-        /* code */
-    }    
+    unsigned int* (*baz)(unsigned int) = (unsigned int* (*)(unsigned int size)) (0x8001629);
+    timer_flush_counter(2);
+    timer_start(2);
+    unsigned int t = baz(alloc_size);
+    timer_stop(2);
+    measurements->results[round] = timer_read_counter(2);  
 }
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
     timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
-    unsigned int* (*baz)(unsigned int) = (unsigned int* (*)(unsigned int size)) (0x8001629);
 
     // while (timer_read_counter(2) < 0xF4240)
     // {
@@ -68,13 +65,18 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     set_moder(&gpio_b, GeneralPurposeOutputMode);
     set_pin_bulk(&gpio_b, 0);
 
-    for (int i = 0; i < 32; i++)
+    // for (int i = 0; i < 32; i++)
+    for (int i = 0x20004CC4, j = 0; j < 32/* i < 0x20002D44 */; i += 0x04, j++)
     {
-        timer_flush_counter(2);
-        timer_start(2);
-        unsigned int t = baz(4);
-        timer_stop(2);
-        measurements.results[i] = timer_read_counter(2);
+
+        // unsigned int t = baz(4);
+        unsigned int r1 = READ_REGISTER(i);
+        
+        benchmark(r1 & 0xFF, &measurements, j);
+        // benchmark((r1 >> 8) & 0xFF, &measurements, j);
+        // benchmark((r1 >> 16) & 0xFF, &measurements, j);
+        // benchmark((r1 >> 24) & 0xFF, &measurements, j);
+        // measurements.results[j] = timer_read_counter(2);
     }
     // for (int i = 0x20002CC4; i < 0x20002CD4; i += 0x04)
     // {
