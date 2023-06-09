@@ -8,6 +8,7 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "uart.h"
+#include "tim2_5.h"
 
 static unsigned int start_measurement = 0b010;
 static unsigned int stop_measurement = 0b111;
@@ -32,6 +33,16 @@ void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(Gpio
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
+    timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
+    asm("bkpt");
+    timer_start(2);
+    while (timer_read_counter(2) < 0xF4240)
+    {
+        /* code */
+    }
+    timer_stop(2);
+    asm("bkpt");
+    
     // PB 0, 1, 2 used
     // Memory Measurement Start: 010
     // Memory Measurement Stop: 101
