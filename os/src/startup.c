@@ -13,6 +13,7 @@
 #include "process/scheduler.h"
 #include "runtime.h"
 #include "lang.h"
+#include "startup.h"
 
 extern void dma2_stream5_ir_handler(void);              //!< Interrupt service routine for DMA2 Controller */
 extern void pendsv_isr(void);                           //!< Interrupt service routine for pending SV Call */
@@ -29,6 +30,8 @@ extern unsigned int _sidata;                            //!< Defined in linker s
 extern unsigned int ram_size;                           //!< Defined in linker script. Needed for internal statistic purposes */
 extern unsigned int stack_top;                          //!< Defined in linker script. Needed to reset main stack pointer after bootstrapping system */
 
+BootFlags_t *boot_flags;
+
 void bootstrap(void)
 {
     unsigned int max = (unsigned int) &_ebss;
@@ -37,6 +40,14 @@ void bootstrap(void)
     if ((unsigned int) &_sidata > max)
         max = (unsigned int) &_sidata; 
 
+    // coldstart
+    // if (READ_REGISTER((unsigned int*) 0x20000000) != 0x12345678)
+    // {
+    //     WRITE_REGISTER((unsigned int*) 0x20000000, 0x12345678);
+    //     WRITE_REGISTER((unsigned int*) 0x20000004, 0);
+    //     boot_flags = (BootFlags_t*) (unsigned int*) 0x20000004;
+    //     boot_flags->reinit_uart = 1;
+    // }
     init_allocator( max , (unsigned int*) &ram_size );
 
     // enable external interrupt sources for tim2/3
@@ -83,6 +94,11 @@ void bootstrap(void)
     }
 
     setup_devices();
+    // if (boot_flags->reinit_uart)
+    // {
+    //     setup_devices();
+    //     boot_flags->reinit_uart = 0;
+    // }
 
     __asm volatile ("mov r2, %[stack_top]":: [stack_top] "r" ((unsigned int) &stack_top));
     __asm__(\
@@ -168,6 +184,8 @@ void ISR usage_fault_handler(void)
     {
         invalidate_current_task();
         set_pendsv();
+    } else if (usagefault_status->unaligned) {
+        return;
     } else {
 
     while (1)

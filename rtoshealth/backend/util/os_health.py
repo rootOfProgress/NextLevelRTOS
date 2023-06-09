@@ -6,11 +6,11 @@ from threading import Thread, Lock
 
 def reboot():
     logging.print_info("set device into REBOOT state...")
-    cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
+    cmd = "printf \"\\x06\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
     
     logging.print_info("perform reboot...")
-    cmd = "printf \"\\x06\" >> /dev/" + uart_receiver.device_address
+    cmd = "printf \"\\x06\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
 def get_lifetime():

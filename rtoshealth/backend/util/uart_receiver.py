@@ -88,6 +88,10 @@ def process_result(result_type = ""):
             receiver.join()
             flush()
 
+def get_rx():
+    global result
+    return result
+
 def device_rx(expected = 1):
     global result
     global mutex
@@ -100,3 +104,4 @@ def device_rx(expected = 1):
     incoming_data = serial_device.read(expected)
     result = incoming_data
     mutex.release()
+

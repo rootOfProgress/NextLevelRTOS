@@ -120,8 +120,8 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
         state = RX_READY;
         break;
     case REBOOT:
-        soft_reset();
         state = RX_READY;
+        soft_reset();
         break;
     case REQUEST_TEST_RESULT:
         char *test = "DDDDEEEE";

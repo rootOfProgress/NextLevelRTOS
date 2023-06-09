@@ -38,7 +38,6 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
             create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
             dma_interrupt_action = DmaIsIdle;
         }
-
         // this check is if the idle runner is woken up by dma isr to create incoming task.
         // if there are other tasks to be scheduled (i.e. task count > 1, because 1 is the idle_runner)
         // it would make no sense to set the system

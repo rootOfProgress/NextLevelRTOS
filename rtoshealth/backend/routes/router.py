@@ -50,13 +50,7 @@ def lifetime():
 
 @app.route('/reboot', methods=['GET'])
 def reboot():
-    logging.print_info("set device into REBOOT state...")
-    cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
-    os.system(cmd)
-
-    logging.print_info("perform reboot...")
-    cmd = "printf \"\\x06\" >> /dev/" + uart_receiver.device_address
-    os.system(cmd)
+    os_health.reboot()
     return {}    
 
 
@@ -66,7 +60,7 @@ def get_test_results():
 
 @app.route('/test/memory', methods=['GET'])
 def test_memory():
-    return memory_test.test_memory_api()
+    return memory_test.test_alloc_speed()
 
 @app.route('/rpm', methods=['GET'])
 def rpm():
