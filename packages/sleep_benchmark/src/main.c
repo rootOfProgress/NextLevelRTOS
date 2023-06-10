@@ -27,12 +27,12 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     unsigned int* (*sleep)(unsigned int) = (unsigned int* (*)(unsigned int time_to_sleep)) (0x8002305);
     MeasurementResults_t measurements;
     timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
-
+    unsigned int sleep_times[4] = {200, 600, 1432, 2000};
     for (int j = 0; j < 4; j++)
     {
         timer_flush_counter(2);
         timer_start(2);
-        sleep(500);
+        sleep(sleep_times[j]);
         timer_stop(2);
         measurements.results[j] = timer_read_counter(2);  
     }
