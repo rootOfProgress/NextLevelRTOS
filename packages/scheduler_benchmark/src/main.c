@@ -27,7 +27,6 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     MeasurementResults_t measurements;
     timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
 
-    // for (int i = 0; i < 32; i++)
     for (int j = 0; j < 32; j++)
     {
         timer_flush_counter(2);

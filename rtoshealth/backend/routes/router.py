@@ -5,12 +5,13 @@ import os
 import time
 import serial
 import test.memory
+import test.scheduler
 import util.uart_receiver as uart_receiver
 import util.binary_loader as binary_loader
 import util.os_health as os_health
 import test.test_util as test_util
 import test.memory as memory_test
-
+import test.scheduler as scheduler_test
 
 # from logging import print_fail, print_info, print_success, print_warning
 from threading import Thread, Lock
@@ -53,7 +54,6 @@ def reboot():
     os_health.reboot()
     return {}    
 
-
 @app.route('/get_test_results', methods=['GET'])
 def get_test_results():
     return test_util.get_test_results()
@@ -61,6 +61,14 @@ def get_test_results():
 @app.route('/test/memory', methods=['GET'])
 def test_memory():
     return memory_test.test_alloc_speed()
+
+@app.route('/test/scheduler', methods=['GET'])
+def test_scheduler():
+    return scheduler_test.test_contextswitch_speed()
+
+@app.route('/test/sleep', methods=['GET'])
+def test_sleep():
+    return scheduler_test.test_sleep_time()
 
 @app.route('/rpm', methods=['GET'])
 def rpm():

@@ -16,18 +16,9 @@ serial_device = None
 device_address = ""
 mutex = Lock()
 
-def prepare_device():
-    os_health.reboot()
-    time.sleep(1)
-    logging.print_info("Check if OS is alive...")
-    lifetime = os_health.get_lifetime()
-    if (lifetime == {}):
-        logging.print_fail("OS not available")
-        return {}
-
 def test_alloc_speed():
     global result
-    prepare_device()
+    test_util.prepare_device()
     binary_loader.upload_binary("memory_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(128,))
     receiver.start()
@@ -49,11 +40,6 @@ def test_alloc_speed():
         "raw": results_as_array
     }
     return response_to_client
-
-        # print(unpack('<I', response[i:i+4])[0])
-    # print(unpack('<I', response[0:4])[0])
-    # print(unpack('<I', response[4:8])[0])
-    # print(unpack('<I', response[8:12])[0])
 
 def test_memory_api():
     logging.print_info("Reboot OS...")
