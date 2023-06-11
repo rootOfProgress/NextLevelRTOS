@@ -7,8 +7,10 @@ public_functions = [
     'allocate',
     'deallocate', 
     'create_task',
-    'timer_init'
+    'timer_init',
+    'task_sleep'
 ]
+
 arch = list(sys.argv)[1]
 header = ""
 

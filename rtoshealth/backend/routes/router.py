@@ -70,6 +70,10 @@ def test_scheduler():
 def test_sleep():
     return scheduler_test.test_sleep_time()
 
+@app.route('/test/sleep_load', methods=['GET'])
+def test_sleep_load():
+    return scheduler_test.test_sleep_load_time()
+
 @app.route('/rpm', methods=['GET'])
 def rpm():
     logging.print_info("set device into REQUEST_RPM state...")

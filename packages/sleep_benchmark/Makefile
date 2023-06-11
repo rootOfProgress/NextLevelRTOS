@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCP := arm-none-eabi-objcopy
-INC = -I../include -I../../os/arch/f401/include/
+INC = -I./include -I../include -I../../os/arch/f401/include/
 OUTDIR := ./build
 
 CFLAGS = -O0  \

@@ -92,7 +92,7 @@ def get_rx():
     global result
     return result
 
-def device_rx(expected = 1):
+def device_rx(expected = 1, timeout = 2):
     global result
     global mutex
     global is_busy
@@ -101,6 +101,8 @@ def device_rx(expected = 1):
     result = b''
     
     mutex.acquire()
+    # serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=timeout, xonxoff=False, rtscts=False, dsrdtr=False)
+    # serial_device.write_timeout(timeout)
     incoming_data = serial_device.read(expected)
     result = incoming_data
     mutex.release()
