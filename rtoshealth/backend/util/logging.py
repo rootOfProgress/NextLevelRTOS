@@ -1,3 +1,5 @@
+from datetime import datetime 
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -11,13 +13,16 @@ class bcolors:
 
 
 def print_info(str):
-    print(bcolors.OKCYAN + str + bcolors.ENDC)
+    print("[" + datetime.today().strftime('%H:%M:%S.%f') + "] " + bcolors.OKCYAN + str + bcolors.ENDC)
 
 def print_fail(str):
-    print(bcolors.FAIL + str + bcolors.ENDC)
+    print("[" + datetime.today().strftime('%H:%M:%S.%f') + "] " + bcolors.FAIL + str + bcolors.ENDC)
 
 def print_success(str):
-    print(bcolors.OKGREEN + str + bcolors.ENDC)
+    print("[" + datetime.today().strftime('%H:%M:%S.%f') + "] " + bcolors.OKGREEN + str + bcolors.ENDC)
 
 def print_warning(str):
-    print(bcolors.WARNING + str + bcolors.ENDC)
+    print("[" + datetime.today().strftime('%H:%M:%S.%f') + "] " + bcolors.WARNING + str + bcolors.ENDC)
+
+def print_bold(str):
+    print("[" + datetime.today().strftime('%H:%M:%S.%f') + "] " + bcolors.BOLD + str + bcolors.ENDC)

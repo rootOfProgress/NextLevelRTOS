@@ -32,12 +32,7 @@ def process_result(result_type = ""):
             logging.print_success("Got memory response from device, Startadress is : " + hex(start_adress))
             return start_adress
         case "lifetime":
-            print(result)
-            print(result[24:28])
-            print(unpack('I', result[24:28])[0])
-            print(len(result))
-
-            logging.print_success("Got device response for Lifetime!")
+            logging.print_success("Recevied lifetime data")
             response = {
                 "num_of_allocs" : unpack('<I', result[0:4])[0],
                 "num_of_deallocs" : unpack('<I', result[4:8])[0], 
@@ -62,7 +57,6 @@ def process_result(result_type = ""):
             return response
         case "DDDDAAAA":
             logging.print_success("Got device response!")
-            print(result)
             response = {
                 "x" : unpack('<h', result[8:10])[0],
                 "y" : unpack('<h', result[10:12])[0], 
@@ -81,7 +75,6 @@ def process_result(result_type = ""):
             return response
         case _:
             logging.print_fail("Unknown response!")
-            print(result)
             logging.print_warning("Flushing receive buffer...")
             receiver = Thread(target = flush_rx_buffer)
             receiver.start()
@@ -101,8 +94,6 @@ def device_rx(expected = 1, timeout = 2):
     result = b''
     
     mutex.acquire()
-    # serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=timeout, xonxoff=False, rtscts=False, dsrdtr=False)
-    # serial_device.write_timeout(timeout)
     incoming_data = serial_device.read(expected)
     result = incoming_data
     mutex.release()

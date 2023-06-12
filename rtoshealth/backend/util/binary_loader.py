@@ -21,12 +21,12 @@ def recompile_binary(final_adress, package_name, size):
     logging.print_info("recompile programm...")
     cmd = "make clean -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
-    cmd = "make -C " + path_suffix + "packages/" + package_name
+    cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null"
     os.system(cmd)
 
 def upload_binary(package_name):
     logging.print_info("Compile programm...")
-    cmd = "make -C " + path_suffix + "packages/" + package_name
+    cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null" 
     os.system(cmd)
 
     logging.print_info("Get Size...")
@@ -69,6 +69,4 @@ def upload_binary(package_name):
 
     logging.print_info("upload binary to target...")
     cmd = "dd if=" + path_suffix + "packages/" + package_name + "/build/" + package_name + "_binary" + " of=/dev/" + uart_receiver.device_address + " iflag=direct,skip_bytes"
-    os.system(cmd)   
-
-    logging.print_success("done!")
+    os.system(cmd)

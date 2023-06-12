@@ -14,23 +14,20 @@ def reboot():
     os.system(cmd)
 
 def get_lifetime():
-    logging.print_info("set device into REQUEST_STATISTIC state...")
+    logging.print_info("Request lifetime info...")
     cmd = "printf \"\\x03\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
     receiver = Thread(target = uart_receiver.device_rx, args=(40,))
     receiver.start()
-
-    logging.print_info("trigger update...")
     cmd = "printf \"\\x03\\x56\\x34\\x12\" >> /dev/" + uart_receiver.device_address
     os.system(cmd)
 
-    logging.print_info("waiting for device response...")
+    logging.print_info("Waiting for device response...")
     start = time.time()
     receiver.join()
 
     stop = time.time()
-    logging.print_info("Took " + str(stop - start) + " ms")
     response = uart_receiver.process_result("lifetime")
     if response:
         return response

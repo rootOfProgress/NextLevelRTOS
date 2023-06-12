@@ -6,9 +6,11 @@ import time
 import serial
 import test.memory
 import test.scheduler
+import test.test_main
 import util.uart_receiver as uart_receiver
 import util.binary_loader as binary_loader
 import util.os_health as os_health
+import test.test_main as test_main
 import test.test_util as test_util
 import test.memory as memory_test
 import test.scheduler as scheduler_test
@@ -58,21 +60,25 @@ def reboot():
 def get_test_results():
     return test_util.get_test_results()
 
+@app.route('/test/all', methods=['GET'])
+def test_all():
+    return test_main.run_all()    
+
 @app.route('/test/memory', methods=['GET'])
 def test_memory():
-    return memory_test.test_alloc_speed()
+    return memory_test.test_memory001_alloc_benchmark()
 
 @app.route('/test/scheduler', methods=['GET'])
 def test_scheduler():
-    return scheduler_test.test_contextswitch_speed()
+    return scheduler_test.test_scheduler002_contextswitch_benchmark()
 
 @app.route('/test/sleep', methods=['GET'])
 def test_sleep():
-    return scheduler_test.test_sleep_time()
+    return scheduler_test.test_scheduler001_sleep_benchmark()
 
 @app.route('/test/sleep_load', methods=['GET'])
 def test_sleep_load():
-    return scheduler_test.test_sleep_time(True)
+    return scheduler_test.test_scheduler001_sleep_benchmark(True)
 
 @app.route('/rpm', methods=['GET'])
 def rpm():

@@ -16,7 +16,7 @@ serial_device = None
 device_address = ""
 mutex = Lock()
 
-def test_alloc_speed():
+def test_memory001_alloc_benchmark():
     global result
     test_util.prepare_device()
     binary_loader.upload_binary("memory_benchmark")
