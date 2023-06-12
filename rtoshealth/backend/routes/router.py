@@ -72,7 +72,7 @@ def test_sleep():
 
 @app.route('/test/sleep_load', methods=['GET'])
 def test_sleep_load():
-    return scheduler_test.test_sleep_load_time()
+    return scheduler_test.test_sleep_time(True)
 
 @app.route('/rpm', methods=['GET'])
 def rpm():

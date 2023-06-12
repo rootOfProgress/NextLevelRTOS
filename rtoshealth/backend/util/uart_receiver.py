@@ -44,11 +44,11 @@ def process_result(result_type = ""):
                 "ram_size" : unpack('<I', result[8:12])[0], 
                 "total_byte_alloced" : unpack('<I', result[12:16])[0], 
                 "total_byte_used" : unpack('<I', result[16:20])[0], 
-                "os_data_end" : unpack('I', result[20:24])[0], 
+                "git_hash" : unpack('I', result[20:24])[0], 
                 "free_useable" : unpack('I', result[24:28])[0], 
                 "waiting_tasks" : unpack('<I', result[28:32])[0], 
                 "running_tasks" : unpack('<I', result[32:36])[0], 
-                "cpu_load" : unpack('I', result[36:40])[0],              
+                "os_version" : unpack('I', result[36:40])[0],              
             }
             return response
         case "CCCCAAAA":

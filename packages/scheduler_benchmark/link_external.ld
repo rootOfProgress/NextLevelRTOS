@@ -28,7 +28,7 @@ SECTIONS
     _ebss = .;
   } > RAM
 
-  .data : AT(ADDR(.rodata) + SIZEOF(.rodata))
+  .data :
   {
     _sdata = .;
     *(.data .data.*);

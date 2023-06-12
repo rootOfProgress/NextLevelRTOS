@@ -1,6 +1,9 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
+#define GIT_HASH 0x1157fedc;
+#define OS_VERSION 12062023;
+
 typedef enum KernelErrorCodes {
     SCHEDULER_INIT_FAILED,
     TASK_CREATION_FAILED,

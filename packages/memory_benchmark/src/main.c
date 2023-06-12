@@ -24,13 +24,11 @@ typedef struct MeasurementResults {
 
 void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(unsigned int alloc_size, MeasurementResults_t *measurements, unsigned int round)
 {
-    unsigned int* (*baz)(unsigned int) = (unsigned int* (*)(unsigned int size)) (0x8001629);
-    unsigned int* (*debaz)(unsigned int) = (unsigned int* (*)(unsigned int address)) (0x800159d);
     timer_flush_counter(2);
     timer_start(2);
-    unsigned int *t = baz(alloc_size);
+    unsigned int *t = allocate(alloc_size);
     timer_stop(2);
-    debaz(t);
+    deallocate(t);
     measurements->results[round] = timer_read_counter(2);  
 }
 
@@ -70,26 +68,9 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     // for (int i = 0; i < 32; i++)
     for (int i = 0x20005484, j = 0; j < 32/* i < 0x20002D44 */; i += 0x04, j++)
     {
-
-        // unsigned int t = baz(4);
         unsigned int r1 = READ_REGISTER(i);
         
         benchmark(r1 & 0xFF, &measurements, j);
-        // benchmark((r1 >> 8) & 0xFF, &measurements, j);
-        // benchmark((r1 >> 16) & 0xFF, &measurements, j);
-        // benchmark((r1 >> 24) & 0xFF, &measurements, j);
-        // measurements.results[j] = timer_read_counter(2);
     }
-    // for (int i = 0x20002CC4; i < 0x20002CD4; i += 0x04)
-    // {
-    //     unsigned int r1 = READ_REGISTER(i);
-        
-    //     benchmark(&gpio_b, r1 & 0xFF);
-    //     benchmark(&gpio_b, (r1 >> 8) & 0xFF);
-    //     benchmark(&gpio_b, (r1 >> 16) & 0xFF);
-    //     benchmark(&gpio_b, (r1 >> 24) & 0xFF);
-    // }
-    
-    // measurements.results[0] = 66789;
     print(&measurements.results, 32 * sizeof(int));
 }

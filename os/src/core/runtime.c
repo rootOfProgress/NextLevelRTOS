@@ -67,5 +67,8 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
     if (run_scheduler() == -1)
         return SCHEDULER_INIT_FAILED;
 
+    mstat.git_hash = GIT_HASH;
+    mstat.os_version = OS_VERSION;
+
     return KERNEL_INIT_SUCCEDED;
 }

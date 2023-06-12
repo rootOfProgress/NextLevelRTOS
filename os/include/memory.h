@@ -27,11 +27,11 @@ typedef struct MemoryStatistic {
     unsigned int ram_size;
     unsigned int total_byte_alloced;
     unsigned int total_byte_used;
-    unsigned int os_data_end;
+    unsigned int git_hash;
     unsigned int free_useable;
     unsigned int waiting_tasks;
     unsigned int running_tasks;
-    unsigned int cpu_load;
+    unsigned int os_version;
 } MemoryStatistic_t;
 
 

@@ -1,15 +1,14 @@
 ram_size = 40000;
 ram_start = 0x20000008;
+metadata = 0x20000000;
 EXTERN(bootstrap)
 ENTRY(bootstrap)
-
-
-bar1 = 0xC00fffff; 
 
 MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
 	RAM (rwx) : ORIGIN = ram_start, LENGTH = ram_size
+	META (rwx) : ORIGIN = metadata, LENGTH = 8
 }
 
 SECTIONS
@@ -25,6 +24,11 @@ SECTIONS
 		_eromdev = .;
 		_sidata = .;
 	} >FLASH
+
+	.meta :
+	{
+		KEEP(*(.meta))
+	} >META
 
 	.data : AT(_sidata)
 	{
@@ -42,6 +46,6 @@ SECTIONS
 	} >RAM
 
 	stack_top = ORIGIN(RAM) + LENGTH(RAM);
-  _sidata = LOADADDR(.data);
+	_sidata = LOADADDR(.data);
 
 }
