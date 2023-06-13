@@ -12,7 +12,6 @@ import test.test_util as test_util
 import util.uart_receiver as uart_receiver
 
 serial_device = None
-# result = []
 device_address = ""
 mutex = Lock()
 

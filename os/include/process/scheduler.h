@@ -36,10 +36,10 @@ typedef struct TaskSleepRequest
     unsigned int pid_of_sleeping_task;
 } TaskSleepRequest_t;
 
-extern TaskSleepRequest_t task_sleep_request;
+extern TaskSleepRequest_t volatile task_sleep_request;
 
-extern ProcessStats_t process_stats;
-extern KernelPids_t kernel_pids;
+extern ProcessStats_t volatile process_stats;
+extern KernelPids_t volatile kernel_pids;
 
 extern Node_t* currently_running;
 extern Node_t* task_to_preserve;

@@ -8,9 +8,9 @@
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
-    while (1)
-    {
-        SV_YIELD_TASK;
-    }
+    // while (1)
+    // {
+        // SV_YIELD_TASK;
+    // }
     
 }

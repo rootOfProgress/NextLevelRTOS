@@ -12,7 +12,7 @@ const unsigned int NUM_OF_SLOTS = 60;
 unsigned int mutex;
 char is_first_round = 1;
 
-MemoryStatistic_t mstat;
+MemoryStatistic_t volatile mstat;
 
 void swap(char* buffer)
 {

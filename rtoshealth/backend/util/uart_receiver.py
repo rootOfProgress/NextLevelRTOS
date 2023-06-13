@@ -32,7 +32,7 @@ def process_result(result_type = ""):
             logging.print_success("Got memory response from device, Startadress is : " + hex(start_adress))
             return start_adress
         case "lifetime":
-            logging.print_success("Recevied lifetime data")
+            logging.print_success("Received lifetime data")
             response = {
                 "num_of_allocs" : unpack('<I', result[0:4])[0],
                 "num_of_deallocs" : unpack('<I', result[4:8])[0], 
@@ -40,9 +40,12 @@ def process_result(result_type = ""):
                 "total_byte_alloced" : unpack('<I', result[12:16])[0], 
                 "total_byte_used" : unpack('<I', result[16:20])[0], 
                 "git_hash" : unpack('I', result[20:24])[0], 
-                "free_useable" : unpack('I', result[24:28])[0], 
-                "waiting_tasks" : unpack('<I', result[28:32])[0], 
-                "running_tasks" : unpack('<I', result[32:36])[0], 
+                "magic" : unpack('I', result[24:28])[0], 
+                "debug_mode" : unpack('I', result[28:32])[0], 
+                "failed_tasks" : unpack('b', result[32:33])[0], 
+                "finished_tasks" : unpack('b', result[33:34])[0], 
+                "waiting_tasks" : unpack('b', result[34:35])[0], 
+                "running_tasks" : unpack('b', result[35:36])[0], 
                 "os_version" : unpack('I', result[36:40])[0],              
             }
             return response

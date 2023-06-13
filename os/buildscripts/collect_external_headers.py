@@ -8,7 +8,8 @@ public_functions = [
     'deallocate', 
     'create_task',
     'timer_init',
-    'task_sleep'
+    'task_sleep',
+    'create_task'
 ]
 
 arch = list(sys.argv)[1]

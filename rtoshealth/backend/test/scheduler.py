@@ -37,7 +37,7 @@ def test_scheduler001_sleep_benchmark(load = False):
 
     if load:
         for _ in range(0,4):
-            binary_loader.upload_binary("empty")
+            binary_loader.upload_binary("empty_unterminated")
 
     binary_loader.upload_binary("sleep_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(16,))
@@ -63,7 +63,10 @@ def test_scheduler001_sleep_benchmark(load = False):
     }
     return response_to_client
 
-def test_scheduler002_contextswitch_benchmark():
+def test_scheduler002_sleep_benchmark_load():
+    return test_scheduler001_sleep_benchmark(True)
+
+def test_scheduler003_contextswitch_benchmark():
     global result
     test_util.prepare_device()
     binary_loader.upload_binary("scheduler_benchmark")
@@ -87,3 +90,18 @@ def test_scheduler002_contextswitch_benchmark():
         "raw": results_as_array
     }
     return response_to_client
+
+def test_scheduler004_finish_task():
+    result = os_health.get_lifetime()
+    finished_tasks_pre = result["finished_tasks"]
+
+    binary_loader.upload_binary("empty")
+
+    time.sleep(2)
+    result = os_health.get_lifetime()
+    finished_tasks_post = result["finished_tasks"]
+
+    if ((finished_tasks_post - finished_tasks_pre) != 1):
+        return False
+    
+    return True

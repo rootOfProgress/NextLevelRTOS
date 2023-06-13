@@ -8,9 +8,9 @@ Queue_t* waiting_tasks = NULL;
 Node_t* currently_running = NULL;
 Node_t* task_to_preserve = NULL;
 
-ProcessStats_t process_stats;
-KernelPids_t kernel_pids;
-TaskSleepRequest_t task_sleep_request;
+ProcessStats_t volatile process_stats;
+KernelPids_t volatile kernel_pids;
+TaskSleepRequest_t volatile task_sleep_request;
 
 int init_scheduler(void)
 {
@@ -57,6 +57,8 @@ void reboot(void)
 void invalidate_current_task(void)
 {
     ((Tcb_t*) (currently_running->data))->general.task_info.state = INVALID;
+    if (DEBUG)
+        mstat.failed_tasks++;
     process_stats.clean_up_requests++;
 }
 
@@ -236,7 +238,10 @@ void finish_task(void)
     n->general.task_info.state = FINISHED;
 
     if (DEBUG)
+    {
         process_stats.num_of_finished_tasks++;
+        mstat.finished_tasks++;
+    }
     process_stats.clean_up_requests++;
     set_pendsv();
 }
