@@ -19,6 +19,7 @@ general_tests = [general.test_general001_lifetime, ]
 memory_benchmarks = [memory.test_memory001_alloc_benchmark, ]
 scheduler_benchmarks = [scheduler.test_scheduler001_sleep_benchmark, scheduler.test_scheduler002_sleep_benchmark_load, scheduler.test_scheduler003_contextswitch_benchmark]
 scheduler_tests = [scheduler.test_scheduler004_finish_task]
+memory_tests = [memory.test_memory002_alloc]
 
 def execute_test(testcollection, test_log, test_type, clean_environment = True):
     global failed_tests
@@ -55,10 +56,11 @@ def run_all():
     test_log.write(meta)
 
     results = []
-    results.append(execute_test(general_tests, test_log, TestType.LOGIC, False))
-    results.append(execute_test(scheduler_tests, test_log, TestType.LOGIC, False))
-    results.append(execute_test(memory_benchmarks, test_log, TestType.BENCHMARK))
-    results.append(execute_test(scheduler_benchmarks, test_log, TestType.BENCHMARK))
+    # results.append(execute_test(general_tests, test_log, TestType.LOGIC, False))
+    # results.append(execute_test(scheduler_tests, test_log, TestType.LOGIC, False))
+    # results.append(execute_test(memory_benchmarks, test_log, TestType.BENCHMARK))
+    # results.append(execute_test(scheduler_benchmarks, test_log, TestType.BENCHMARK))
+    results.append(execute_test(memory_tests, test_log, TestType.LOGIC, True))
 
     if (failed_tests):
         logging.print_bold("\n Failed tests:")

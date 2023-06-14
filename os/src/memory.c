@@ -224,6 +224,9 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
     lock_mutex((void*) &mutex);
     unsigned int next_useable_chunk = 0;
 
+    if (size <= 0)
+        return NULL;
+
     while ((size % 4) != 0) { size++; }
 
     /*
@@ -291,17 +294,20 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
         }
         next_useable_chunk += memory_entry->mementry_fields.chunk_size;
     }
-    if (is_first_round)
-    {
-        defrag();
-        is_first_round = 0;
-        release_mutex((void*) &mutex);
-        return allocate(size);
-    }
-    else
-    {
-        is_first_round = 1;
-        release_mutex((void*) &mutex);
-        return NULL;
-    }
+    release_mutex((void*) &mutex);
+    return NULL;
+
+    // if (is_first_round)
+    // {
+    //     defrag();
+    //     is_first_round = 0;
+    //     release_mutex((void*) &mutex);
+    //     return allocate(size);
+    // }
+    // else
+    // {
+    //     is_first_round = 1;
+    //     release_mutex((void*) &mutex);
+    //     return NULL;
+    // }
 }

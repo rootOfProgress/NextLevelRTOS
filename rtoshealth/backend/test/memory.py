@@ -10,6 +10,7 @@ import util.binary_loader as binary_loader
 import util.os_health as os_health
 import test.test_util as test_util
 import util.uart_receiver as uart_receiver
+import random
 
 serial_device = None
 device_address = ""
@@ -17,6 +18,22 @@ mutex = Lock()
 
 def test_memory001_alloc_benchmark():
     global result
+
+    random.seed()
+    package_name = "memory_benchmark"
+    target_path = path_suffix + "packages/" + package_name + "/include/parameters.h"
+
+    random_numbers = ""
+
+    for r in range(0,32):
+        alloc_chunk = random.randrange(256)
+        random_numbers += str(alloc_chunk) + ","
+      
+    sed_command = "sed -i 's/{([0-9]*,)*}/{" + random_numbers + "}/g' " + target_path  
+    print(sed_command)         
+    # sed_command = "sed -i 's/{([0-9]*,)*[0-9]*,[0-9]*,[0-9]*,}/{" + random_numbers + "}/g' " + target_path           
+    # os.system(sed_command)
+    # return {}
     test_util.prepare_device()
     binary_loader.upload_binary("memory_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(128,))
@@ -37,6 +54,33 @@ def test_memory001_alloc_benchmark():
         "avg": sum(results_as_array) / len(results_as_array),
         "max": max(results_as_array),
         "raw": results_as_array
+    }
+    return response_to_client
+
+def test_memory002_alloc():
+    global result
+
+    random.seed()
+    package_name = "memory_tests"
+    
+
+    test_util.prepare_device()
+    binary_loader.upload_binary("memory_tests")
+    receiver = Thread(target = uart_receiver.device_rx, args=(7,))
+    receiver.start()
+    logging.print_info("waiting for MEMORY response...")
+    start = time.time()
+    receiver.join()
+
+    stop = time.time()
+    logging.print_info("Took " + str(stop - start) + " ms")
+    response = uart_receiver.get_rx()
+
+    # results_as_array = []
+    # for i in range(0,128,4):
+    #     results_as_array.append(unpack('<I', response[i:i+4])[0])
+    print(response)
+    response_to_client = {
     }
     return response_to_client
 

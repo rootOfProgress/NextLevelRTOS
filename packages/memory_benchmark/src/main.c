@@ -9,6 +9,7 @@
 #include "gpio.h"
 #include "uart.h"
 #include "tim2_5.h"
+#include "parameters.h"
 
 static unsigned int start_measurement = 0b010;
 static unsigned int stop_measurement = 0b111;
@@ -37,40 +38,9 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     MeasurementResults_t measurements;
     timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
 
-    // while (timer_read_counter(2) < 0xF4240)
-    // {
-    //     /* code */
-    // }
-    
-    // PB 0, 1, 2 used
-    // Memory Measurement Start: 010
-    // Memory Measurement Stop: 101
-    unsigned int rand1 = READ_REGISTER(0x20006004);
-    unsigned int rand2 = READ_REGISTER(0x200060C4);
-    unsigned int rand3 = READ_REGISTER(0x200062C4);
-    unsigned int rand4 = READ_REGISTER(0x200064C4);
-
-    GpioObject_t gpio_b;
-    gpio_b.port = 'B';
-    gpio_b.pin = 0;
-
-    init_gpio(&gpio_b);
-    set_moder(&gpio_b, GeneralPurposeOutputMode);
-
-    gpio_b.pin = 1;
-    set_moder(&gpio_b, GeneralPurposeOutputMode);
-    set_pupdr(&gpio_b, Nothing);
-
-    gpio_b.pin = 2;
-    set_moder(&gpio_b, GeneralPurposeOutputMode);
-    set_pin_bulk(&gpio_b, 0);
-
-    // for (int i = 0; i < 32; i++)
-    for (int i = 0x20005484, j = 0; j < 32/* i < 0x20002D44 */; i += 0x04, j++)
+    for (int j = 0; j < 32; j++)
     {
-        unsigned int r1 = READ_REGISTER(i);
-        
-        benchmark(r1 & 0xFF, &measurements, j);
+        benchmark(alloc_chunks[j], &measurements, j);
     }
     print(&measurements.results, 32 * sizeof(int));
 }
