@@ -43,7 +43,7 @@ void update_memory_statistic(void);
 void init_allocator(unsigned int,unsigned int*);
 void init_process_allocator(unsigned int*);
 void swap(char*);
-void memset_byte(void*,unsigned int, char);
+void memset_byte(void*, unsigned int, char);
 void defrag(void);
 
 int size_comparator(int, int);

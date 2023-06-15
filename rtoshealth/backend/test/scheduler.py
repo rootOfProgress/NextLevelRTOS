@@ -105,3 +105,26 @@ def test_scheduler004_finish_task():
         return False
     
     return True
+
+def test_scheduler005_join_task():
+    binary_loader.upload_binary("memory_tests")
+    receiver = Thread(target = uart_receiver.device_rx, args=(32,))
+    receiver.start()
+    logging.print_info("waiting for MEMORY response...")
+    start = time.time()
+    receiver.join()
+
+    stop = time.time()
+    logging.print_info("Took " + str(stop - start) + " ms")
+    result = uart_receiver.get_rx()
+
+    response = {
+        "Subtest005_000_join_task" : unpack('b', result[0:1])[0], 
+        "reserved" : unpack('@31s', result[1:32])[0],             
+    }
+
+    if ((response["Subtest005_000_join_task"]) != 1):
+        return False
+    
+    return True
+    

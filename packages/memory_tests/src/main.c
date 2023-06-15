@@ -12,15 +12,40 @@
 #include "parameters.h"
 
 typedef struct MeasurementResults {
-    unsigned int alloc_negative : 1, alloc_outofrange : 1, : 30; 
+    char Subtest002_000_memset_byte; 
+    char Subtest002_001_outofrange; 
+    char Subtest002_002_alloc_negative; 
+    char reserved[29]; 
 } MeasurementResults_t;
+
+typedef struct DummyStruct {
+    unsigned int a0;
+    unsigned int a1;
+    char a2[4];
+} DummyStruct_t;
 
 
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
-    measurements.alloc_negative = 0;
-    
+    DummyStruct_t dt;
+    dt.a0 = 0x12345678;
+    dt.a1 = 0xaaaaaaaa;
+    dt.a2[0] = 'c';
 
-    print(&measurements, sizeof(int));
+    memset_byte((void*) &dt, sizeof(DummyStruct_t), 0);
+    
+    measurements.Subtest002_000_memset_byte = 0;
+    if (dt.a0 == 0 || dt.a1 == 0 || dt.a2[0] == 0 || dt.a2[3] == 0)
+    {
+        measurements.Subtest002_000_memset_byte = 1;
+    }
+    else
+    {
+        print(&measurements, sizeof(int));
+        return;
+    }
+       
+
+    print(&measurements, sizeof(MeasurementResults_t));
 }

@@ -57,16 +57,10 @@ def test_memory001_alloc_benchmark():
     }
     return response_to_client
 
-def test_memory002_alloc():
-    global result
-
-    random.seed()
-    package_name = "memory_tests"
-    
-
+def test_memory002_various():    
     test_util.prepare_device()
     binary_loader.upload_binary("memory_tests")
-    receiver = Thread(target = uart_receiver.device_rx, args=(7,))
+    receiver = Thread(target = uart_receiver.device_rx, args=(32,))
     receiver.start()
     logging.print_info("waiting for MEMORY response...")
     start = time.time()
@@ -74,15 +68,20 @@ def test_memory002_alloc():
 
     stop = time.time()
     logging.print_info("Took " + str(stop - start) + " ms")
-    response = uart_receiver.get_rx()
-
-    # results_as_array = []
-    # for i in range(0,128,4):
-    #     results_as_array.append(unpack('<I', response[i:i+4])[0])
-    print(response)
-    response_to_client = {
+    result = uart_receiver.get_rx()
+    print(result)
+    response = {
+        "Subtest002_000_memset_byte" : unpack('b', result[0:1])[0],
+        #"Subtest002_001_outofrange" : unpack('b', result[1:2])[0], 
+        #"Subtest002_002_alloc_negative" : unpack('b', result[2:3])[0], 
+        "reserved" : unpack('@31s', result[1:32])[0],             
     }
-    return response_to_client
+
+    if ((response["Subtest002_000_memset_byte"]) != 1):
+        return False
+    
+    return True
+    
 
 def test_memory_api():
     logging.print_info("Reboot OS...")

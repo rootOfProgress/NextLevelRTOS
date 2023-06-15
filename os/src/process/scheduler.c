@@ -14,6 +14,7 @@ TaskSleepRequest_t volatile task_sleep_request;
 
 int init_scheduler(void)
 {
+    currently_running = NULL;
     running_tasks = new_queue();
     
     if (running_tasks == NULL)
@@ -240,12 +241,11 @@ void search_invalidate_tasks(void)
 
 void finish_task(void)
 {
-    Tcb_t* n = (Tcb_t*) currently_running->data;
-    n->general.task_info.state = FINISHED;
+    currently_running->data->general.task_info.state = FINISHED;
 
-    if (n->parent_task->join_pid == n->general.task_info.pid)
+    if (currently_running->data->parent_task->join_pid == currently_running->data->general.task_info.pid)
     {
-        wakeup_pid(n->parent_task->general.task_info.pid);
+        wakeup_pid(currently_running->data->parent_task->general.task_info.pid);
     }
 
     if (DEBUG)

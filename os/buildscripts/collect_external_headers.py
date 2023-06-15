@@ -9,7 +9,9 @@ public_functions = [
     'create_task',
     'timer_init',
     'task_sleep',
-    'create_task'
+    'create_task',
+    'join_task',
+    'memset_byte'
 ]
 
 arch = list(sys.argv)[1]
