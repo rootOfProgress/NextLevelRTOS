@@ -29,7 +29,8 @@ typedef struct MemoryStatistic {
     unsigned int total_byte_used;
     unsigned int git_hash;
     unsigned int magic;
-    unsigned int debug_mode;
+    short debug_mode;
+    short systick_enabled;
     unsigned int failed_tasks : 8, finished_tasks : 8, waiting_tasks : 8, running_tasks : 8;
     unsigned int os_version;
 } MemoryStatistic_t;

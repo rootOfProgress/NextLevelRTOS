@@ -63,8 +63,29 @@ void invalidate_current_task(void)
     process_stats.clean_up_requests++;
 }
 
+char check_tasks_availability(unsigned int pid)
+{
+    Node_t *q = get_head_element(waiting_tasks);
+    
+    if (!q)
+        return 0;
+
+    for (unsigned int i = 0; i < waiting_tasks->size; i++)
+    {
+        if (q->data->general.task_info.pid == pid && q->data->general.task_info.state == READY)
+        {
+            return 1;
+        }
+        q = q->next;
+    }
+
+    return 0;
+}
+
 void join_task(unsigned int pid_to_wait_for) 
 {
+    if (!check_tasks_availability(pid_to_wait_for))
+        return;
     ((Tcb_t*) (currently_running->data))->join_pid = pid_to_wait_for;
     block_current_task();
 }

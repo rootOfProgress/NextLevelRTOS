@@ -102,12 +102,13 @@ def test_scheduler004_finish_task():
     finished_tasks_post = result["finished_tasks"]
 
     if ((finished_tasks_post - finished_tasks_pre) != 1):
-        return False
+        return [("test_scheduler004_finish_task", 0)]
     
-    return True
+    return [("test_scheduler004_finish_task", 1)]
+
 
 def test_scheduler005_join_task():
-    binary_loader.upload_binary("memory_tests")
+    binary_loader.upload_binary("scheduler_join_task")
     receiver = Thread(target = uart_receiver.device_rx, args=(32,))
     receiver.start()
     logging.print_info("waiting for MEMORY response...")
@@ -120,11 +121,15 @@ def test_scheduler005_join_task():
 
     response = {
         "Subtest005_000_join_task" : unpack('b', result[0:1])[0], 
-        "reserved" : unpack('@31s', result[1:32])[0],             
+        "Subtest005_001_join_multiple_tasks" : unpack('b', result[1:2])[0], 
+        "Subtest005_002_no_join" : unpack('b', result[2:3])[0], 
+        "Subtest005_003_join_nested_tasks" : unpack('b', result[3:4])[0], 
+        # "reserved" : unpack('@31s', result[1:32])[0],             
     }
 
-    if ((response["Subtest005_000_join_task"]) != 1):
-        return False
-    
-    return True
-    
+    processed_results = []
+
+    for r in response:
+        processed_results.append((r, response[r]))
+        
+    return processed_results
