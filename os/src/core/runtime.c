@@ -18,6 +18,24 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   };
 }
 
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) subfake(void)
+{
+//   while (1) 
+//   {
+//     SV_YIELD_TASK;
+//   };
+}
+
+static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) fake(void)
+{
+  int t = create_task(&subfake, 0);
+  join_task(t);
+  while (1) 
+  {
+    SV_YIELD_TASK;
+  };
+}
+
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {
     SV_STD;
@@ -27,6 +45,8 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
         create_task(func_ptr[i], 0);
 
     SV_STE;
+
+    create_task(&fake, 0);
 
     while (1)
     {
@@ -43,10 +63,11 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
         // it would make no sense to set the system
         // in sleep mode. in this case, the system would freezen for the systick interval.
         // now, os enters sleep only if the idle runner is the only one in line.
-        if (running_tasks->size == 1)
-            sleep();
-        
-        block_current_task();
+        // if (running_tasks->size == 1)
+            // sleep();
+        // 
+        // block_current_task();
+        SV_YIELD_TASK;
     }
 }
 

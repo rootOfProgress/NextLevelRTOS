@@ -62,6 +62,12 @@ void invalidate_current_task(void)
     process_stats.clean_up_requests++;
 }
 
+void join_task(unsigned int pid_to_wait_for) 
+{
+    ((Tcb_t*) (currently_running->data))->join_pid = pid_to_wait_for;
+    block_current_task();
+}
+
 int run_scheduler(void)
 {
     if (DEBUG == 2)
@@ -236,6 +242,11 @@ void finish_task(void)
 {
     Tcb_t* n = (Tcb_t*) currently_running->data;
     n->general.task_info.state = FINISHED;
+
+    if (n->parent_task->join_pid == n->general.task_info.pid)
+    {
+        wakeup_pid(n->parent_task->general.task_info.pid);
+    }
 
     if (DEBUG)
     {

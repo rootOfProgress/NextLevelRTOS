@@ -4,6 +4,7 @@
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "panic.h"
+#include "data/list.h"
 
 #define STACK_SIZE 1536
 
@@ -65,6 +66,17 @@ int create_task(void (*task_function)(), unsigned int ram_location)
     tcb->sp = (unsigned int) &cpu_register->r4;
     tcb->memory_lower_bound = (unsigned int) task_start_address;
     tcb->code_section = ram_location;
+    tcb->join_pid = -1;
+
+    if (!currently_running)
+        tcb->parent_task = NULL;
+    else
+        tcb->parent_task = currently_running->data;
+    
+    if (currently_running)
+        single_list_push(currently_running->data->child_tasks, (void*) &tcb);
+    
+    tcb->child_tasks = new_list();
     
     if (DEBUG)
     {

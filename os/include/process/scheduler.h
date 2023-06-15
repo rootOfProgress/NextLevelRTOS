@@ -58,6 +58,7 @@ void finish_task(void);
 void search_invalidate_tasks(void);
 void clean_up_task(Tcb_t*, Node_t*);
 void task_sleep(unsigned int);
+void join_task(unsigned int);
 void collect_os_statistics(char*);
 
 // workaround
