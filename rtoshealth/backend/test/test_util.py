@@ -15,4 +15,5 @@ def prepare_device():
     if (lifetime == {}):
         logging.print_fail("OS not available")
         return {}
+    return lifetime
 

@@ -37,7 +37,7 @@ def test_scheduler001_sleep_benchmark(load = False):
 
     if load:
         for _ in range(0,4):
-            binary_loader.upload_binary("empty_unterminated")
+            binary_loader.upload_binary("cpu_stress")
 
     binary_loader.upload_binary("sleep_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(16,))
@@ -106,7 +106,6 @@ def test_scheduler004_finish_task():
     
     return [("test_scheduler004_finish_task", 1)]
 
-
 def test_scheduler005_join_task():
     binary_loader.upload_binary("scheduler_join_task")
     receiver = Thread(target = uart_receiver.device_rx, args=(32,))
@@ -124,6 +123,30 @@ def test_scheduler005_join_task():
         "Subtest005_001_join_multiple_tasks" : unpack('b', result[1:2])[0], 
         "Subtest005_002_no_join" : unpack('b', result[2:3])[0], 
         "Subtest005_003_join_nested_tasks" : unpack('b', result[3:4])[0], 
+        # "reserved" : unpack('@31s', result[1:32])[0],             
+    }
+
+    processed_results = []
+
+    for r in response:
+        processed_results.append((r, response[r]))
+        
+    return processed_results
+
+def test_scheduler006_task_control():
+    binary_loader.upload_binary("scheduler_tests")
+    receiver = Thread(target = uart_receiver.device_rx, args=(32,))
+    receiver.start()
+    logging.print_info("waiting for MEMORY response...")
+    start = time.time()
+    receiver.join()
+
+    stop = time.time()
+    logging.print_info("Took " + str(stop - start) + " ms")
+    result = uart_receiver.get_rx()
+
+    response = {
+        "Subtest006_000_append_loop_task" : unpack('b', result[0:1])[0],
         # "reserved" : unpack('@31s', result[1:32])[0],             
     }
 

@@ -20,8 +20,15 @@ num_of_failed = 0
 general_tests = [general.test_general001_lifetime, ]
 memory_benchmarks = [memory.test_memory001_alloc_benchmark, ]
 scheduler_benchmarks = [scheduler.test_scheduler001_sleep_benchmark, scheduler.test_scheduler002_sleep_benchmark_load, scheduler.test_scheduler003_contextswitch_benchmark]
-scheduler_tests = [scheduler.test_scheduler004_finish_task, scheduler.test_scheduler005_join_task]
+scheduler_tests = [scheduler.test_scheduler004_finish_task, scheduler.test_scheduler005_join_task, scheduler.test_scheduler006_task_control]
 memory_tests = [memory.test_memory002_various]
+
+def check_test_exceptions(testname, condition):
+    if (testname == "test_scheduler006_task_control" and not condition):
+        return False
+
+    return True
+
 
 def execute_test(testcollection, test_log, test_type, clean_environment = True):
     global failed_tests
@@ -30,35 +37,35 @@ def execute_test(testcollection, test_log, test_type, clean_environment = True):
 
     for test in testcollection:
         results = []
-        logging.print_bold("Starting test " + test.__name__)
+        lifetime_info = {}
+
         if (clean_environment):
-            util.prepare_device()
-        result = test()
+            lifetime_info = util.prepare_device()
 
-        if (test_type == TestType.BENCHMARK):
-            results.append(result)
-        elif (test_type == TestType.LOGIC):
-            for r in result:
-                if (r[1]):
-                    logging.print_success(r[0] + " PASSED")
-                    results.append({r[0]: "PASSED" })
-                    num_of_passed += 1
-                else:
-                    logging.print_fail(r[0] + " FAILED")
-                    results.append({r[0]: "FAILED" })
-                    failed_tests.append({ r[0] : "FAILED" })  
-                    num_of_failed += 1                  
+        if lifetime_info and not check_test_exceptions(test.__name__, lifetime_info["systick_enabled"] == '1'):
+            logging.print_warning("Skipping test " + test.__name__)
+            pass
+        else:
+            logging.print_bold("Starting test " + test.__name__)
 
-            # if (result):
-            #     logging.print_success(test.__name__ + " PASSED")
-            #     results.append({ test.__name__ : "PASSED" })
-            # else:
-            #     logging.print_fail(test.__name__ + " FAILED")
-            #     results.append({ test.__name__ : "FAILED" })
-            #     failed_tests.append({ test.__name__ : "FAILED" })
-            
-        test_log.write("\nResults of test " + test.__name__ + "\n")
-        test_log.write(json.dumps(results, indent=1) + "\n\n")
+            result = test()
+
+            if (test_type == TestType.BENCHMARK):
+                results.append(result)
+            elif (test_type == TestType.LOGIC):
+                for r in result:
+                    if (r[1]):
+                        logging.print_success(r[0] + " PASSED")
+                        results.append({r[0]: "PASSED" })
+                        num_of_passed += 1
+                    else:
+                        logging.print_fail(r[0] + " FAILED")
+                        results.append({r[0]: "FAILED" })
+                        failed_tests.append({ r[0] : "FAILED" })  
+                        num_of_failed += 1                  
+                
+            test_log.write("\nResults of test " + test.__name__ + "\n")
+            test_log.write(json.dumps(results, indent=1) + "\n\n")
     return results
 
 def run_all():
@@ -74,6 +81,8 @@ def run_all():
     lifetime = os_health.get_lifetime()
 
     meta = "Test running on OS version " + str(lifetime["os_version"]) + " on commit " + str(lifetime["git_hash"]) + "\n"
+    test_log.write(meta)
+
     meta = "--Config--\n " + "Debug Mode: " + str(lifetime["debug_mode"]) + "\n" + " Systick Enabled: " + str(lifetime["systick_enabled"]) + "\n"
     test_log.write(meta)
 
@@ -88,9 +97,6 @@ def run_all():
         logging.print_bold("\n Failed tests:")
         for failed in failed_tests:
             logging.print_fail(json.dumps(failed))
-    # else:
-        # logging.print_success(str(len(general_tests) + len(scheduler_tests)) + " TESTS PASSED")
-        # logging.print_fail(str(len(failed_tests)) + " TESTS FAILED")
 
     logging.print_success(str(num_of_passed) + "/" + str(num_of_passed + num_of_failed) + " tests passed")
 

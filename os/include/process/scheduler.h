@@ -60,6 +60,9 @@ void clean_up_task(Tcb_t*, Node_t*);
 void task_sleep(unsigned int);
 void join_task(unsigned int);
 void collect_os_statistics(char*);
+void kill_all_child_tasksR(Tcb_t*);
+void kill_all_child_tasks(void);
+void kill_child_task(unsigned int, Tcb_t*);
 
 // workaround
 void force_pid0_into_running(void);

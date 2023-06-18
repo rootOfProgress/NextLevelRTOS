@@ -29,11 +29,13 @@ def test_memory001_alloc_benchmark():
         alloc_chunk = random.randrange(256)
         random_numbers += str(alloc_chunk) + ","
       
-    sed_command = "sed -i 's/{([0-9]*,)*}/{" + random_numbers + "}/g' " + target_path  
-    print(sed_command)         
-    # sed_command = "sed -i 's/{([0-9]*,)*[0-9]*,[0-9]*,[0-9]*,}/{" + random_numbers + "}/g' " + target_path           
-    # os.system(sed_command)
-    # return {}
+    sed_command = "sed -i 's/{\([0-9]*,\)*};/{" + random_numbers + "};/g' " + target_path  
+
+    os.system(sed_command)
+
+
+    # # sed_command = "sed -i 's/{([0-9]*,)*[0-9]*,[0-9]*,[0-9]*,}/{" + random_numbers + "}/g' " + target_path           
+    # # return {}
     test_util.prepare_device()
     binary_loader.upload_binary("memory_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(128,))
@@ -83,37 +85,3 @@ def test_memory002_various():
         processed_results.append((r, response[r]))
         
     return processed_results
-    
-
-# def test_memory_api():
-#     logging.print_info("Reboot OS...")
-#     os_health.reboot()
-#     time.sleep(1)
-#     logging.print_info("Check if OS is alive...")
-#     lifetime = os_health.get_lifetime()
-#     if (lifetime == {}):
-#         logging.print_fail("OS not available")
-#         return {}
-#     binary_loader.upload_binary("dummy")
-#     time.sleep(1)
-#     test_result = test_util.get_test_results()
-#     test_result = test_result["test_result"]
-#     result = []
-#     for test in range(0,12):
-#         if (test_result & 1 << test):
-#             logging.print_success("Test " + str(test) + " succeeded!")
-#             test = {'test'+str(test): "PASS"}
-#             result.append(test)
-#         else:
-#             logging.print_fail("Test " + str(test) + " failed!")
-#             test = {'test'+str(test): "FAIL"}
-#             result.append(test)
-#     logging.print_info("Check if OS is alive...")
-#     lifetime = os_health.get_lifetime()
-#     if (lifetime == {}):
-#         logging.print_fail("OS not available")
-#         return {}
-#     logging.print_info("Reboot OS...")
-#     os_health.reboot()
-#     return result
-

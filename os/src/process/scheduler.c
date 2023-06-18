@@ -90,6 +90,53 @@ void join_task(unsigned int pid_to_wait_for)
     block_current_task();
 }
 
+void kill_all_child_tasksR(Tcb_t* parent)
+{
+
+    if (parent->child_tasks->size == 0)
+        return;
+    
+    SingleLinkedNode_t* q = parent->child_tasks->head;
+    while (q)
+    {
+        kill_all_child_tasksR((Tcb_t*)q->data);
+        ((Tcb_t*)q->data)->general.task_info.state = INVALID;
+        q = q->next;
+    }
+}
+
+
+void kill_all_child_tasks(void)
+{
+    List_t* child_tasks;
+    child_tasks = currently_running->data->child_tasks;
+
+    SingleLinkedNode_t* q = child_tasks->head;
+    kill_all_child_tasksR((Tcb_t*) q->data);
+}
+
+
+void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
+{
+    List_t* child_tasks;
+    child_tasks = currently_running->data->child_tasks ? !parent : parent->child_tasks;
+
+    if (child_tasks->size == 0)
+        return;
+
+    SingleLinkedNode_t* q = child_tasks->head;
+    while (q)
+    {
+        if (((Tcb_t*)q->data)->general.task_info.pid == pid_of_child)
+        {
+            ((Tcb_t*)q->data)->general.task_info.state = INVALID;
+            return;
+        }
+        q = q->next;
+    }
+    return;    
+}
+
 int run_scheduler(void)
 {
     if (DEBUG == 2)
