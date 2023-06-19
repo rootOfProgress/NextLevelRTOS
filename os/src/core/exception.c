@@ -9,13 +9,19 @@
 #include "process/scheduler.h"
 
 volatile unsigned int svc_number = 0;
-
+// volatile unsigned int systick_cnt = 0;
+// volatile unsigned int logging[32];
 void ISR systick_isr()
 {
-  save_psp_if_threadmode();
+  // disable systick
+  ST_DISABLE;
 
+  save_psp_if_threadmode();
+  // systick_cnt++;
   if (DEBUG && currently_running)
   {
+    // logging[systick_cnt % 32] = (unsigned int) currently_running->data->general.task_info.pid;
+    // logging[systick_cnt % 32] = systick_cnt % 32;
     Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
     tcb_of_current_task->lifetime_info[0].lifetime.forced_interrupts++;
     process_stats.num_of_systick_interrupts++;
@@ -45,6 +51,11 @@ void ISR systick_isr()
     "ldmfd r2!, {r4-r11}\n"
     "msr psp, r2\n"
     "msr msp, r3\n"
+    // enable systick
+    "mov.w	r0, #3758153728\n"
+    "ldr	r1, [r0, #16]\n"
+    "orr.w	r1, r1, #1\n"
+    "str	r1, [r0, #16]\n"  
     "bx lr\n"
   );
 }
@@ -68,18 +79,20 @@ void NO_OPT kprint(void)
   setup_transfer((char*) t->start_adress, t->length);
 }
 
-void svcall_isr()
+void __attribute__ ((interrupt("SWI"))) svcall_isr()
 {
-  // r0 must be preserved, it could be used by e.g. disable_systick()
-  __asm__("mov r9, r0");
+  // @todo!
+  // r0 must be preserved, it could be used by e.g. EXEC_PRIV
+  // __asm__("mov r9, r0");
 
   if (SYSTICK)
-    disable_systick();
-
-  if (DEBUG == 2)
   {
-    timer_stop(TimerForSysLogging);
-    process_stats.num_of_svcalls++;
+    __asm volatile(
+        "mov.w	r2, #3758153728\n"
+        "ldr	r3, [r2, #16]\n"
+        "bic.w	r3, r3, #1\n"
+        "str	r3, [r2, #16]\n"
+    );
   }
   
   save_psp_if_threadmode();
@@ -91,7 +104,6 @@ void svcall_isr()
     if (SYSTICK) 
     {
       init_systick(200);
-      enable_systick();
     }
 
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
@@ -100,6 +112,7 @@ void svcall_isr()
     __asm volatile ("msr psp, r0");
     __asm volatile ("mov r1, 0xfffffffd");
     __asm volatile ("str r1, [sp, #4]");
+    ST_ENABLE;
     return;
   case PRINT_MSG:
     kprint();
@@ -114,14 +127,14 @@ void svcall_isr()
   case STD:
     if (SYSTICK)
     {
-      disable_systick();
+      ST_DISABLE;
     }
     restore_psp();
     return;
   case STE:
     if (SYSTICK)
     {
-      enable_systick();
+      ST_ENABLE;
     }
     restore_psp();
     return;
@@ -136,6 +149,4 @@ void svcall_isr()
     __builtin_unreachable();
     break;
   }
-  if (SYSTICK)
-    enable_systick();
 }

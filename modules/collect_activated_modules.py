@@ -17,16 +17,15 @@ if __name__ == '__main__':
 
     package_list="PACKAGES="
     activated_mods=0
-    for module_name, is_activated in data.items():
-        if is_activated:
-            package_list += " " + module_name
-            activated_mods += 1
-            func_ptr_list += module_name + ","
-            # extern_declarations += "void __attribute__((__noipa__))  __attribute__((optimize(\"O0\"))) " + module_name + "(void);\n"
-            extern_declarations += "extern void " + module_name + "(void);\n"
+    for module_name, args in data.items():
+        if args["run"] == 1:
+            activated_mods += args["amount"]
 
-        # os.system("sed -i '1c" + package_list + "'" +  dir_of_invokation + "/../modules/Makefile")
-    # print("sed -i '1c" + package_list + "' " +  dir_of_invokation + "/../modules/Makefile")
+            for _ in range(0, args["amount"]):
+                package_list += " " + module_name
+                func_ptr_list += module_name + ","
+                extern_declarations += "extern void " + module_name + "(void);\n"
+
     func_ptr_list += "};"
 
     external_header += "#define NUM_OF_EXTERNAL_FUNCTIONS " + str(activated_mods) + "\n"

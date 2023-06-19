@@ -1,8 +1,27 @@
 {
-    "am2302": 0,
-    "foo": 0,
-    "bar": 0,
-    "template1": 0,
-    "template2": 0,
-    "dummy": 0
+    "am2302":
+        {
+            "run" : 0,
+            "amount" : 0
+        },
+    "foo":
+        {
+            "run" : 0,
+            "amount" : 0
+        },
+    "bar":
+        {
+            "run" : 0,
+            "amount" : 0
+        },
+    "template1":
+        {
+            "run" : 0,
+            "amount" : 0
+        },
+    "template2":
+        {
+            "run" : 0,
+            "amount" : 8
+        }
 }

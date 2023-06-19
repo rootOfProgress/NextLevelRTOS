@@ -172,6 +172,11 @@ void  __attribute__((optimize("O3"))) hardfault_handler(void)
         "MSR PSP, r2\n"
         );
     }
+    while (1)
+    {
+        /* code */
+    }
+    
 }
 
 void ISR usage_fault_handler(void)

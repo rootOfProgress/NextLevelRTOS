@@ -119,7 +119,7 @@ void kill_all_child_tasks(void)
 void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
 {
     List_t* child_tasks;
-    child_tasks = currently_running->data->child_tasks ? !parent : parent->child_tasks;
+    child_tasks = currently_running->data->child_tasks ? (List_t*) !parent : parent->child_tasks;
 
     if (child_tasks->size == 0)
         return;
@@ -209,10 +209,15 @@ void __attribute__ ((hot)) pendsv_isr(void)
         timer_flush_counter(TimerForSysLogging);
         timer_start(TimerForSysLogging);
     }
+    
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm volatile (
-      "ldmfd r2!, {r4-r11}\n"
-      "msr psp, r2\n"
+        "ldmfd r2!, {r4-r11}\n"
+        "mov.w r0, #3758153728\n"
+        "ldr   r1, [r0, #16]\n"
+        "orr.w r1, r1, #1\n"
+        "str   r1, [r0, #16]\n"
+        "msr psp, r2\n"
     );
 }
 

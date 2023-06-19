@@ -41,6 +41,7 @@
     "*.inc": "c",
     "rcc.h": "c",
     "math.h": "c",
-    "scheduler.h": "c"
+    "scheduler.h": "c",
+    "cpu.h": "c"
   }
 }
