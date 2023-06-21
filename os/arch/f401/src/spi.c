@@ -91,13 +91,31 @@ void spi_write_single(char data)
 
 }
 
-void NO_OPT spi_write(char preamble, char *data, unsigned int length, char *receive_buffer)
+// void NO_OPT spi_write(char preamble, char *data, unsigned int length, char *receive_buffer)
+// {
+//     SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
+//     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << SPE));
+//     WRITE_REGISTER(&spi_regs->dr, preamble);
+//     while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
+//     READ_REGISTER(&spi_regs->dr);
+//     // asm("bkpt");
+//     for (unsigned int t = 0; t < length; t++)
+//     {
+//         WRITE_REGISTER(&spi_regs->dr, data[t]);
+//         while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
+//         receive_buffer[t] = READ_REGISTER(&spi_regs->dr);
+//     }
+    
+//     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
+// }
+
+void NO_OPT spi_write(char *data, unsigned int length, char *receive_buffer)
 {
     SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << SPE));
-    WRITE_REGISTER(&spi_regs->dr, preamble);
-    while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
-    READ_REGISTER(&spi_regs->dr);
+    // WRITE_REGISTER(&spi_regs->dr, preamble);
+    // while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
+    // READ_REGISTER(&spi_regs->dr);
     // asm("bkpt");
     for (unsigned int t = 0; t < length; t++)
     {
