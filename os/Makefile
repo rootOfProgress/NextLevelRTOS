@@ -79,7 +79,8 @@ build_base_kernel: $(SRC)
 	mv *.o ./build
 
 build_rust_src: $(RUST_SRC)
-	$(RC) $^ --emit=obj --target thumbv7em-none-eabi --out-dir ./build
+#$(RC) ./src/data/rust_panic_mock.rs --emit=obj --target thumbv7em-none-eabi --out-dir ./build
+	python ./buildscripts/build_rust.py $^
 
 compile_asm: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o

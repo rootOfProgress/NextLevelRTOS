@@ -45,14 +45,12 @@ SECTIONS
 		_ebss = .;
 	} >RAM
 
-	.ARM.exidx.text.rust_begin_unwind :
+	/DISCARD/ :
 	{
-					*(.rust_begin_unwind)
-					*(.rust_begin_unwind.*)
-	} >RAM
-
+	    *(.ARM.exidx*)
+	    *(.gnu.linkonce.armexidx.*)
+	}
 
 	stack_top = ORIGIN(RAM) + LENGTH(RAM);
 	_sidata = LOADADDR(.data);
-
 }
