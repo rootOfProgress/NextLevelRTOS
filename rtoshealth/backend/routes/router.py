@@ -64,6 +64,10 @@ def get_test_results():
 def test_all():
     return test_main.run_all()    
 
+@app.route('/test/nrf2401', methods=['GET'])
+def test_nrf2401():
+    return test_main.nrf2401()       
+
 @app.route('/test/memory', methods=['GET'])
 def test_memory():
     return memory_test.test_memory001_alloc_benchmark()

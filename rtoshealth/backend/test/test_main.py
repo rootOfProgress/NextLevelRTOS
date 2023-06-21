@@ -2,6 +2,7 @@ import test.memory as memory
 import test.scheduler as scheduler
 import test.general as general
 import test.test_util as util
+import test.nrf2401 as nrf2401
 import util.os_health as os_health
 import util.logging as logging
 from enum import Enum
@@ -23,6 +24,8 @@ scheduler_benchmarks = [scheduler.test_scheduler001_sleep_benchmark, scheduler.t
 scheduler_tests = [scheduler.test_scheduler004_finish_task, scheduler.test_scheduler005_join_task, scheduler.test_scheduler006_task_control]
 memory_tests = [memory.test_memory002_various]
 
+device_tests = [nrf2401.test_nrf_000_various]
+
 def check_test_exceptions(testname, condition):
     if (testname == "test_scheduler006_task_control" and not condition):
         return False
@@ -30,7 +33,7 @@ def check_test_exceptions(testname, condition):
     return True
 
 
-def execute_test(testcollection, test_log, test_type, clean_environment = True):
+def execute_test(testcollection, test_log, test_type, clean_environment = True, requires_logging = True):
     global failed_tests
     global num_of_failed
     global num_of_passed
@@ -63,9 +66,16 @@ def execute_test(testcollection, test_log, test_type, clean_environment = True):
                         results.append({r[0]: "FAILED" })
                         failed_tests.append({ r[0] : "FAILED" })  
                         num_of_failed += 1                  
-                
-            test_log.write("\nResults of test " + test.__name__ + "\n")
-            test_log.write(json.dumps(results, indent=1) + "\n\n")
+            
+            if requires_logging == True:
+                test_log.write("\nResults of test " + test.__name__ + "\n")
+                test_log.write(json.dumps(results, indent=1) + "\n\n")
+    return results
+
+def nrf2401():
+    results = []
+    test_log = []
+    results.append(execute_test(device_tests, test_log, TestType.LOGIC, False, False))
     return results
 
 def run_all():

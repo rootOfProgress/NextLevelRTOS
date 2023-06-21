@@ -3,7 +3,8 @@
 #include "spi.h"
 #include "nrf24l01.h"
 #include "rcc.h"
-#include "../../include/os_api.h"
+#include "uart.h"
+#include "os_api.h"
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
@@ -11,6 +12,15 @@
 
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
+
+
+typedef struct MeasurementResults {
+    char Subtest000_000_check_default_config;
+    char Subtest000_001_check_default_status;
+    char Subtest000_002_check_power_on;
+    char Subtest000_002_check_tx_addr_rw;
+    char reserved[28]; 
+} MeasurementResults_t;
 
 char receive_buffer[35];
 nrf24l01_registers_t nrf24l01_regs;
@@ -175,6 +185,55 @@ void init_rx()
     nrf24l01_regs.status = receive_buffer[0];
 }
 
+char get_default_config()
+{
+    char foo[1] = {0}; 
+    transfer(CONFIG, foo, 1, read_register);
+    // transfer(CONFIG, (char[1]) {0}, 1, read_register);
+    if (receive_buffer[0] == 8)
+        return 1;
+    return 0;
+}
+
+char get_default_status()
+{
+    char foo[1] = {0}; 
+    transfer(STATUS, foo, 1, read_register);
+    // transfer(CONFIG, (char[1]) {0}, 1, read_register);
+    if (receive_buffer[0] == 0xE)
+        return 1;
+    return 0;
+}
+
+char get_nrf_register(nrf24l01_registermap_t reg_type)
+{
+    char foo[1] = {0}; 
+    transfer(reg_type, foo, 1, read_register);
+    
+    return receive_buffer[0];
+}
+
+void set_nrf_register(nrf24l01_registermap_t reg_type, char new_value)
+{
+    char current_value = get_nrf_register(reg_type);
+    char foo[1] = { current_value | new_value }; 
+    transfer(reg_type, foo, 1, write_register);
+    
+}
+
+
+
+char get_and_test_nrf_register(nrf24l01_registermap_t reg_type, char expected)
+{
+    char foo[1] = {0}; 
+    transfer(reg_type, foo, 1, read_register);
+    
+
+    if (receive_buffer[0] == expected)
+        return 1;
+    return 0;
+}
+
 void init_tx()
 {
     /************ Disable AA ***************/
@@ -218,6 +277,22 @@ void init_tx()
     // nrf24l01_regs.status = receive_buffer[0];
 }
 
+char set_and_test_txaddr(void)
+{
+    char payload_tx_addr[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xCC};
+    transfer(TX_ADDR, payload_tx_addr, sizeof(payload_tx_addr) / sizeof(payload_tx_addr[0]), write_register);
+
+    // validate
+    transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
+    for (int i = 0; i < 5; i++)
+    {
+        if (receive_buffer[i] != payload_tx_addr[i])
+            return 0; 
+    }
+    
+    return 1;
+}
+
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
 
@@ -239,28 +314,23 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     // DebugConfig_t init;
     // init.is_tx = 0;
     // init.needs_init = 1;
+    MeasurementResults_t measurements;
+    memset_byte((void*) &measurements, sizeof(MeasurementResults_t), 0);
     init_spi();
-    init_tx();
-    // if (init.needs_init)
-    // {
-    //     init_spi();
-    // }
-    // else
-    // {
-    //     spin(150);
-    //     switch (init.is_tx)
-    //     {
-    //     case 0:
-    //         init_rx();
-    //         // poll_rx();
-    //         break;
-    //     case 1:
-    //         init_tx();
-    //         // send_stuff();
-    //     default:
-    //         break;
-    //     }
-    // }
+    measurements.Subtest000_000_check_default_config = get_nrf_register(CONFIG) == 8 ? 1 : 0;
+    measurements.Subtest000_001_check_default_status = get_nrf_register(STATUS) == 0xE ? 1 : 0;
+
+    // test power on
+    set_nrf_register(CONFIG, 1 << 1);
+    measurements.Subtest000_002_check_power_on = (get_nrf_register(CONFIG) & (1 << 1)) ? 1 : 0;
+
+    measurements.Subtest000_002_check_tx_addr_rw = set_and_test_txaddr();
+    // measurements.Subtest000_000_check_default_config = get_default_config();
+    print((void*) &measurements, 32 * sizeof(char));
+
+    
+    // init_tx();
+    
     
     return 0;
 }
