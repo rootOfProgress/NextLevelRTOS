@@ -1,4 +1,5 @@
 CC := arm-none-eabi-gcc
+RC := rustc
 AS := arm-none-eabi-as
 NON_OS_SRC := ../modules
 INC = -Iinclude -I$(NON_OS_SRC)/include/ -I./arch/$(ARCH)/include/
@@ -10,6 +11,7 @@ CFLAGS = -O3  \
 	 -Wno-implicit-fallthrough -fsingle-precision-constant 
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
+RUST_SRC:=$(wildcard ./src/**/*.rs) $(wildcard ./src/*.rs)
 OBJ:=$(wildcard ./build/*.o)
 
 SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
@@ -19,6 +21,7 @@ all: $(TARGET)
 $(TARGET): 	clean \
 			build_non_os_src \
 			build_base_kernel \
+			build_rust_src \
 			compile_asm build_platform_$(ARCH) \
 			link_objects \
 			clean_objects
@@ -74,6 +77,9 @@ move_objects:
 build_base_kernel: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
 	mv *.o ./build
+
+build_rust_src: $(RUST_SRC)
+	$(RC) $^ --emit=obj --target thumbv7em-none-eabi --out-dir ./build
 
 compile_asm: $(SRC_AS)
 	$(AS) $^ -o ./build/asm.o
