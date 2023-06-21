@@ -23,7 +23,8 @@ typedef struct MeasurementResults {
 } MeasurementResults_t;
 
 char receive_buffer[35];
-char tx_buffer[16];
+#define TX_BUFFER_SIZE 16
+char tx_buffer[TX_BUFFER_SIZE];
 nrf24l01_registers_t nrf24l01_regs;
 
 void unset_ce()
@@ -44,29 +45,25 @@ void set_ce()
 
 void transfer(char target_register, char *data, unsigned int length, transferType_t t) 
 {
-    char preamble;
+    memset_byte((void*) tx_buffer, TX_BUFFER_SIZE, 0);
     switch (t)
     {
     case read_register:
         tx_buffer[0] = target_register;
-        // preamble = target_register;
         break;
     case write_register:
         tx_buffer[0] = ((char) (1 << 5) | target_register);
-        // preamble = ((char) (1 << 5) | target_register);
         break;
     // don't care
     case r_rx_payload:
     case w_tx_payload:
-        // @todo
-        // preamble = W_TX_PAYLOAD;
+        tx_buffer[0] = W_TX_PAYLOAD;
         break;
     default:
         return;
     }
-    // spi_write(&preamble, 1, receive_buffer);
-
-    for (unsigned int i = 0; i < length; i++)
+    
+    for (unsigned int i = 0; i < length && i < TX_BUFFER_SIZE; i++)
         tx_buffer[i+1] = data[i];
 
     spi_write(tx_buffer, length + 1, receive_buffer);
@@ -295,7 +292,7 @@ char set_and_test_txaddr(void)
     transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
     for (int i = 0; i < 5; i++)
     {
-        if (receive_buffer[i] != payload_tx_addr[i])
+        if (receive_buffer[i+1] != payload_tx_addr[i])
             return 0; 
     }
     
@@ -333,7 +330,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     set_nrf_register(CONFIG, 1 << 1);
     measurements.Subtest000_002_check_power_on = (get_nrf_register(CONFIG) & (1 << 1)) ? 1 : 0;
 
-    // measurements.Subtest000_002_check_tx_addr_rw = set_and_test_txaddr();
+    measurements.Subtest000_002_check_tx_addr_rw = set_and_test_txaddr();
     // measurements.Subtest000_000_check_default_config = get_default_config();
     print((void*) &measurements, 32 * sizeof(char));
 

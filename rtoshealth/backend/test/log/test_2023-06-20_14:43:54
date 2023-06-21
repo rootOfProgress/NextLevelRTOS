@@ -1,0 +1,162 @@
+Test running on OS version 12062023 on commit 4276086433
+--Config--
+ Debug Mode: 1
+ Systick Enabled: 0
+
+Results of test test_general001_lifetime
+[
+ {
+  "Subtest001_000_test_magic": "PASSED"
+ }
+]
+
+
+Results of test test_memory002_various
+[
+ {
+  "Subtest002_000_memset_byte": "PASSED"
+ },
+ {
+  "Subtest002_001_alloc_zero_or_less": "FAILED"
+ }
+]
+
+
+Results of test test_scheduler004_finish_task
+[
+ {
+  "test_scheduler004_finish_task": "PASSED"
+ }
+]
+
+
+Results of test test_scheduler005_join_task
+[
+ {
+  "Subtest005_000_join_task": "PASSED"
+ },
+ {
+  "Subtest005_001_join_multiple_tasks": "PASSED"
+ },
+ {
+  "Subtest005_002_no_join": "PASSED"
+ },
+ {
+  "Subtest005_003_join_nested_tasks": "PASSED"
+ }
+]
+
+
+Results of test test_scheduler001_sleep_benchmark
+[
+ {
+  "raw": [
+   "1493000 | 1494534 diff: 0.10274614869390489%",
+   "1439000 | 1440476 diff: 0.10257123002084781%",
+   "618000 | 618656 diff: 0.10614886731391586%",
+   "240000 | 240277 diff: 0.11541666666666667%"
+  ]
+ }
+]
+
+
+Results of test test_scheduler002_sleep_benchmark_load
+[
+ {
+  "raw": [
+   "1881000 | 1883125 diff: 0.11297182349813929%",
+   "1024000 | 1025804 diff: 0.176171875%",
+   "507000 | 509683 diff: 0.5291913214990138%",
+   "1614000 | 1617507 diff: 0.21728624535315985%"
+  ]
+ }
+]
+
+
+Results of test test_scheduler003_contextswitch_benchmark
+[
+ {
+  "min": 11,
+  "avg": 11.8125,
+  "max": 12,
+  "raw": [
+   11,
+   12,
+   12,
+   12,
+   12,
+   11,
+   12,
+   12,
+   12,
+   12,
+   11,
+   12,
+   12,
+   12,
+   12,
+   12,
+   11,
+   12,
+   12,
+   12,
+   12,
+   11,
+   12,
+   12,
+   12,
+   12,
+   11,
+   12,
+   12,
+   12,
+   12,
+   12
+  ]
+ }
+]
+
+
+Results of test test_memory001_alloc_benchmark
+[
+ {
+  "min": 66,
+  "avg": 78.875,
+  "max": 99,
+  "raw": [
+   66,
+   68,
+   70,
+   73,
+   77,
+   69,
+   79,
+   78,
+   67,
+   81,
+   68,
+   74,
+   82,
+   85,
+   87,
+   68,
+   73,
+   89,
+   90,
+   77,
+   81,
+   68,
+   74,
+   96,
+   73,
+   79,
+   88,
+   83,
+   74,
+   96,
+   99,
+   92
+  ]
+ }
+]
+
