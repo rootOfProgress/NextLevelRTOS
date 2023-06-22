@@ -46,7 +46,7 @@ void get_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long
     
     transfer(reg_type, empty, sizeof(empty)/sizeof(char), ReadRegister);
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < sizeof(empty)/sizeof(char); i++)
     {
         register_long[i] = receive_buffer[i+1];
     }
