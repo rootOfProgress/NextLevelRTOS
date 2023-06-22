@@ -78,9 +78,6 @@ typedef enum nrf24l01_registermap {
     FEATURE = 0x1D
 } nrf24l01_registermap_t;
 
-typedef struct DebugConfig {
-    char is_tx;
-    char needs_init;
-} DebugConfig_t;
+
 
 #endif

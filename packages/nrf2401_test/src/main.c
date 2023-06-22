@@ -46,6 +46,7 @@ void set_ce()
 void transfer(char target_register, char *data, unsigned int length, transferType_t t) 
 {
     memset_byte((void*) tx_buffer, TX_BUFFER_SIZE, 0);
+    // unsigned int payload_length = sizeof
     switch (t)
     {
     case read_register:
@@ -121,63 +122,16 @@ void power_on()
 
 void getconfig()
 {
-    char dummy[1] = {0};
-    transfer(RF_SETUP, (char[1]) {0}, 1, read_register);
-    nrf24l01_regs.rf_setup = receive_buffer[0];
+    char empty = 0;
+    transfer(RF_SETUP, &empty, sizeof(char), read_register);
+    nrf24l01_regs.rf_setup = receive_buffer[1];
 
     // validate
-    transfer(SETUP_AW, (char[1]) {0}, 1, read_register);
-    nrf24l01_regs.setup_aw = receive_buffer[0];
+    transfer(SETUP_AW, &empty, sizeof(char), read_register);
+    nrf24l01_regs.setup_aw = receive_buffer[1];
 
-    transfer(RF_CH, (char[1]) {0}, 1, read_register);
-    nrf24l01_regs.rf_ch = receive_buffer[0];
-
-    // validate
-    transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
-    nrf24l01_regs.tx_addr[0] = receive_buffer[0];
-    nrf24l01_regs.tx_addr[1] = receive_buffer[1];
-    nrf24l01_regs.tx_addr[2] = receive_buffer[2];
-    nrf24l01_regs.tx_addr[3] = receive_buffer[3];
-    nrf24l01_regs.tx_addr[4] = receive_buffer[4];
-    
-    transfer(STATUS, dummy, sizeof(dummy) / sizeof(dummy[0]), read_register);
-    nrf24l01_regs.status = receive_buffer[0];    
-
-    // validate
-    transfer(FIFO_STATUS, dummy, sizeof(dummy) / sizeof(dummy[0]), read_register);
-    nrf24l01_regs.fifo_status = receive_buffer[0];
-}
-
-void init_rx()
-{
-    /************ Disable AA ***************/
-    transfer(EN_AA, (char[1]) {0x0}, 1, write_register);
-
-    /************ 1Mbps data rate, 0dBm ***************/
-    transfer(RF_SETUP, (char[1]) {0x6}, 1, write_register);
-    
-    // validate
-    transfer(RF_SETUP, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.rf_setup = receive_buffer[0];
-
-    /************ 5 byte address width ***************/
-    char payload_aw[1] = {0x3};
-    transfer(SETUP_AW, payload_aw, sizeof(payload_aw) / sizeof(payload_aw[0]), write_register);
-
-    // validate
-    transfer(SETUP_AW, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.setup_aw = receive_buffer[0];
-
-    /************ Channel 2 ***************/
-    transfer(RF_CH, (char[1]) {0x2}, 1, write_register);
-
-    // validate
-    transfer(RF_CH, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.rf_ch = receive_buffer[0];
-
-    /************ RxAddr 0xcccecccecc ***************/
-    char payload_tx_addr[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xCC};
-    transfer(TX_ADDR, payload_tx_addr, sizeof(payload_tx_addr) / sizeof(payload_tx_addr[0]), write_register);
+    transfer(RF_CH, &empty, sizeof(char), read_register);
+    nrf24l01_regs.rf_ch = receive_buffer[1];
 
     // validate
     transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
@@ -187,36 +141,34 @@ void init_rx()
     nrf24l01_regs.tx_addr[3] = receive_buffer[3];
     nrf24l01_regs.tx_addr[4] = receive_buffer[4];
     
-    transfer(STATUS, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.status = receive_buffer[0];
-}
+    transfer(STATUS, &empty, sizeof(char), read_register);
+    nrf24l01_regs.status = receive_buffer[1];    
 
-char get_default_config()
-{
-    char foo[1] = {0}; 
-    transfer(CONFIG, foo, 1, read_register);
-    // transfer(CONFIG, (char[1]) {0}, 1, read_register);
-    if (receive_buffer[0] == 8)
-        return 1;
-    return 0;
-}
-
-char get_default_status()
-{
-    char foo[1] = {0}; 
-    transfer(STATUS, foo, 1, read_register);
-    // transfer(CONFIG, (char[1]) {0}, 1, read_register);
-    if (receive_buffer[0] == 0xE)
-        return 1;
-    return 0;
+    // validate
+    transfer(FIFO_STATUS, &empty, sizeof(char), read_register);
+    nrf24l01_regs.fifo_status = receive_buffer[1];
 }
 
 char get_nrf_register(nrf24l01_registermap_t reg_type)
 {
-    char foo[1] = {0}; 
-    transfer(reg_type, foo, 1, read_register);
+    char empty = 0;
+    transfer(reg_type, &empty, sizeof(char), read_register);
     
     return receive_buffer[1];
+}
+
+void set_bit_nrf_register(nrf24l01_registermap_t reg_type, char bit_position)
+{
+    char current_value = get_nrf_register(reg_type);
+    char new_value = { current_value | 1 << bit_position }; 
+    transfer(reg_type, &new_value, 1, write_register);   
+}
+
+void clear_bit_nrf_register(nrf24l01_registermap_t reg_type, char bit_position)
+{
+    char current_value = get_nrf_register(reg_type);
+    char new_value = { current_value & ~(1 << bit_position) }; 
+    transfer(reg_type, &new_value, 1, write_register);   
 }
 
 void set_nrf_register(nrf24l01_registermap_t reg_type, char new_value)
@@ -301,25 +253,6 @@ char set_and_test_txaddr(void)
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
-
-    //  nRF24L01+ must be in a standby or power down mode 
-    // before writing to the configuration registers
-    // 8.3.2 page 49
-    // BREAK;
-    // if (0)
-    // {
-    //     init_spi();
-    // }
-    // else 
-    // {
-    //     init_tx();
-    //     spin(150);
-    //     send_stuff();
-    //     SV_YIELD_TASK;
-    // }
-    // DebugConfig_t init;
-    // init.is_tx = 0;
-    // init.needs_init = 1;
     MeasurementResults_t measurements;
     memset_byte((void*) &measurements, sizeof(MeasurementResults_t), 0);
     init_spi();
@@ -329,9 +262,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     // test power on
     set_nrf_register(CONFIG, 1 << 1);
     measurements.Subtest000_002_check_power_on = (get_nrf_register(CONFIG) & (1 << 1)) ? 1 : 0;
-
     measurements.Subtest000_002_check_tx_addr_rw = set_and_test_txaddr();
-    // measurements.Subtest000_000_check_default_config = get_default_config();
     print((void*) &measurements, 32 * sizeof(char));
 
     
