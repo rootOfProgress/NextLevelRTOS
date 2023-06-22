@@ -8,17 +8,20 @@ void transfer(char target_register, char *data, unsigned int length, TransferTyp
     memset_byte((void*) tx_buffer, TX_BUFFER_SIZE, 0);
     switch (t)
     {
-    case read_register:
-        tx_buffer[0] = target_register;
+    case ReadRegister:
+        tx_buffer[0] = target_register & ~(0b111 << 5);
         break;
-    case write_register:
-        tx_buffer[0] = ((char) (1 << 5) | target_register);
+    case WriteRegister:
+        tx_buffer[0] = ((char) (1 << 5) | target_register) & ~(0b11 << 6);
         break;
-    // don't care
-    case r_rx_payload:
-    case w_tx_payload:
+    case RRxPayload:
+        tx_buffer[0] = R_RX_PAYLOAD;
+        return;
+    case WTxPayload:
         tx_buffer[0] = W_TX_PAYLOAD;
         break;
+    case FlushTX:
+        tx_buffer[0] = FLUSH_TX;
     default:
         return;
     }
@@ -49,6 +52,11 @@ void get_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long
     }
 }
 
+void set_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long)
+{
+    transfer(reg_type, register_long, 5 /* sizeof(register_long)/sizeof(char) */, write_register);
+}
+
 void set_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
 {
     char current_value = get_nrf_register(reg_type);
@@ -66,6 +74,5 @@ void clear_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
 
 void replace_nrf_register(Nrf24l01RegisterNames_t reg_type, char new_value)
 {
-    char new_value_local = new_value;
-    transfer(reg_type, &new_value_local, 1, write_register);
+    transfer(reg_type, &new_value, 1, write_register);
 }

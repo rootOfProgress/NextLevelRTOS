@@ -8,10 +8,11 @@
 
 
 typedef enum transferType { 
-    read_register,
-    write_register,
-    r_rx_payload,
-    w_tx_payload,
+    ReadRegister,
+    WriteRegister,
+    RRxPayload,
+    WTxPayload,
+    FlushTX
 } TransferType_t;
 
 typedef enum OperatingMode {
@@ -100,6 +101,7 @@ char get_nrf_register(Nrf24l01RegisterNames_t);
 void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void replace_nrf_register(Nrf24l01RegisterNames_t, char);
 void transfer(char, char*, unsigned int, TransferType_t); 
+void set_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 
 
 

@@ -52,11 +52,19 @@ void get_nrf_config(void)
 
 }
 
-char configure_device(Nrf24l01Registers_t* nrf_regs, OperatingMode_t mode)
+char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
-    transfer(RF_SETUP, &nrf_regs->rf_setup, 1, write_register);
+    replace_nrf_register(RF_SETUP, nrf_regs->rf_setup);
+    replace_nrf_register(EN_AA, nrf_regs->en_aa);
+    set_nrf_register_long(TX_ADDR, nrf_regs->tx_addr);
+    // transfer(RF_SETUP, &nrf_regs->rf_setup, 1, write_register);
     // transfer(RF_SETUP, (char[1]) {0x0}, 1, read_register);
     // if (receive_buffer[1] != 6)
     //     return 0;
-    // return 1;
+    return 1;
+}
+
+void nrf_transmit(char* payload, unsigned int payload_length)
+{
+
 }

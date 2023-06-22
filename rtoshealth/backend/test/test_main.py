@@ -26,6 +26,7 @@ scheduler_tests = [scheduler.test_scheduler004_finish_task, scheduler.test_sched
 memory_tests = [memory.test_memory002_various]
 
 device_tests = [nrf2401.test_nrf_000_various]
+#Todo: Move to better location
 device_tests_config = [nrf2401.test_nrf_001_getconfig]
 
 def check_test_exceptions(testname, condition):
@@ -84,7 +85,7 @@ def nrf2401(test_type):
         results.append(execute_test(device_tests_config, test_log, TestType.OTHER, False, False))        
     elif test_type == 1:
         results.append(execute_test(device_tests, test_log, TestType.LOGIC, False, False))
-    print(results)
+
     return results
 
 def run_all():

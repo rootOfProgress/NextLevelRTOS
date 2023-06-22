@@ -45,7 +45,7 @@ void clear_ir_flag()
 
 void send_stuff()
 {
-    transfer(FLUSH_TX, (char[1]) {0}, 1, write_register);
+    // transfer(FLUSH_TX, (char[1]) {0}, 1, write_register);
     clear_ir_flag();
     // sleep(5);
     nrf_power_on();
@@ -92,10 +92,9 @@ void getconfig()
 
 void init_tx()
 {
-    /************ Disable AA ***************/
+    
     transfer(EN_AA, (char[1]) {0x0}, 1, write_register);
 
-    /************ 1Mbps data rate, 0dBm ***************/
     transfer(RF_SETUP, (char[1]) {0x6}, 1, write_register);
     
     // // validate
@@ -147,9 +146,17 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     
     
     Nrf24l01Registers_t nrf_registers;
+
+    /************ Disable AA ***************/
     nrf_registers.en_aa = 0;
+
+    /************ 1Mbps data rate, 0dBm ***************/
     nrf_registers.rf_setup = 6;
+
+    /************ 5 byte address width ***************/
     nrf_registers.setup_aw = 3;
+    
+    /************ Channel 2 ***************/
     nrf_registers.rf_ch = 2;
 
     char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xCC};
