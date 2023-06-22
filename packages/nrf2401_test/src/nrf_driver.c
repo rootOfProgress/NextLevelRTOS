@@ -1,8 +1,9 @@
 #include "nrf24l01.h"
 #include "nrf_driver.h"
+#include "gpio.h"
 
 Nrf24l01Registers_t current_nrf_config;
-
+GpioObject_t gpio_pa5_ce;
 
 void nrf_power_off()
 {
@@ -11,13 +12,14 @@ void nrf_power_off()
 
 void nrf_power_on()
 {
-    transfer(CONFIG, (char[1]) {0x2}, 1, write_register);
+    set_bit_nrf_register(CONFIG, 1);
+    // transfer(CONFIG, (char[1]) {0x2}, 1, WriteRegister);
 
-    // settle >1,5 msec
-    // sleep(2);
+    // // settle >1,5 msec
+    // // sleep(2);
 
-    transfer(CONFIG, (char[1]) {0x2}, 1, read_register);
-    nrf24l01_regs.config = receive_buffer[0];
+    // transfer(CONFIG, (char[1]) {0x2}, 1, ReadRegister);
+    // nrf24l01_regs.config = receive_buffer[0];
 }
 
 void get_nrf_config(void)
@@ -52,19 +54,58 @@ void get_nrf_config(void)
 
 }
 
+void clear_ir_maxrt_flag(void)
+{
+    set_bit_nrf_register(STATUS, 4);
+    // transfer(STATUS, (char[1]) {0x7}, 1, ReadRegister); 
+    // char new_data[1] = {(receive_buffer[0] | (1 << 4))}; 
+    // transfer(STATUS, new_data, 1, WriteRegister); 
+}
+
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
     replace_nrf_register(RF_SETUP, nrf_regs->rf_setup);
     replace_nrf_register(EN_AA, nrf_regs->en_aa);
     set_nrf_register_long(TX_ADDR, nrf_regs->tx_addr);
-    // transfer(RF_SETUP, &nrf_regs->rf_setup, 1, write_register);
-    // transfer(RF_SETUP, (char[1]) {0x0}, 1, read_register);
+    // transfer(RF_SETUP, &nrf_regs->rf_setup, 1, WriteRegister);
+    // transfer(RF_SETUP, (char[1]) {0x0}, 1, ReadRegister);
     // if (receive_buffer[1] != 6)
     //     return 0;
     return 1;
 }
 
+
+
+void unset_ce()
+{
+    gpio_pa5_ce.pin = 5;
+    gpio_pa5_ce.port = 'A';
+    set_pin_off(&gpio_pa5_ce);
+}
+
+void set_ce()
+{
+    gpio_pa5_ce.pin = 5;
+    gpio_pa5_ce.port = 'A';
+    set_pin_on(&gpio_pa5_ce);
+}
+
+
 void nrf_transmit(char* payload, unsigned int payload_length)
 {
+    transfer(-1, (char[1]) {0}, 0, FlushTX);
+    clear_ir_maxrt_flag();
+    nrf_power_on();
+    transfer(-1, payload, payload_length, WTxPayload);
+
+    set_ce();
+
+    for (int i = 0; i < 2000; i++)
+    {
+        // @todo replace with sleep as soon as fw is updated
+    }
+    
+    unset_ce();
+
 
 }

@@ -14,10 +14,10 @@ typedef struct MeasurementResults {
 char set_and_test_txaddr(void)
 {
     char payload_tx_addr[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xCC};
-    transfer(TX_ADDR, payload_tx_addr, sizeof(payload_tx_addr) / sizeof(payload_tx_addr[0]), write_register);
+    transfer(TX_ADDR, payload_tx_addr, sizeof(payload_tx_addr) / sizeof(payload_tx_addr[0]), WriteRegister);
 
     // validate
-    transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
+    transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, ReadRegister);
     for (int i = 0; i < 5; i++)
     {
         if (receive_buffer[i+1] != payload_tx_addr[i])
@@ -30,7 +30,7 @@ char set_and_test_txaddr(void)
 char get_and_test_nrf_register(Nrf24l01RegisterNames_t reg_type, char expected)
 {
     char foo[1] = {0}; 
-    transfer(reg_type, foo, 1, read_register);
+    transfer(reg_type, foo, 1, ReadRegister);
     
 
     if (receive_buffer[0] == expected)
