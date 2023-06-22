@@ -4,12 +4,22 @@
 #define W_REGISTER(target_reg) (char) ((char) (1 << 5) | (char) target_reg)
 #define R_REGISTER(target_reg) (char) ((char) (0 << 5) | (char) target_reg)
 
+
+enum {
+    TX_BUFFER_SIZE = 32,
+    RX_BUFFER_SIZE = 35
+};
+
+extern char receive_buffer[RX_BUFFER_SIZE];
+extern char tx_buffer[TX_BUFFER_SIZE];
+
+
 typedef enum transferType { 
     read_register,
     write_register,
     r_rx_payload,
     w_tx_payload,
-} transferType_t;
+} TransferType_t;
 
 void spin(int);
 void power_on();
@@ -18,8 +28,7 @@ void power_on();
 #define W_TX_PAYLOAD 0xA0 
 #define FLUSH_TX 0xE1
 
-//#define FIFO_STATUS 0x17
-typedef struct nrf24l01_registers {
+typedef struct Nrf24l01Registers {
     char config;
     char en_aa;
     char en_rxaddr;
@@ -46,10 +55,10 @@ typedef struct nrf24l01_registers {
     char fifo_status; // 0x17
     char dyndp;
     char feature;
-} nrf24l01_registers_t;
+} Nrf24l01Registers_t;
 
 
-typedef enum nrf24l01_registermap {
+typedef enum Nrf24l01RegisterNames {
     CONFIG = 0x0,
     EN_AA,
     EN_RXADDR,
@@ -76,7 +85,13 @@ typedef enum nrf24l01_registermap {
     FIFO_STATUS, // 0x17
     DYNDP = 0x1C,
     FEATURE = 0x1D
-} nrf24l01_registermap_t;
+} Nrf24l01RegisterNames_t;
+
+void set_bit_nrf_register(Nrf24l01RegisterNames_t, char);
+void clear_bit_nrf_register(Nrf24l01RegisterNames_t, char);
+char get_nrf_register(Nrf24l01RegisterNames_t);
+void replace_nrf_register(Nrf24l01RegisterNames_t, char);
+void transfer(char, char*, unsigned int, TransferType_t); 
 
 
 

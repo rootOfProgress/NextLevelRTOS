@@ -1,4 +1,3 @@
-#include "fifo.h"
 #include "gpio.h"
 #include "spi.h"
 #include "nrf24l01.h"
@@ -22,31 +21,28 @@ typedef struct MeasurementResults {
     char reserved[28]; 
 } MeasurementResults_t;
 
-char receive_buffer[35];
-#define TX_BUFFER_SIZE 16
+char receive_buffer[RX_BUFFER_SIZE];
 char tx_buffer[TX_BUFFER_SIZE];
-nrf24l01_registers_t nrf24l01_regs;
+Nrf24l01Registers_t nrf24l01_regs;
+GpioObject_t gpio_pa5_ce;
 
 void unset_ce()
 {
-    GpioObject_t t;
-    t.pin = 5;
-    t.port = 'A';
-    set_pin_off(&t);
+    gpio_pa5_ce.pin = 5;
+    gpio_pa5_ce.port = 'A';
+    set_pin_off(&gpio_pa5_ce);
 }
 
 void set_ce()
 {
-    GpioObject_t t;
-    t.pin = 5;
-    t.port = 'A';
-    set_pin_on(&t);
+    gpio_pa5_ce.pin = 5;
+    gpio_pa5_ce.port = 'A';
+    set_pin_on(&gpio_pa5_ce);
 }
 
-void transfer(char target_register, char *data, unsigned int length, transferType_t t) 
+void transfer(char target_register, char *data, unsigned int length, TransferType_t t) 
 {
     memset_byte((void*) tx_buffer, TX_BUFFER_SIZE, 0);
-    // unsigned int payload_length = sizeof
     switch (t)
     {
     case read_register:
@@ -81,32 +77,20 @@ void send_stuff()
 {
     transfer(FLUSH_TX, (char[1]) {0}, 1, write_register);
     clear_ir_flag();
-    spin(1000);
+    // sleep(5);
     power_on();
     
     char *tx_payload = "fragezeichenfragezeichenantwort\n";
     transfer(0, tx_payload, 32, w_tx_payload);
     set_ce();
 
-    spin(2000);
+    // sleep(10);
     unset_ce();
-}
-
-void spin(int t)
-{
-    for (int i = 0; i < t; i++) {}
 }
 
 void power_off()
 {
-    // char conf[1] = {0x0};
-    transfer(CONFIG, (char[1]) {0}, 1, write_register);
-
-    // settle >1,5 msec
-    spin(150);
-
-    transfer(CONFIG, (char[1]) {0}, 1, read_register);
-    nrf24l01_regs.config = receive_buffer[0];
+    clear_bit_nrf_register(CONFIG, 1);
 }
 
 void power_on()
@@ -114,7 +98,7 @@ void power_on()
     transfer(CONFIG, (char[1]) {0x2}, 1, write_register);
 
     // settle >1,5 msec
-    spin(150);
+    // sleep(2);
 
     transfer(CONFIG, (char[1]) {0x2}, 1, read_register);
     nrf24l01_regs.config = receive_buffer[0];
@@ -149,39 +133,10 @@ void getconfig()
     nrf24l01_regs.fifo_status = receive_buffer[1];
 }
 
-char get_nrf_register(nrf24l01_registermap_t reg_type)
-{
-    char empty = 0;
-    transfer(reg_type, &empty, sizeof(char), read_register);
-    
-    return receive_buffer[1];
-}
-
-void set_bit_nrf_register(nrf24l01_registermap_t reg_type, char bit_position)
-{
-    char current_value = get_nrf_register(reg_type);
-    char new_value = { current_value | 1 << bit_position }; 
-    transfer(reg_type, &new_value, 1, write_register);   
-}
-
-void clear_bit_nrf_register(nrf24l01_registermap_t reg_type, char bit_position)
-{
-    char current_value = get_nrf_register(reg_type);
-    char new_value = { current_value & ~(1 << bit_position) }; 
-    transfer(reg_type, &new_value, 1, write_register);   
-}
-
-void set_nrf_register(nrf24l01_registermap_t reg_type, char new_value)
-{
-    char current_value = get_nrf_register(reg_type);
-    char foo[1] = { current_value | new_value }; 
-    transfer(reg_type, foo, 1, write_register);
-    
-}
 
 
 
-char get_and_test_nrf_register(nrf24l01_registermap_t reg_type, char expected)
+char get_and_test_nrf_register(Nrf24l01RegisterNames_t reg_type, char expected)
 {
     char foo[1] = {0}; 
     transfer(reg_type, foo, 1, read_register);
@@ -256,11 +211,12 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     MeasurementResults_t measurements;
     memset_byte((void*) &measurements, sizeof(MeasurementResults_t), 0);
     init_spi();
+    power_off();
     measurements.Subtest000_000_check_default_config = get_nrf_register(CONFIG) == 8 ? 1 : 0;
     measurements.Subtest000_001_check_default_status = get_nrf_register(STATUS) == 0xE ? 1 : 0;
 
-    // test power on
-    set_nrf_register(CONFIG, 1 << 1);
+    // // test power on
+    set_bit_nrf_register(CONFIG, 1);
     measurements.Subtest000_002_check_power_on = (get_nrf_register(CONFIG) & (1 << 1)) ? 1 : 0;
     measurements.Subtest000_002_check_tx_addr_rw = set_and_test_txaddr();
     print((void*) &measurements, 32 * sizeof(char));
