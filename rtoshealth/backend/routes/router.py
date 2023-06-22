@@ -64,9 +64,13 @@ def get_test_results():
 def test_all():
     return test_main.run_all()    
 
-@app.route('/test/nrf2401', methods=['GET'])
-def test_nrf2401():
-    return test_main.nrf2401()       
+@app.route('/test/nrf2401_wr_config', methods=['GET'])
+def test_nrf2401_wr_config():
+    return test_main.nrf2401(0)       
+
+@app.route('/test/nrf2401_selfcheck', methods=['GET'])
+def test_nrf2401_selfcheck():
+    return test_main.nrf2401(1)       
 
 @app.route('/test/memory', methods=['GET'])
 def test_memory():

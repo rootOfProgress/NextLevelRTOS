@@ -5,13 +5,6 @@
 #define R_REGISTER(target_reg) (char) ((char) (0 << 5) | (char) target_reg)
 
 
-enum {
-    TX_BUFFER_SIZE = 32,
-    RX_BUFFER_SIZE = 35
-};
-
-extern char receive_buffer[RX_BUFFER_SIZE];
-extern char tx_buffer[TX_BUFFER_SIZE];
 
 
 typedef enum transferType { 
@@ -20,6 +13,11 @@ typedef enum transferType {
     r_rx_payload,
     w_tx_payload,
 } TransferType_t;
+
+typedef enum OperatingMode {
+    SLAVE,
+    MASTER
+} OperatingMode_t;
 
 void spin(int);
 void power_on();
@@ -39,13 +37,13 @@ typedef struct Nrf24l01Registers {
     char status;
     char observe_tx;
     char rpd;
-    char rx_addr_p0[5];
-    char rx_addr_p1[5];
+    char rx_addr_p0[8];
+    char rx_addr_p1[8];
     char rx_addr_p2;
     char rx_addr_p3;
     char rx_addr_p4;
     char rx_addr_p5;
-    char tx_addr[5];
+    char tx_addr[8];
     char rx_pw_p0;
     char rx_pw_p1;
     char rx_pw_p2;
@@ -57,6 +55,15 @@ typedef struct Nrf24l01Registers {
     char feature;
 } Nrf24l01Registers_t;
 
+enum {
+    TX_BUFFER_SIZE = 32,
+    RX_BUFFER_SIZE = sizeof(Nrf24l01Registers_t)
+};
+
+extern char receive_buffer[RX_BUFFER_SIZE];
+extern char tx_buffer[TX_BUFFER_SIZE];
+
+extern Nrf24l01Registers_t nrf24l01_regs;
 
 typedef enum Nrf24l01RegisterNames {
     CONFIG = 0x0,
@@ -90,6 +97,7 @@ typedef enum Nrf24l01RegisterNames {
 void set_bit_nrf_register(Nrf24l01RegisterNames_t, char);
 void clear_bit_nrf_register(Nrf24l01RegisterNames_t, char);
 char get_nrf_register(Nrf24l01RegisterNames_t);
+void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void replace_nrf_register(Nrf24l01RegisterNames_t, char);
 void transfer(char, char*, unsigned int, TransferType_t); 
 

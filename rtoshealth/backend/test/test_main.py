@@ -13,7 +13,8 @@ from datetime import datetime
 
 class TestType(Enum):
     BENCHMARK = 1,
-    LOGIC = 2
+    LOGIC = 2,
+    OTHER = 3
 
 failed_tests = []
 num_of_passed = 0
@@ -25,6 +26,7 @@ scheduler_tests = [scheduler.test_scheduler004_finish_task, scheduler.test_sched
 memory_tests = [memory.test_memory002_various]
 
 device_tests = [nrf2401.test_nrf_000_various]
+device_tests_config = [nrf2401.test_nrf_001_getconfig]
 
 def check_test_exceptions(testname, condition):
     if (testname == "test_scheduler006_task_control" and not condition):
@@ -65,17 +67,24 @@ def execute_test(testcollection, test_log, test_type, clean_environment = True, 
                         logging.print_fail(r[0] + " FAILED")
                         results.append({r[0]: "FAILED" })
                         failed_tests.append({ r[0] : "FAILED" })  
-                        num_of_failed += 1                  
+                        num_of_failed += 1
+            elif (test_type == TestType.OTHER):
+                results = result
+                logging.print_success("Got TestOTHER response...")                  
             
             if requires_logging == True:
                 test_log.write("\nResults of test " + test.__name__ + "\n")
                 test_log.write(json.dumps(results, indent=1) + "\n\n")
     return results
 
-def nrf2401():
+def nrf2401(test_type):
     results = []
     test_log = []
-    results.append(execute_test(device_tests, test_log, TestType.LOGIC, False, False))
+    if test_type == 0:
+        results.append(execute_test(device_tests_config, test_log, TestType.OTHER, False, False))        
+    elif test_type == 1:
+        results.append(execute_test(device_tests, test_log, TestType.LOGIC, False, False))
+    print(results)
     return results
 
 def run_all():
