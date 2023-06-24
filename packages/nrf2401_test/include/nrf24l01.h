@@ -105,5 +105,6 @@ void set_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void clear_ir_maxrt_flag(void);
 void unset_ce(void);
 void set_ce(void);
+void nrf_receive(void);
 
 #endif

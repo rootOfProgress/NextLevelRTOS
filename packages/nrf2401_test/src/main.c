@@ -58,13 +58,13 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);
 
-    nrf_power_off();
-    configure_device(&nrf_registers, MASTER);
 
+    configure_device(&nrf_registers, MASTER);
+    // nrf_receive();
     char* p = "hello";
     nrf_transmit(p, 4);
     get_nrf_config();
-
+// 
     print((void*) &current_nrf_config, sizeof(Nrf24l01Registers_t));
     
     return 0;

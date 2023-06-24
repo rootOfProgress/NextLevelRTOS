@@ -54,6 +54,7 @@ void clear_ir_maxrt_flag(void)
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
     nrf_power_off();
+    unset_ce();
 
     if (mode == SLAVE)
     {
@@ -61,13 +62,14 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
         set_bit_nrf_register(CONFIG, 0);
 
         // @todo: Open Pipe0, remove hardcoded variant!
-        set_bit_nrf_register(EN_RXADDR, 0);
+        replace_nrf_register(EN_RXADDR, 0x1F);
     }
     else
     {
         clear_bit_nrf_register(CONFIG, 0);
     } 
 
+    clear_bit_nrf_register(CONFIG, 3);
     set_nrf_register_long(RX_ADDR_P0, nrf_regs->rx_addr_p0);
     set_nrf_register_long(TX_ADDR, nrf_regs->tx_addr);
     replace_nrf_register(RF_SETUP, nrf_regs->rf_setup);
@@ -93,7 +95,7 @@ void set_ce()
 
 void nrf_receive()
 {
-    nrf_power_on();
+    // nrf_power_on();
     set_ce();
 }
 
@@ -101,7 +103,7 @@ void nrf_transmit(char* payload, unsigned int payload_length)
 {
     transfer(-1, (char[1]) {0}, 0, FlushTX);
     clear_ir_maxrt_flag();
-    // nrf_power_on();
+    
     transfer(-1, payload, payload_length, WTxPayload);
 
     set_ce();
