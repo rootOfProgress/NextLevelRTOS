@@ -42,9 +42,24 @@ def test_nrf_000_various():
         
     return processed_results
 
-def test_nrf_001_getconfig():    
+def test_nrf_001_rxtx(binary_type):  
+    response = {
+        "upload_binary" : "pass"
+    }
+ 
+
     test_util.prepare_device()
-    binary_loader.upload_binary("nrf2401_test")
+
+    if (binary_type == "receive"):
+        binary_loader.upload_binary("nrf2401_receive")
+        return response
+    elif (binary_type == "transmit"):
+        binary_loader.upload_binary("nrf2401_transmit")
+        return response
+    elif (binary_type == "get_config"):
+        binary_loader.upload_binary("nrf2401_config")
+
+    # binary_loader.upload_binary("nrf2401_test")
     receiver = Thread(target = uart_receiver.device_rx, args=(47,))
     receiver.start()
     logging.print_info("waiting for NRF2401 CONFIG response...")

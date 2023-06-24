@@ -11,7 +11,7 @@ CFLAGS = -O0  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-TARGET = nrf2401_test
+TARGET = nrf2401_receive
 all: $(TARGET)
 
 $(TARGET): clean compile_c build_platform_f401 link convert_elf

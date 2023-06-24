@@ -27,7 +27,7 @@ memory_tests = [memory.test_memory002_various]
 
 device_tests = [nrf2401.test_nrf_000_various]
 #Todo: Move to better location
-device_tests_config = [nrf2401.test_nrf_001_getconfig]
+device_tests_config = [nrf2401.test_nrf_001_rxtx]
 
 def check_test_exceptions(testname, condition):
     if (testname == "test_scheduler006_task_control" and not condition):
