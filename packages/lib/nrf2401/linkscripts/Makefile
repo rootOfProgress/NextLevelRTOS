@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 LINK = ../link_external.ld
 
-CFLAGS = -O2  \
+CFLAGS = -O0  \
          -mcpu=cortex-m4 -mthumb \
          -g -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 

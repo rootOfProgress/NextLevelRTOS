@@ -99,6 +99,11 @@ void nrf_receive()
     set_ce();
 }
 
+void nrf_flush_rx(void)
+{
+    transfer(-1, (char[1]) {0}, 0, FlushRX);
+}
+
 void nrf_transmit(char* payload, unsigned int payload_length)
 {
     transfer(-1, (char[1]) {0}, 0, FlushTX);
@@ -115,3 +120,23 @@ void nrf_transmit(char* payload, unsigned int payload_length)
     
     unset_ce();
 }
+
+void clear_rx_dr_flag(void)
+{
+    set_bit_nrf_register(STATUS, 6);   
+}
+
+void nrf_receive_payload(char* payload, unsigned int payload_length)
+{
+    clear_rx_dr_flag();
+    
+    transfer(-1, payload, payload_length, RRxPayload);
+
+
+    for (int i = 0; i < 2000; i++)
+    {
+        // @todo replace with sleep as soon as fw is updated
+    }
+    
+}
+

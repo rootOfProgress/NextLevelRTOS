@@ -279,17 +279,21 @@ void collect_os_statistics(char* statistic)
 
 void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
 {
-    if (!deallocate((unsigned int*) t->memory_lower_bound))
-        invoke_panic(MEMORY_DEALLOC_FAILED);
-
-    if (t->code_section != 0)
+    if (t->general.task_info.is_external)
     {
         if (!deallocate((unsigned int*) t->code_section))
             invoke_panic(MEMORY_DEALLOC_FAILED);
     }
+
+    if (!deallocate((unsigned int*) t->stacksection_lower_bound))
+    {
+        invoke_panic(MEMORY_DEALLOC_FAILED);
+    }
     
     if (!deallocate((unsigned int*) t))
+    {
         invoke_panic(MEMORY_DEALLOC_FAILED);
+    }
 
     Node_t* old_element = dequeue_element(running_tasks, obsolete_node);
 

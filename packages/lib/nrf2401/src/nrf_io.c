@@ -22,6 +22,10 @@ void transfer(char target_register, char *data, unsigned int length, TransferTyp
         break;
     case FlushTX:
         tx_buffer[0] = FLUSH_TX;
+        break;
+    case FlushRX:
+        tx_buffer[0] = FLUSH_RX;
+        break;
     default:
         return;
     }
@@ -46,7 +50,7 @@ void get_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long
     
     transfer(reg_type, empty, sizeof(empty)/sizeof(char), ReadRegister);
 
-    for (int i = 0; i < sizeof(empty)/sizeof(char); i++)
+    for (unsigned int i = 0; i < sizeof(empty)/sizeof(char); i++)
     {
         register_long[i] = receive_buffer[i+1];
     }

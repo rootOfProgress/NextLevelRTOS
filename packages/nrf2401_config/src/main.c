@@ -50,10 +50,11 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
-    // init_spi();
+    init_spi();
 
     memset_byte((void*) &receive_buffer, sizeof(receive_buffer), 0x0);
     memset_byte((void*) &current_nrf_config, sizeof(current_nrf_config), 0x0);
+    
     
     get_nrf_config();
     print((void*) &current_nrf_config, sizeof(Nrf24l01Registers_t));

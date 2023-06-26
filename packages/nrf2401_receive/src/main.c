@@ -70,14 +70,14 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     set_pin_off(&blue_led);
     set_pin_off(&orange_led);
 
-    memset_byte((void*) &receive_buffer, sizeof(receive_buffer), 0x0);
-    memset_byte((void*) &current_nrf_config, sizeof(current_nrf_config), 0x0);
     
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);
 
-
+    memset_byte((void*) &receive_buffer, sizeof(receive_buffer), 0x0);
+    memset_byte((void*) &current_nrf_config, sizeof(current_nrf_config), 0x0);
     configure_device(&nrf_registers, SLAVE);
+    nrf_flush_rx();
     nrf_receive();
 
     while (1)
@@ -91,9 +91,23 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
             set_pin_off(&orange_led);
         
         if ((current_nrf_config.status & (char) (1 << 6)) != 0)
+        {
             set_pin_on(&blue_led);
+            // unset_ce();
+            char dummy[3] = {0xFF,0xFF,0xFF,};
+            nrf_receive_payload(dummy, 3);
+// 
+            clear_rx_dr_flag();
+            // nrf_receive();
+
+        }
         else
+        {
+            asm("bkpt");
             set_pin_off(&blue_led);
+        }
+
+
 
         SV_YIELD_TASK;
     }

@@ -12,7 +12,8 @@ typedef enum transferType {
     WriteRegister,
     RRxPayload,
     WTxPayload,
-    FlushTX
+    FlushTX,
+    FlushRX
 } TransferType_t;
 
 typedef enum OperatingMode {
@@ -26,6 +27,7 @@ void power_on();
 #define R_RX_PAYLOAD 0x61 
 #define W_TX_PAYLOAD 0xA0 
 #define FLUSH_TX 0xE1
+#define FLUSH_RX 0xE2
 
 typedef struct Nrf24l01Registers {
     char config;
@@ -106,5 +108,8 @@ void clear_ir_maxrt_flag(void);
 void unset_ce(void);
 void set_ce(void);
 void nrf_receive(void);
+void nrf_flush_rx(void);
+void nrf_receive_payload(char*, unsigned int);
+void clear_rx_dr_flag(void);
 
 #endif

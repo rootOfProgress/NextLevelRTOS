@@ -262,7 +262,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
             unsigned int remaining = old_size - size;
 
             *(MEM_TABLE_START + index) &= 0xFFFF0000;
-            *(MEM_TABLE_START + index) |= (size << 1) | 0x1;
+            *(MEM_TABLE_START + index) |= (old_size << 1) | 0x1;
             mstat.num_of_allocs++;
             release_mutex((void*) &mutex);
             return (unsigned int*) ((memory_entry->raw >> 16) + (unsigned int) USEABLE_MEM_START);

@@ -25,7 +25,7 @@ build_platform_f401:
 	mv ../../../os/arch/f401/build/*.o ./build
 
 archive: 
-	ar -rc ../nrf2401.a build/*.o
+	ar -rc ../archives/libnrf2401.a build/*.o
 
 clean:
 	rm -f $(OUTDIR)/*.o ./build/*
