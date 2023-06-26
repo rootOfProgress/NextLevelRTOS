@@ -79,21 +79,21 @@ void NO_OPT kprint(void)
   setup_transfer((char*) t->start_adress, t->length);
 }
 
-void __attribute__ ((interrupt("SWI"))) svcall_isr()
+void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
 {
   // @todo!
   // r0 must be preserved, it could be used by e.g. EXEC_PRIV
   // __asm__("mov r9, r0");
 
-  if (SYSTICK)
-  {
-    __asm volatile(
-        "mov.w	r2, #3758153728\n"
-        "ldr	r3, [r2, #16]\n"
-        "bic.w	r3, r3, #1\n"
-        "str	r3, [r2, #16]\n"
-    );
-  }
+  // if (SYSTICK)
+  // {
+  //   __asm volatile(
+  //       "mov.w	r2, #3758153728\n"
+  //       "ldr	r3, [r2, #16]\n"
+  //       "bic.w	r3, r3, #1\n"
+  //       "str	r3, [r2, #16]\n"
+  //   );
+  // }
   
   save_psp_if_threadmode();
   __asm__("mov %0, r6" : "=r"(svc_number));
@@ -111,8 +111,11 @@ void __attribute__ ((interrupt("SWI"))) svcall_isr()
     __asm volatile ("ldmia.w  r0!, {r4-r11}");
     __asm volatile ("msr psp, r0");
     __asm volatile ("mov r1, 0xfffffffd");
-    __asm volatile ("str r1, [sp, #4]");
-    ST_ENABLE;
+    __asm volatile ("mov lr, 0xfffffffd");
+    __asm volatile ("bx lr");
+
+    // __asm volatile ("str r1, [sp, #4]");
+    // ST_ENABLE;
     return;
   case PRINT_MSG:
     kprint();
