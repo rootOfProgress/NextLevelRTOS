@@ -72,7 +72,10 @@ int create_task(void (*task_function)(), unsigned int ram_location)
         tcb->general.task_info.is_external = (char) IsExternalTask;
 
     tcb->sp = (unsigned int) &cpu_register->r4;
-    tcb->memory_lower_bound = (unsigned int) task_start_address;
+
+    tcb->memory_lower_bound = (unsigned int) task_start_address ? ram_location : -1;
+    
+
     tcb->code_section = ram_location;
     tcb->join_pid = -1;
 

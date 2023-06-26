@@ -81,11 +81,11 @@ def test_nrf2401_getconfig():
 
 @app.route('/test/nrf2401/transmit', methods=['GET'])
 def test_nrf2401_transmit():
-    return nrf2401.test_nrf_001_rxtx("transmit")
+    return nrf2401.test_nrf_001_rxtx("transmit", True)
 
 @app.route('/test/nrf2401/receive', methods=['GET'])
 def test_nrf2401_receive():
-    return nrf2401.test_nrf_001_rxtx("receive")
+    return nrf2401.test_nrf_001_rxtx("receive", True)
 
 @app.route('/test/memory', methods=['GET'])
 def test_memory():

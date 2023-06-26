@@ -51,6 +51,24 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     init_spi();
+    GpioObject_t orange_led;
+    GpioObject_t blue_led;
+
+    orange_led.pin = 14;
+    orange_led.port = 'C';
+
+    blue_led.pin = 15;
+    blue_led.port = 'C';
+
+    init_gpio(&orange_led);
+    init_gpio(&blue_led);
+
+    set_moder(&orange_led, GeneralPurposeOutputMode);
+    set_moder(&blue_led, GeneralPurposeOutputMode);
+
+
+    set_pin_off(&blue_led);
+    set_pin_off(&orange_led);
 
     memset_byte((void*) &receive_buffer, sizeof(receive_buffer), 0x0);
     memset_byte((void*) &current_nrf_config, sizeof(current_nrf_config), 0x0);
@@ -61,6 +79,25 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 
     configure_device(&nrf_registers, SLAVE);
     nrf_receive();
+
+    while (1)
+    {
+        // unset_ce();
+        get_nrf_config();
+
+        if (current_nrf_config.rpd == (char) 1)
+            set_pin_on(&orange_led);
+        else
+            set_pin_off(&orange_led);
+        
+        if ((current_nrf_config.status & (char) (1 << 6)) != 0)
+            set_pin_on(&blue_led);
+        else
+            set_pin_off(&blue_led);
+
+        SV_YIELD_TASK;
+    }
+    
     
     return 0;
 }

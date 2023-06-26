@@ -76,6 +76,10 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
     replace_nrf_register(EN_AA, nrf_regs->en_aa);
 
     nrf_power_on();
+    for (int i = 0; i < 2000; i++)
+    {
+        // @todo replace with sleep as soon as fw is updated
+    }
     return 1;
 }
 
@@ -97,6 +101,10 @@ void nrf_receive()
 {
     // nrf_power_on();
     set_ce();
+    for (int i = 0; i < 2000; i++)
+    {
+        // @todo replace with sleep as soon as fw is updated
+    }
 }
 
 void nrf_transmit(char* payload, unsigned int payload_length)

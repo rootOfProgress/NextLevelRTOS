@@ -42,14 +42,14 @@ def test_nrf_000_various():
         
     return processed_results
 
-def test_nrf_001_rxtx(binary_type):  
+def test_nrf_001_rxtx(binary_type, clean_env = False):  
     response = {
         "upload_binary" : "pass"
     }
+
+    if clean_env:
+        os_health.reboot()
  
-
-    test_util.prepare_device()
-
     if (binary_type == "receive"):
         binary_loader.upload_binary("nrf2401_receive")
         return response

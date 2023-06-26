@@ -37,7 +37,7 @@ typedef struct Tcb Tcb_t;
 struct Tcb {
     TaskInfo_t general;
     unsigned int sp;
-    unsigned int memory_lower_bound;
+    int memory_lower_bound;
     unsigned int code_section;
     short join_pid;
     Tcb_t* parent_task;
