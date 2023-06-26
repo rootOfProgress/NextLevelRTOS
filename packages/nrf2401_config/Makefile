@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCP := arm-none-eabi-objcopy
-INC = -I./include -I../include -I../../os/arch/f401/include/
+INC = -I./include -I../include -I../../os/arch/f401/include/ -I../lib/nrf2401/include
 OUTDIR := ./build
 
 CFLAGS = -O0  \
@@ -14,7 +14,7 @@ OBJ:=$(wildcard ./build/*.o)
 TARGET = nrf2401_config
 all: $(TARGET)
 
-$(TARGET): clean compile_c build_platform_f401 link convert_elf
+$(TARGET): clean compile_c link convert_elf
 
 compile_c: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
