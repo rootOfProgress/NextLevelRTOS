@@ -53,8 +53,8 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     init_spi();
 
     memset_byte((void*) &receive_buffer, sizeof(receive_buffer), 0x0);
-    memset_byte((void*) &current_nrf_config, sizeof(current_nrf_config), 0x0);
-    
+
+   
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);
 
