@@ -2,6 +2,15 @@
 #include "spi.h"
 #include "os_api.h"
 #include "nrf_driver.h"
+#include "nrf24l01_privates.h"
+
+
+void spi_transfer_raw(char target_register, unsigned int length, TransferType_t t)
+{
+    char tx_buffer[PackageBufferSize];
+
+    configure_package_type(target_register, t, tx_buffer);
+}
 
 void transfer(char target_register, char *data, unsigned int length, TransferType_t t, char* aux_receive_buffer) 
 {

@@ -6,16 +6,6 @@
 
 
 
-
-typedef enum transferType { 
-    ReadRegister,
-    WriteRegister,
-    RRxPayload,
-    WTxPayload,
-    FlushTX,
-    FlushRX
-} TransferType_t;
-
 typedef enum OperatingMode {
     SLAVE,
     MASTER
@@ -102,7 +92,7 @@ void clear_bit_nrf_register(Nrf24l01RegisterNames_t, char);
 char get_nrf_register(Nrf24l01RegisterNames_t);
 void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void replace_nrf_register(Nrf24l01RegisterNames_t, char);
-void transfer(char, char*, unsigned int, TransferType_t,char*); 
+// void transfer(char, char*, unsigned int, TransferType_t,char*); 
 void set_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void clear_ir_maxrt_flag(void);
 void unset_ce(void);

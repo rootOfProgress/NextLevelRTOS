@@ -65,11 +65,6 @@ typedef struct rxinfo {
 rxinfo_t rx_data[32];
 static unsigned int index = 0;
 
-void process()
-{
-
-}
-
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     init_spi();
@@ -114,7 +109,6 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     sleep(10);
     while (1)
     {
-        // unset_ce();
         get_nrf_config(&nrf_cfg);
 
         if (nrf_cfg.rpd == (char) 1)
@@ -129,8 +123,6 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
         int pipe = 7;
         pipe = (nrf_cfg.status >> 1) & 0x7;
         
-        // if ((nrf_cfg.status & (char) (1 << 6)) != 0 ||)
-        // {
         if(pipe >= 0 && pipe <= 5)
         {
             set_pin_on(&blue_led);
@@ -152,30 +144,12 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
             clear_rx_dr_flag();
             start_listening();
             sleep(1);
-            // memset_byte((void*) &rx_answer, 16, 0x0);
-
-            // nrf_receive();
 
         }
         else
         {
-
             set_pin_off(&blue_led);
         }
-            // clear_rx_dr_flag();
-        // }
-        // else
-        // {
-
-        //     set_pin_off(&blue_led);
-        // }
-        // if (nrf_cfg.rpd == (char) 1)
-        // {
-        //     unset_ce();
-        //     sleep(10);
-        //     // nrf_receive();
-        //     set_pin_off(&orange_led);
-        // }
 
         SV_YIELD_TASK;
     }
