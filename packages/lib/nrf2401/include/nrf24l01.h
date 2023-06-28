@@ -102,7 +102,7 @@ void clear_bit_nrf_register(Nrf24l01RegisterNames_t, char);
 char get_nrf_register(Nrf24l01RegisterNames_t);
 void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void replace_nrf_register(Nrf24l01RegisterNames_t, char);
-void transfer(char, char*, unsigned int, TransferType_t); 
+void transfer(char, char*, unsigned int, TransferType_t,char*); 
 void set_nrf_register_long(Nrf24l01RegisterNames_t, char*);
 void clear_ir_maxrt_flag(void);
 void unset_ce(void);
@@ -110,7 +110,7 @@ void set_ce(void);
 void start_listening(void);
 void stop_listening(void);
 void nrf_flush_rx(void);
-void nrf_receive_payload(char*, unsigned int);
+void nrf_receive_payload(char*, unsigned int, char*);
 void clear_rx_dr_flag(void);
 
 #endif

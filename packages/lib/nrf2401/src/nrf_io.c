@@ -3,7 +3,7 @@
 #include "os_api.h"
 #include "nrf_driver.h"
 
-void transfer(char target_register, char *data, unsigned int length, TransferType_t t) 
+void transfer(char target_register, char *data, unsigned int length, TransferType_t t, char* aux_receive_buffer) 
 {
     memset_byte((void*) tx_buffer, TX_BUFFER_SIZE, 0);
     switch (t)
@@ -16,7 +16,7 @@ void transfer(char target_register, char *data, unsigned int length, TransferTyp
         break;
     case RRxPayload:
         tx_buffer[0] = R_RX_PAYLOAD;
-        return;
+        break;
     case WTxPayload:
         tx_buffer[0] = W_TX_PAYLOAD;
         break;
@@ -33,13 +33,19 @@ void transfer(char target_register, char *data, unsigned int length, TransferTyp
     for (unsigned int i = 0; i < length && i < TX_BUFFER_SIZE; i++)
         tx_buffer[i+1] = data[i];
 
-    spi_write(tx_buffer, length + 1, receive_buffer);
+    if (aux_receive_buffer)
+    {
+        spi_write(tx_buffer, length + 1, aux_receive_buffer);
+
+    }
+    else
+        spi_write(tx_buffer, length + 1, receive_buffer);
 }
 
 char get_nrf_register(Nrf24l01RegisterNames_t reg_type)
 {
     char empty = 0;
-    transfer(reg_type, &empty, sizeof(char), ReadRegister);
+    transfer(reg_type, &empty, sizeof(char), ReadRegister, (void*) 0);
     
     return receive_buffer[1];
 }
@@ -48,7 +54,7 @@ void get_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long
 {
     char empty[5] = {0,0,0,0,0};
     
-    transfer(reg_type, empty, sizeof(empty)/sizeof(char), ReadRegister);
+    transfer(reg_type, empty, sizeof(empty)/sizeof(char), ReadRegister, (void*) 0);
 
     for (unsigned int i = 0; i < sizeof(empty)/sizeof(char); i++)
     {
@@ -58,14 +64,14 @@ void get_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long
 
 void set_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long)
 {
-    transfer(reg_type, register_long, 5 /* sizeof(register_long)/sizeof(char) */, WriteRegister);
+    transfer(reg_type, register_long, 5 /* sizeof(register_long)/sizeof(char) */, WriteRegister, (void*) 0);
 }
 
 void set_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
 {
     char current_value = get_nrf_register(reg_type);
     char new_value = { current_value | 1 << bit_position }; 
-    transfer(reg_type, &new_value, 1, WriteRegister);   
+    transfer(reg_type, &new_value, 1, WriteRegister, (void*) 0);   
 }
 
 void clear_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
@@ -73,10 +79,10 @@ void clear_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
     char current_value = get_nrf_register(reg_type);
     char new_value = { current_value & ~(1 << bit_position) }; 
     // asm("bkpt");
-    transfer(reg_type, &new_value, 1, WriteRegister);   
+    transfer(reg_type, &new_value, 1, WriteRegister, (void*) 0);   
 }
 
 void replace_nrf_register(Nrf24l01RegisterNames_t reg_type, char new_value)
 {
-    transfer(reg_type, &new_value, 1, WriteRegister);
+    transfer(reg_type, &new_value, 1, WriteRegister, (void*) 0);
 }

@@ -17,7 +17,6 @@
 
 char receive_buffer[RX_BUFFER_SIZE];
 char tx_buffer[TX_BUFFER_SIZE];
-char rx_answer[16];
 Nrf24l01Registers_t nrf24l01_regs;
 
 
@@ -107,15 +106,10 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     configure_device(&nrf_registers, SLAVE);
     sleep(10);
     
-
-    // set_bit_nrf_register(CONFIG, 6);
-    // set_bit_nrf_register(CONFIG, 5);
-    // set_bit_nrf_register(CONFIG, 4);
-    // nrf_receive();
-
-    // nrf_flush_rx();
+    nrf_flush_rx();
 
     start_listening();
+    char rx_answer[16];
 
     sleep(10);
     while (1)
@@ -137,27 +131,38 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
         
         // if ((nrf_cfg.status & (char) (1 << 6)) != 0 ||)
         // {
-            if(pipe >= 0 && pipe <= 5)
-            {
-                set_pin_on(&blue_led);
-                stop_listening();
-                sleep(1);
-                // unset_ce();
-                rx_data[index % 32].pipe = pipe;
-                index++;
-                char dummy[6] = {0xFF,0xFF,0xFF,};
-                nrf_receive_payload(dummy, 6);
-                start_listening();
-                sleep(1);
-                // nrf_receive();
+        if(pipe >= 0 && pipe <= 5)
+        {
+            set_pin_on(&blue_led);
 
-            }
-            else
-            {
+            // unset ce
+            stop_listening();
+            
+            sleep(1);
 
-                set_pin_off(&blue_led);
-            }
+            char dummy[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,};
+            nrf_receive_payload(dummy, 6, rx_answer);
+            asm("bkpt");
+            get_nrf_config(&nrf_cfg);
+
+            rx_data[index % 32].pipe = pipe;
+            index++;
+
+            // todo: check first if fifo is empty
             clear_rx_dr_flag();
+            start_listening();
+            sleep(1);
+            // memset_byte((void*) &rx_answer, 16, 0x0);
+
+            // nrf_receive();
+
+        }
+        else
+        {
+
+            set_pin_off(&blue_led);
+        }
+            // clear_rx_dr_flag();
         // }
         // else
         // {

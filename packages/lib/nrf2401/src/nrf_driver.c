@@ -115,15 +115,15 @@ void stop_listening()
 
 void nrf_flush_rx(void)
 {
-    transfer(-1, (char[1]) {0}, 0, FlushRX);
+    transfer(-1, (char[1]) {0}, 0, FlushRX, (void*) 0);
 }
 
 void nrf_transmit(char* payload, unsigned int payload_length)
 {
-    transfer(-1, (char[1]) {0}, 0, FlushTX);
+    transfer(-1, (char[1]) {0}, 0, FlushTX, (void*) 0);
     clear_ir_maxrt_flag();
     
-    transfer(-1, payload, payload_length, WTxPayload);
+    transfer(-1, payload, payload_length, WTxPayload, (void*) 0);
 
     set_ce();
 
@@ -140,11 +140,10 @@ void clear_rx_dr_flag(void)
     set_bit_nrf_register(STATUS, 6);   
 }
 
-void nrf_receive_payload(char* payload, unsigned int payload_length)
+void nrf_receive_payload(char* payload, unsigned int payload_length, char* buffer)
 {
-    clear_rx_dr_flag();
-    
-    transfer(-1, payload, payload_length, RRxPayload);
+    // clear_rx_dr_flag();
+    transfer(-1, payload, payload_length, RRxPayload, buffer);
 
 
     for (int i = 0; i < 2000; i++)
