@@ -34,16 +34,24 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
 int create_task(void (*task_function)(), unsigned int ram_location)
 {
-
-    unsigned int task_start_address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
+    if (SYSTICK)
+    {
+        __asm volatile(
+            "mov.w	r2, #3758153728\n"
+            "ldr	r3, [r2, #16]\n"
+            "bic.w	r3, r3, #1\n"
+            "str	r3, [r2, #16]\n"
+        );
+    }
+    unsigned int task_stack_start_address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
     
-    if (!task_start_address)
+    if (!task_stack_start_address)
     {
         invoke_panic(OUT_OF_MEMORY);
         return -1;
     }
 
-    CpuRegister_t *cpu_register = prepare_cpu_register(task_start_address, STACK_SIZE, task_function);
+    CpuRegister_t *cpu_register = prepare_cpu_register(task_stack_start_address, STACK_SIZE, task_function);
     
     if (!cpu_register)
         return -1;
@@ -55,16 +63,30 @@ int create_task(void (*task_function)(), unsigned int ram_location)
         invoke_panic(OUT_OF_MEMORY);
         return -1;
     }
+    else
+    {
+        memset_byte((void*) tcb, sizeof(Tcb_t), 0);
+    }
 
     tcb->general.task_info.pid = running_tasks->size + waiting_tasks->size;
     tcb->general.task_info.state =  !tcb->general.task_info.pid ? WAITING : READY;
     tcb->general.task_info.stack_size = STACK_SIZE;
+    tcb->stacksection_lower_bound = task_stack_start_address;
 
-    if (ram_location)
-        tcb->general.task_info.is_external = IsExternalTask;
+    if (ram_location != 0)
+    {
+        tcb->general.task_info.is_external = (char) IsExternalTask;
+        tcb->codesection_lower_bound = ram_location;
+        tcb->codesection_upper_bound = (ram_location + tInfo.task_size);
+    }
+    else 
+    {
+        tcb->general.task_info.is_external = (char) 0;
+        tcb->codesection_lower_bound = -1;
+        tcb->codesection_upper_bound = -1;
+    }
 
-    tcb->sp = (unsigned int) &cpu_register->r4;
-    tcb->memory_lower_bound = (unsigned int) task_start_address;
+    tcb->sp = (unsigned int) &cpu_register->r4;    
     tcb->code_section = ram_location;
     tcb->join_pid = -1;
 
@@ -99,6 +121,15 @@ int create_task(void (*task_function)(), unsigned int ram_location)
     if (insert_scheduled_task((Tcb_t*) tcb) == -1)
     {
         return -1;
+    }
+    if (SYSTICK)
+    {
+      __asm volatile(
+          "mov.w	r2, #3758153728\n"
+          "ldr	r3, [r2, #16]\n"
+          "orr.w	r3, r3, #1\n"
+          "str	r3, [r2, #16]\n"
+      );
     }
     return tcb->general.task_info.pid;
 }

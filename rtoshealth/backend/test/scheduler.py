@@ -38,6 +38,7 @@ def test_scheduler001_sleep_benchmark(load = False):
     if load:
         for _ in range(0,4):
             binary_loader.upload_binary("cpu_stress")
+            time.sleep(1)
 
     binary_loader.upload_binary("sleep_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(16,))

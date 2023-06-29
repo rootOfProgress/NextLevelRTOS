@@ -37,7 +37,7 @@ def detect_serial_interface() -> bool:
                     MODEL_ID = device_info.split('=')[-1]
             if (VENDOR_ID == ID_VENDOR_ID and MODEL_ID == ID_MODEL_ID):
                 print("found device!")
-                receiver.serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=10, xonxoff=False, rtscts=False, dsrdtr=False)
+                receiver.serial_device = serial.Serial(f"/dev/ttyUSB{i}", 9600, timeout=20, xonxoff=False, rtscts=False, dsrdtr=False)
                 # global device_address
                 receiver.device_address = f"ttyUSB{i}"
                 return True

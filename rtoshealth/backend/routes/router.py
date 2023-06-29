@@ -14,6 +14,7 @@ import test.test_main as test_main
 import test.test_util as test_util
 import test.memory as memory_test
 import test.scheduler as scheduler_test
+import test.nrf2401 as nrf2401
 
 # from logging import print_fail, print_info, print_success, print_warning
 from threading import Thread, Lock
@@ -63,6 +64,28 @@ def get_test_results():
 @app.route('/test/all', methods=['GET'])
 def test_all():
     return test_main.run_all()    
+
+@app.route('/test/nrf2401_wr_config', methods=['GET'])
+def test_nrf2401_wr_config():
+    # @todo: unclean to call test_main
+    return test_main.nrf2401(0)       
+
+@app.route('/test/nrf2401_selfcheck', methods=['GET'])
+def test_nrf2401_selfcheck():
+    # @todo: unclean to call test_main
+    return test_main.nrf2401(1)       
+
+@app.route('/test/nrf2401/getconfig', methods=['GET'])
+def test_nrf2401_getconfig():
+    return nrf2401.test_nrf_001_rxtx("get_config")  
+
+@app.route('/test/nrf2401/transmit', methods=['GET'])
+def test_nrf2401_transmit():
+    return nrf2401.test_nrf_001_rxtx("transmit", True)
+
+@app.route('/test/nrf2401/receive', methods=['GET'])
+def test_nrf2401_receive():
+    return nrf2401.test_nrf_001_rxtx("receive", True)
 
 @app.route('/test/memory', methods=['GET'])
 def test_memory():

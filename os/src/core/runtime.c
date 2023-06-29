@@ -20,13 +20,13 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
 
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {
-    SV_STD;
+    ST_DISABLE;
     
     // execute non-os modules
     for (unsigned int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
         create_task(func_ptr[i], 0);
 
-    SV_STE;
+    ST_ENABLE;
 
     while (1)
     {

@@ -70,6 +70,8 @@ void force_pid0_into_running(void);
 
 static inline __attribute__((always_inline)) void block_current_task(void)
 {
+    ST_DISABLE;
+
     ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
 
     // On context switch, task->next is loaded. Jump back one task here ensures that next task is 
@@ -90,6 +92,7 @@ static inline __attribute__((always_inline)) void block_current_task(void)
 
 static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
+    ST_DISABLE;
     Node_t *q = get_head_element(waiting_tasks);
     
     if (!q)
@@ -102,11 +105,12 @@ static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid
             isolate_node(waiting_tasks,q);
             move_node(running_tasks,q);
             ((Tcb_t*)q->data)->general.task_info.state = READY;
+            ST_ENABLE;
             return q;
         }
         q = q->next;
     }
-
+    ST_ENABLE;
     return NULL;
 }
 

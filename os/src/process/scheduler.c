@@ -119,7 +119,7 @@ void kill_all_child_tasks(void)
 void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
 {
     List_t* child_tasks;
-    child_tasks = currently_running->data->child_tasks ? !parent : parent->child_tasks;
+    child_tasks = currently_running->data->child_tasks ? (List_t*) !parent : parent->child_tasks;
 
     if (child_tasks->size == 0)
         return;
@@ -209,10 +209,15 @@ void __attribute__ ((hot)) pendsv_isr(void)
         timer_flush_counter(TimerForSysLogging);
         timer_start(TimerForSysLogging);
     }
+    
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
     __asm volatile (
-      "ldmfd r2!, {r4-r11}\n"
-      "msr psp, r2\n"
+        "ldmfd r2!, {r4-r11}\n"
+        "mov.w r0, #3758153728\n"
+        "ldr   r1, [r0, #16]\n"
+        "orr.w r1, r1, #1\n"
+        "str   r1, [r0, #16]\n"
+        "msr psp, r2\n"
     );
 }
 
@@ -274,17 +279,21 @@ void collect_os_statistics(char* statistic)
 
 void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
 {
-    if (!deallocate((unsigned int*) t->memory_lower_bound))
-        invoke_panic(MEMORY_DEALLOC_FAILED);
-
-    if (t->code_section != 0)
+    if (t->general.task_info.is_external)
     {
         if (!deallocate((unsigned int*) t->code_section))
             invoke_panic(MEMORY_DEALLOC_FAILED);
     }
+
+    if (!deallocate((unsigned int*) t->stacksection_lower_bound))
+    {
+        invoke_panic(MEMORY_DEALLOC_FAILED);
+    }
     
     if (!deallocate((unsigned int*) t))
+    {
         invoke_panic(MEMORY_DEALLOC_FAILED);
+    }
 
     Node_t* old_element = dequeue_element(running_tasks, obsolete_node);
 

@@ -1,18 +1,19 @@
 #include "spi.h"
 #include "gpio.h"
 #include "rcc.h"
+#include "lang.h"
 
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
 void init_spi_gpio(GpioObject_t* obj)
 {
-    init_gpio(obj); //passt
+    init_gpio(obj); 
 
     // clk
     obj->pin = 3;
     obj->port = 'B';
-    set_moder(obj, AlternateFunctionMode);//passt
+    set_moder(obj, AlternateFunctionMode);
     into_af(obj, 5);
     set_otyper(obj, PushPull);
     set_pupdr(obj, PullDown);
@@ -21,7 +22,6 @@ void init_spi_gpio(GpioObject_t* obj)
     // miso
     obj->pin = 4;
     obj->port = 'B';
-    // set_moder(obj, InputMode);
     set_otyper(obj, PushPull);
     set_pupdr(obj, PullUp);
     set_speed(obj, High);
@@ -63,35 +63,24 @@ void init_spi(void)
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
 
     WRITE_REGISTER(&rcc_regs->apb2enr, READ_REGISTER(&rcc_regs->apb2enr) | (1 << SPI1EN));
-    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
+    // WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
     WRITE_REGISTER(&spi_regs->cr1, 0);
+    WRITE_REGISTER(&spi_regs->cr1,\
+          (7 << BR) \
+        | (1 << MSTR) \
+        | (1 << SSM) \
+        | (1 << SSI)\
+    );
 
-    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (0 << DFF) | (7 << 3) | (1 << MSTR) | (1 << SSM) | (1 << SSI));
-    WRITE_REGISTER(&spi_regs->cr2, READ_REGISTER(&spi_regs->cr2) | (1 << SSOE));
+    WRITE_REGISTER(&spi_regs->cr2, 0);
+    WRITE_REGISTER(&spi_regs->cr2, (1 << SSOE));
 }
 
-void spi_write_single(char data)
-{
-    SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
-
-    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << SPE));
-    
-    WRITE_REGISTER(&spi_regs->dr, data);
-    while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
-    READ_REGISTER(&spi_regs->dr);
-
-    WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
-
-}
-
-void spi_write(char preamble, char *data, unsigned int length, char *receive_buffer)
+void NO_OPT spi_write(char *data, unsigned int length, char *receive_buffer)
 {
     SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) | (1 << SPE));
-    WRITE_REGISTER(&spi_regs->dr, preamble);
-    while (!((READ_REGISTER(&(spi_regs)->sr) & (1 << BSY)) == 0));
-    READ_REGISTER(&spi_regs->dr);
-    
+
     for (unsigned int t = 0; t < length; t++)
     {
         WRITE_REGISTER(&spi_regs->dr, data[t]);

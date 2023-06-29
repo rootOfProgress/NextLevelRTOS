@@ -25,11 +25,15 @@ def recompile_binary(final_adress, package_name, size):
     os.system(cmd)
 
 def upload_binary(package_name):
+    logging.print_info("Set default size in linker script...")
+    cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(15000) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
+    os.system(cmd)
+
     logging.print_info("Compile programm...")
     cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null" 
     os.system(cmd)
 
-    logging.print_info("Get Size...")
+    logging.print_info("Get Actual Size...")
     cmd = "wc -c < " + path_suffix + "packages/" + package_name + "/build/" + package_name + "_binary"
     size = int(os.popen(cmd).read())
 
@@ -37,6 +41,10 @@ def upload_binary(package_name):
         logging.print_success("Success - Filesize is : " + hex(size) + " / " + str(size))
     else:
         logging.print_fail("Could not read filesize!")
+                
+    logging.print_info("Resize in linker script...")
+    cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(size + 1) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
+    os.system(cmd)
 
     text_file = open(path_suffix + "packages/" + package_name + "/prepare", "wb")
     text_file.write(size.to_bytes(4,'little'))

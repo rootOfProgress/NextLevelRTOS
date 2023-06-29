@@ -10,11 +10,12 @@ enum { Spi1BaseAdress = 0x40013000 };
 #define SSI 8
 #define BSY 7
 #define SSM 9
-#define TXE 1
+#define SPI_TXE 1
 #define SSOE 2
 #define DFF 11
 #define LSBFIRST 7
 #define RXNE 0
+#define BR 3
 
 typedef struct
 {
@@ -31,7 +32,7 @@ typedef struct
 
 void init_spi(void);
 void spi_write_single(char);
-void spi_write(char preamble, char *data, unsigned int length, char *receive_buffer);
+void spi_write(char *data, unsigned int length, char *receive_buffer);
 
 extern SpiRegisterMap_t* spi_regs;
 #endif

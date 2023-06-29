@@ -183,39 +183,39 @@ void init_tx()
     /************ 1Mbps data rate, 0dBm ***************/
     transfer(RF_SETUP, (char[1]) {0x6}, 1, write_register);
     
-    // validate
-    transfer(RF_SETUP, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.rf_setup = receive_buffer[0];
+    // // validate
+    // transfer(RF_SETUP, (char[1]) {0x0}, 1, read_register);
+    // nrf24l01_regs.rf_setup = receive_buffer[0];
 
-    /************ 5 byte address width ***************/
-    char payload_aw[1] = {0x3};
-    transfer(SETUP_AW, payload_aw, sizeof(payload_aw) / sizeof(payload_aw[0]), write_register);
+    // /************ 5 byte address width ***************/
+    // char payload_aw[1] = {0x3};
+    // transfer(SETUP_AW, payload_aw, sizeof(payload_aw) / sizeof(payload_aw[0]), write_register);
 
-    // validate
-    transfer(SETUP_AW, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.setup_aw = receive_buffer[0];
+    // // validate
+    // transfer(SETUP_AW, (char[1]) {0x0}, 1, read_register);
+    // nrf24l01_regs.setup_aw = receive_buffer[0];
 
-    /************ Channel 2 ***************/
-    transfer(RF_CH, (char[1]) {0x2}, 1, write_register);
+    // /************ Channel 2 ***************/
+    // transfer(RF_CH, (char[1]) {0x2}, 1, write_register);
 
-    // validate
-    transfer(RF_CH, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.rf_ch = receive_buffer[0];
+    // // validate
+    // transfer(RF_CH, (char[1]) {0x0}, 1, read_register);
+    // nrf24l01_regs.rf_ch = receive_buffer[0];
 
-    /************ TxAddr 0xcccecccecc ***************/
-    char payload_tx_addr[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xCC};
-    transfer(TX_ADDR, payload_tx_addr, sizeof(payload_tx_addr) / sizeof(payload_tx_addr[0]), write_register);
+    // /************ TxAddr 0xcccecccecc ***************/
+    // char payload_tx_addr[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xCC};
+    // transfer(TX_ADDR, payload_tx_addr, sizeof(payload_tx_addr) / sizeof(payload_tx_addr[0]), write_register);
 
-    // validate
-    transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
-    nrf24l01_regs.tx_addr[0] = receive_buffer[0];
-    nrf24l01_regs.tx_addr[1] = receive_buffer[1];
-    nrf24l01_regs.tx_addr[2] = receive_buffer[2];
-    nrf24l01_regs.tx_addr[3] = receive_buffer[3];
-    nrf24l01_regs.tx_addr[4] = receive_buffer[4];
+    // // validate
+    // transfer(TX_ADDR, (char[5]) {0,0,0,0,0}, 5, read_register);
+    // nrf24l01_regs.tx_addr[0] = receive_buffer[0];
+    // nrf24l01_regs.tx_addr[1] = receive_buffer[1];
+    // nrf24l01_regs.tx_addr[2] = receive_buffer[2];
+    // nrf24l01_regs.tx_addr[3] = receive_buffer[3];
+    // nrf24l01_regs.tx_addr[4] = receive_buffer[4];
     
-    transfer(STATUS, (char[1]) {0x0}, 1, read_register);
-    nrf24l01_regs.status = receive_buffer[0];
+    // transfer(STATUS, (char[1]) {0x0}, 1, read_register);
+    // nrf24l01_regs.status = receive_buffer[0];
 }
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
@@ -236,30 +236,31 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     //     send_stuff();
     //     SV_YIELD_TASK;
     // }
-    DebugConfig_t init;
-    init.is_tx = 0;
-    init.needs_init = 1;
-
-    if (init.needs_init)
-    {
-        init_spi();
-    }
-    else
-    {
-        spin(150);
-        switch (init.is_tx)
-        {
-        case 0:
-            init_rx();
-            poll_rx();
-            break;
-        case 1:
-            init_tx();
-            send_stuff();
-        default:
-            break;
-        }
-    }
+    // DebugConfig_t init;
+    // init.is_tx = 0;
+    // init.needs_init = 1;
+    init_spi();
+    init_tx();
+    // if (init.needs_init)
+    // {
+    //     init_spi();
+    // }
+    // else
+    // {
+    //     spin(150);
+    //     switch (init.is_tx)
+    //     {
+    //     case 0:
+    //         init_rx();
+    //         // poll_rx();
+    //         break;
+    //     case 1:
+    //         init_tx();
+    //         // send_stuff();
+    //     default:
+    //         break;
+    //     }
+    // }
     
     return 0;
 }

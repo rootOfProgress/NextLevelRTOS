@@ -150,6 +150,7 @@ void init_allocator(unsigned int start_os_section, unsigned int* ram_size) {
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
     // return;
+    ST_DISABLE;
     lock_mutex((void*) &mutex);
 
     unsigned int address_offset = (unsigned int) address - (unsigned int) USEABLE_MEM_START;
@@ -165,7 +166,7 @@ unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address) {
         }
     }
     release_mutex((void*) &mutex);
-
+    ST_ENABLE;
     return 0;
 }
 
@@ -193,7 +194,7 @@ void __attribute__ ((cold)) update_memory_statistic(void)
 
     unsigned int *memory = NULL;
 
-    collect_os_statistics((char*)memory);
+    // collect_os_statistics((char*)memory);
     deallocate(memory);
     
     #define BUG
@@ -221,6 +222,7 @@ void __attribute__ ((cold)) update_memory_statistic(void)
 }
 
 unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
+    ST_DISABLE;
     lock_mutex((void*) &mutex);
     unsigned int next_useable_chunk = 0;
 
@@ -259,19 +261,8 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
             memory_entry->mementry_fields.is_occupied = 0;
             unsigned int remaining = old_size - size;
 
-            // untested!
-            if (remaining > 0)
-            {
-                unsigned int j = index;
-
-                // @todo: leads to BUSFAULT because may be an infinite loop!
-                while (*(MEM_TABLE_START + j) != 0x0000FFFE) { j++; };
-                *(MEM_TABLE_START + j) = (((memory_entry->raw >> 16) + size) << 16) | remaining << 1 | 0; 
-                // mstat.num_of_fractial_allocs++;
-            }
-
             *(MEM_TABLE_START + index) &= 0xFFFF0000;
-            *(MEM_TABLE_START + index) |= (size << 1) | 0x1;
+            *(MEM_TABLE_START + index) |= (old_size << 1) | 0x1;
             mstat.num_of_allocs++;
             release_mutex((void*) &mutex);
             return (unsigned int*) ((memory_entry->raw >> 16) + (unsigned int) USEABLE_MEM_START);
@@ -290,24 +281,14 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
             mstat.num_of_allocs++;
             release_mutex((void*) &mutex);
 
+            ST_ENABLE;
             return (unsigned int*) (memory_entry->mementry_fields.base_offset + (unsigned int) USEABLE_MEM_START);
+        
         }
         next_useable_chunk += memory_entry->mementry_fields.chunk_size;
     }
-    release_mutex((void*) &mutex);
-    return NULL;
 
-    // if (is_first_round)
-    // {
-    //     defrag();
-    //     is_first_round = 0;
-    //     release_mutex((void*) &mutex);
-    //     return allocate(size);
-    // }
-    // else
-    // {
-    //     is_first_round = 1;
-    //     release_mutex((void*) &mutex);
-    //     return NULL;
-    // }
+    release_mutex((void*) &mutex);
+    ST_ENABLE;
+    return NULL;
 }

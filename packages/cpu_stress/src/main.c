@@ -4,8 +4,6 @@
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
                                   "svc 0\n")
 
-#include "os_api.h"
-
 int fibbonacci(int n) {
    if(n == 0){
       return 0;
@@ -20,8 +18,8 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 {
     while (1)
     {
-        fibbonacci(1);
-        SV_YIELD_TASK;
+      fibbonacci(10);
+      SV_YIELD_TASK;
     }
     return 0;
 }
