@@ -2,7 +2,6 @@
 #include "test.h"
 #include "spi.h"
 #include "nrf24l01.h"
-#include "nrf_driver.h"
 #include "rcc.h"
 #include "uart.h"
 #include "os_api.h"
@@ -105,39 +104,57 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     start_listening();
     char rx_answer[16];
 
+
     sleep(10);
     while (1)
     {
+        // todo: status & rpd is sufficient
         get_nrf_config(&nrf_cfg);
 
-        if (nrf_cfg.rpd == (char) 1)
-        {
-            set_pin_on(&orange_led);
-        }
-        else 
-        {
-            set_pin_off(&orange_led);
-        }
-
+        // if (/* nrf_cfg.rpd */ get_nrf_rpd() == (char) 1)
+        // {
+        //     set_pin_on(&orange_led);
+        // }
+        // else 
+        // {
+        //     set_pin_off(&orange_led);
+        // }
         int pipe = 7;
         pipe = (nrf_cfg.status >> 1) & 0x7;
-        
+        // sleep(10);
         if(pipe >= 0 && pipe <= 5)
         {
             set_pin_on(&blue_led);
-
-            // unset ce
             stop_listening();
+
+            switch (pipe)
+            {
+            case 0:
+                nrf_receive_payload(nrf_cfg.rx_pw_p0, rx_answer);
+                break;
+            case 1:
+                nrf_receive_payload(nrf_cfg.rx_pw_p1, rx_answer);
+                asm("bkpt");
+                break;
+            case 2:
+                nrf_receive_payload(nrf_cfg.rx_pw_p2, rx_answer);
+                break;
+            case 3:
+                nrf_receive_payload(nrf_cfg.rx_pw_p3, rx_answer);
+                break;
+            case 4:
+                nrf_receive_payload(nrf_cfg.rx_pw_p4, rx_answer);
+                break;
+            case 5:
+                nrf_receive_payload(nrf_cfg.rx_pw_p5, rx_answer);
+                break;
+            default:
+                break;
+            }
             
             sleep(1);
 
-            nrf_receive_payload(6, rx_answer);
-            asm("bkpt");
-            get_nrf_config(&nrf_cfg);
-
-            rx_data[index % 32].pipe = pipe;
-            index++;
-
+            // get_nrf_config(&nrf_cfg);
             // todo: check first if fifo is empty
             clear_rx_dr_flag();
             start_listening();

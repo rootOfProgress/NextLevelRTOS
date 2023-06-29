@@ -2,7 +2,6 @@
 #include "test.h"
 #include "spi.h"
 #include "nrf24l01.h"
-#include "nrf_driver.h"
 #include "rcc.h"
 #include "uart.h"
 #include "os_api.h"

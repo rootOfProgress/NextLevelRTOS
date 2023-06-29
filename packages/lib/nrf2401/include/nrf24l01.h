@@ -79,8 +79,9 @@ typedef enum Nrf24l01RegisterNames {
     FEATURE = 0x1D
 } Nrf24l01RegisterNames_t;
 
-void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
-char get_nrf_register(Nrf24l01RegisterNames_t);
+char get_nrf_status(void); 
+char get_nrf_fifo(void); 
+char get_nrf_rpd(void);
 void clear_ir_maxrt_flag(void);
 void start_listening(void);
 void stop_listening(void);

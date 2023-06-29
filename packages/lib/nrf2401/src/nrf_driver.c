@@ -1,9 +1,7 @@
 #include "nrf24l01.h"
-#include "nrf_driver.h"
 #include "nrf24l01_privates.h"
 #include "gpio.h"
 
-// Nrf24l01Registers_t current_nrf_config;
 GpioObject_t gpio_pa5_ce;
 
 void nrf_power_off()
@@ -14,6 +12,19 @@ void nrf_power_off()
 void nrf_power_on()
 {
     set_bit_nrf_register(CONFIG, 1);
+}
+
+char get_nrf_status(void)
+{
+    return get_nrf_register(STATUS);
+} 
+char get_nrf_fifo(void)
+{
+    return get_nrf_register(FIFO_STATUS);
+} 
+char get_nrf_rpd(void)
+{
+    return get_nrf_register(RPD);
 }
 
 void get_nrf_config(Nrf24l01Registers_t* current_nrf_config)
@@ -143,14 +154,6 @@ void clear_rx_dr_flag(void)
 
 void nrf_receive_payload(unsigned int payload_length, char* buffer)
 {
-    // clear_rx_dr_flag();
     transfer_read_wbuffer(-1, payload_length, RRxPayload, buffer);
-
-
-    for (int i = 0; i < 2000; i++)
-    {
-        // @todo replace with sleep as soon as fw is updated
-    }
-    
 }
 

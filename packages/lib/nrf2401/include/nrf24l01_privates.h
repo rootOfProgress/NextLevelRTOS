@@ -65,5 +65,7 @@ void transfer_read_wbuffer(char target_register, unsigned int length, TransferTy
 void transfer_write(char target_register, unsigned int length, TransferType_t t, char* payload);
 void unset_ce(void);
 void set_ce(void);
+void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
+char get_nrf_register(Nrf24l01RegisterNames_t);
 
 #endif
