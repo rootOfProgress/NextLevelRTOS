@@ -16,13 +16,14 @@ typedef struct proc_stats {
     unsigned int num_of_systick_interrupts;
     unsigned int num_of_svcalls;
     unsigned int num_of_pendsv;
+    PanicTypes_t panic_state;
 } ProcessStats_t;
 
 typedef struct KernelPids {
-    char idle_task;
-    char transfer_handler;
-    char statistic_manager;
-    char generic_printer;
+    signed char idle_task;
+    signed char transfer_handler;
+    signed char statistic_manager;
+    signed char generic_printer;
 } KernelPids_t;
 
 enum { ResolutionForSysLogging = 5 };       // <! Task runtimes are measured in 5 usec ticks 
@@ -35,10 +36,10 @@ typedef struct TaskSleepRequest
     unsigned int pid_of_sleeping_task;
 } TaskSleepRequest_t;
 
-extern TaskSleepRequest_t task_sleep_request;
+extern TaskSleepRequest_t volatile task_sleep_request;
 
-extern ProcessStats_t process_stats;
-extern KernelPids_t kernel_pids;
+extern ProcessStats_t volatile process_stats;
+extern KernelPids_t volatile kernel_pids;
 
 extern Node_t* currently_running;
 extern Node_t* task_to_preserve;
@@ -48,18 +49,29 @@ extern Queue_t* waiting_tasks;
 
 void policy_round_robin(void);
 void remove_current_task(void);
-void init_scheduler(void);
-void insert_scheduled_task(Tcb_t*);
-void run_scheduler(void);
+int init_scheduler(void);
+int insert_scheduled_task(Tcb_t*);
+int run_scheduler(void);
 void invalidate_current_task(void);
 void reboot(void);
 void finish_task(void);
 void search_invalidate_tasks(void);
 void clean_up_task(Tcb_t*, Node_t*);
 void task_sleep(unsigned int);
+void join_task(unsigned int);
+void collect_os_statistics(char*);
+void kill_all_child_tasksR(Tcb_t*);
+void kill_all_child_tasks(void);
+void kill_child_task(unsigned int, Tcb_t*);
+
+// workaround
+void force_pid0_into_running(void);
+
 
 static inline __attribute__((always_inline)) void block_current_task(void)
 {
+    ST_DISABLE;
+
     ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
 
     // On context switch, task->next is loaded. Jump back one task here ensures that next task is 
@@ -80,7 +92,9 @@ static inline __attribute__((always_inline)) void block_current_task(void)
 
 static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
+    ST_DISABLE;
     Node_t *q = get_head_element(waiting_tasks);
+    
     if (!q)
         return NULL;
 
@@ -91,10 +105,12 @@ static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid
             isolate_node(waiting_tasks,q);
             move_node(running_tasks,q);
             ((Tcb_t*)q->data)->general.task_info.state = READY;
+            ST_ENABLE;
             return q;
         }
         q = q->next;
     }
+    ST_ENABLE;
     return NULL;
 }
 
@@ -104,7 +120,10 @@ static inline __attribute__((always_inline)) void switch_task(void)
     {
         currently_running = wakeup_pid(kernel_pids.idle_task);
         if (!currently_running)
-            invoke_panic(SCHEDULER_NOT_INITIALIZED);
+        {
+            force_pid0_into_running();
+        }
+        
         task_to_preserve = currently_running;
         return;
     }
@@ -124,9 +143,13 @@ static inline __attribute__((always_inline)) void switch_task(void)
     }
 
     currently_running = wakeup_pid(kernel_pids.idle_task);
-    if (!currently_running)
-        invoke_panic(SCHEDULER_NOT_INITIALIZED);
     task_to_preserve = currently_running;
+    // @todo Workaround if systick=1
+    // Not yet resolved: Pid0 is not ready and not yet moved to waiting queue
+    if (!currently_running)
+    {
+        force_pid0_into_running();
+    }
 }
 
 static inline __attribute__((always_inline)) void restore_psp()

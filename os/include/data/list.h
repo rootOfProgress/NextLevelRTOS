@@ -14,7 +14,8 @@ typedef struct List {
 } List_t;
 
 List_t* new_list(void);
-void push(List_t*, void*);
-SingleLinkedNode_t* pop(List_t*);
+
+void single_list_push(List_t*, void*);
+SingleLinkedNode_t* single_list_pop(List_t*);
 
 #endif

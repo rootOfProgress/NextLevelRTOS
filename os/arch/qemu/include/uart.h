@@ -3,13 +3,20 @@
 #include "gpio.h"
 #include "lang.h"
 
-// #include <stdint.h>
+enum { Usart1Baseadress = 0x40011000 };
 
-// #define READ_REGISTER(addr)     (*(volatile uint32_t *) (addr))
-// #define WRITE_REGISTER(addr, val) ((*(volatile uint32_t *) (addr)) = (uint32_t) (val))
-// #define WRITE_REGISTER64(addr, val) ((*(volatile uint64_t *) (addr)) = (uint64_t) (val))
+typedef struct UartRegisterMap {
+    unsigned int sr;
+    unsigned int dr;
+    unsigned int brr;
+    unsigned int cr1;
+    unsigned int cr2;
+    unsigned int cr3;
+    unsigned int gtpr;
+} UartRegisterMap_t;
 
 #define USART1_SR 0x40011000
+#define USART1_sr 0x40011000
 #define USART1_DR 0x40011004
 #define USART1_CR 0x4001100C
 #define UE 13
@@ -17,6 +24,7 @@
 #define RE 2
 #define TE 3
 #define BUFFERSIZE 4
+
 
 void init_uart(GpioObject_t*);
 void print_char(char c);

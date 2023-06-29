@@ -4,6 +4,7 @@
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "panic.h"
+#include "data/list.h"
 
 #define STACK_SIZE 1536
 
@@ -13,11 +14,13 @@ unsigned int pid_of_foo;
 
 CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_size, void (*task_function)())
 {
-    // @todo
     CpuRegister_t* cpu_register =  (CpuRegister_t*) ((unsigned int) address + (unsigned int) buffer_size - (unsigned int) sizeof(CpuRegister_t));
 
     if (!cpu_register)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return NULL;
+    }
 
     memset_byte((void*) cpu_register, sizeof(CpuRegister_t), 0);
     memset_byte((void*) address, STACK_SIZE - sizeof(CpuRegister_t), 0xA5);
@@ -29,30 +32,73 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 }
 
 
-unsigned int create_task(void (*task_function)(), unsigned int ram_location)
+int create_task(void (*task_function)(), unsigned int ram_location)
 {
-
-    unsigned int address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
-    if (!address)
+    if (SYSTICK)
+    {
+        __asm volatile(
+            "mov.w	r2, #3758153728\n"
+            "ldr	r3, [r2, #16]\n"
+            "bic.w	r3, r3, #1\n"
+            "str	r3, [r2, #16]\n"
+        );
+    }
+    unsigned int task_stack_start_address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
+    
+    if (!task_stack_start_address)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return -1;
+    }
 
-    CpuRegister_t *cpu_register = prepare_cpu_register(address, STACK_SIZE, task_function);
+    CpuRegister_t *cpu_register = prepare_cpu_register(task_stack_start_address, STACK_SIZE, task_function);
+    
+    if (!cpu_register)
+        return -1;
 
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
 
     if (!tcb)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return -1;
+    }
+    else
+    {
+        memset_byte((void*) tcb, sizeof(Tcb_t), 0);
+    }
 
     tcb->general.task_info.pid = running_tasks->size + waiting_tasks->size;
     tcb->general.task_info.state =  !tcb->general.task_info.pid ? WAITING : READY;
     tcb->general.task_info.stack_size = STACK_SIZE;
+    tcb->stacksection_lower_bound = task_stack_start_address;
 
-    if (ram_location)
-        tcb->general.task_info.is_external = IsExternalTask;
+    if (ram_location != 0)
+    {
+        tcb->general.task_info.is_external = (char) IsExternalTask;
+        tcb->codesection_lower_bound = ram_location;
+        tcb->codesection_upper_bound = (ram_location + tInfo.task_size);
+    }
+    else 
+    {
+        tcb->general.task_info.is_external = (char) 0;
+        tcb->codesection_lower_bound = -1;
+        tcb->codesection_upper_bound = -1;
+    }
 
-    tcb->sp = (unsigned int) &cpu_register->r4;
-    tcb->memory_lower_bound = (unsigned int)address;
+    tcb->sp = (unsigned int) &cpu_register->r4;    
     tcb->code_section = ram_location;
+    tcb->join_pid = -1;
+
+    if (!currently_running)
+        tcb->parent_task = NULL;
+    else
+        tcb->parent_task = currently_running->data;
+    
+    if (currently_running)
+        single_list_push(currently_running->data->child_tasks, (void*) &tcb);
+    
+    tcb->child_tasks = new_list();
     
     if (DEBUG)
     {
@@ -72,6 +118,18 @@ unsigned int create_task(void (*task_function)(), unsigned int ram_location)
 //     *mpu_rasr = (0b000 << 24) | (0b000110 << 16) | (4 << 1) | 0x1;
 //     volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
 //     *mpu_ctrl = 0x5;
-    insert_scheduled_task((Tcb_t*) tcb);
+    if (insert_scheduled_task((Tcb_t*) tcb) == -1)
+    {
+        return -1;
+    }
+    if (SYSTICK)
+    {
+      __asm volatile(
+          "mov.w	r2, #3758153728\n"
+          "ldr	r3, [r2, #16]\n"
+          "orr.w	r3, r3, #1\n"
+          "str	r3, [r2, #16]\n"
+      );
+    }
     return tcb->general.task_info.pid;
 }

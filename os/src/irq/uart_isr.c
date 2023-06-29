@@ -44,7 +44,6 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
 
 void __attribute__((optimize("O0"))) transfer_handler(void)
 {
-    SingleLinkedNode_t* node;
     init_transfer_handler();
     
     while (1)
@@ -103,11 +102,11 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
     
         dt.chsel = 4;
         dt.minc = 1;
-        // dt.ndtr = 0x200;
         dt.ndtr = tInfo.task_size;
 
         // uart rx
-        dt.source_address = 0x40011004;
+        dt.source_address = (unsigned int) &((UartRegisterMap_t*) Usart1Baseadress)->dr;
+        // dt.source_address = 0x40011004;
         dt.destination_address = (unsigned int) tInfo.start_adress;
         dt.stream_number = 5;
         dt.tcie = 1;    
@@ -129,7 +128,6 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
         print(test, 8);
         print((char*) 0x20000000, 4);
         WRITE_REGISTER(0x20000000, 0);
-        state = RX_READY;
         return;
     default:
         break;

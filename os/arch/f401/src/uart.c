@@ -29,8 +29,8 @@ void init_uart(GpioObject_t* obj)
 
 
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
-
-    WRITE_REGISTER(&rcc_regs->apb2enr, READ_REGISTER(rcc_regs->apb2enr) | (1 << RCC_USART1EN));
+    // *(&rcc_regs->apb2enr) = *(&rcc_regs->apb2enr) | (1 << RCC_USART1EN);
+    WRITE_REGISTER(&rcc_regs->apb2enr, READ_REGISTER(&rcc_regs->apb2enr) | (1 << RCC_USART1EN));
 
     // bus is feed from HSI CLK with 16 MHZ.
     // how to set brr register:

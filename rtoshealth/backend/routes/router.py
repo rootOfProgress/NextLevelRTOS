@@ -5,12 +5,16 @@ import os
 import time
 import serial
 import test.memory
+import test.scheduler
+import test.test_main
 import util.uart_receiver as uart_receiver
 import util.binary_loader as binary_loader
 import util.os_health as os_health
+import test.test_main as test_main
 import test.test_util as test_util
 import test.memory as memory_test
-
+import test.scheduler as scheduler_test
+import test.nrf2401 as nrf2401
 
 # from logging import print_fail, print_info, print_success, print_warning
 from threading import Thread, Lock
@@ -50,23 +54,54 @@ def lifetime():
 
 @app.route('/reboot', methods=['GET'])
 def reboot():
-    logging.print_info("set device into REBOOT state...")
-    cmd = "printf \"\\x06\\x12\\x34\\x56\" >> /dev/" + uart_receiver.device_address
-    os.system(cmd)
-
-    logging.print_info("perform reboot...")
-    cmd = "printf \"\\x06\" >> /dev/" + uart_receiver.device_address
-    os.system(cmd)
+    os_health.reboot()
     return {}    
-
 
 @app.route('/get_test_results', methods=['GET'])
 def get_test_results():
     return test_util.get_test_results()
 
+@app.route('/test/all', methods=['GET'])
+def test_all():
+    return test_main.run_all()    
+
+@app.route('/test/nrf2401_wr_config', methods=['GET'])
+def test_nrf2401_wr_config():
+    # @todo: unclean to call test_main
+    return test_main.nrf2401(0)       
+
+@app.route('/test/nrf2401_selfcheck', methods=['GET'])
+def test_nrf2401_selfcheck():
+    # @todo: unclean to call test_main
+    return test_main.nrf2401(1)       
+
+@app.route('/test/nrf2401/getconfig', methods=['GET'])
+def test_nrf2401_getconfig():
+    return nrf2401.test_nrf_001_rxtx("get_config")  
+
+@app.route('/test/nrf2401/transmit', methods=['GET'])
+def test_nrf2401_transmit():
+    return nrf2401.test_nrf_001_rxtx("transmit", True)
+
+@app.route('/test/nrf2401/receive', methods=['GET'])
+def test_nrf2401_receive():
+    return nrf2401.test_nrf_001_rxtx("receive", True)
+
 @app.route('/test/memory', methods=['GET'])
 def test_memory():
-    return memory_test.test_memory_api()
+    return memory_test.test_memory001_alloc_benchmark()
+
+@app.route('/test/scheduler', methods=['GET'])
+def test_scheduler():
+    return scheduler_test.test_scheduler002_contextswitch_benchmark()
+
+@app.route('/test/sleep', methods=['GET'])
+def test_sleep():
+    return scheduler_test.test_scheduler001_sleep_benchmark()
+
+@app.route('/test/sleep_load', methods=['GET'])
+def test_sleep_load():
+    return scheduler_test.test_scheduler001_sleep_benchmark(True)
 
 @app.route('/rpm', methods=['GET'])
 def rpm():

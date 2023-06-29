@@ -31,9 +31,29 @@ typedef enum {
     PendSVSet = 28,
 } Icsr_t;
 
-#define STK 0xE000E010
+enum { 
+    CPU_NVIC_ISER0 = 0xE000E100, 
+    CPU_NVIC_ISER1 = 0xE000E104, 
+    CPU_NVIC_ISER2 = 0xE000E108, 
+    CPU_NVIC_ISER3 = 0xE000E10C, 
+    CPU_NVIC_ISER4 = 0xE000E110, 
+    CPU_NVIC_ISER5 = 0xE000E114, 
+    CPU_NVIC_ISER6 = 0xE000E118, 
+    CPU_NVIC_ISER7 = 0xE000E11C, 
+};
+
+enum { 
+    CPU_SCB_CCR = 0xE000ED14,
+};
+
+enum { 
+    CPU_SCB_SHCSR = 0xE000ED24,
+};
+
+
+enum { STK = 0xE000E010 };
+
 #define AIRCR 0xE000ED0C
-#define SCR 0xE000ED10
 
 #define CTRL 0x00
 #define LOAD 0x04
@@ -49,8 +69,7 @@ typedef struct Systick {
 
 static inline __attribute__((always_inline)) void enable_systick(void)
 {
-    SystickRegisters_t* stk = (SystickRegisters_t*) STK;
-    WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) | 1);
+    WRITE_REGISTER(&((SystickRegisters_t*) STK)->ctrl, READ_REGISTER(&((SystickRegisters_t*) STK)->ctrl) | 1);
 }
 
 static inline __attribute__((always_inline)) void soft_reset(void)

@@ -40,6 +40,10 @@
     "valarray": "c",
     "*.inc": "c",
     "rcc.h": "c",
-    "math.h": "c"
+    "math.h": "c",
+    "scheduler.h": "c",
+    "cpu.h": "c",
+    "parameters.h": "c",
+    "*.old": "c"
   }
 }

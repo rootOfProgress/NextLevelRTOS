@@ -4,8 +4,6 @@
 
 void reset_timer(unsigned int tim_nr)
 {
-    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
-
     SET_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));    
     CLEAR_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));    
 }
@@ -63,19 +61,19 @@ void set_prescaler(unsigned int tim_nr, unsigned int psc_value)
     WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->psc, psc_value);
 }
 
-void set_sr(unsigned int tim_nr, unsigned int updated_value)
+void timer_set_sr(unsigned int tim_nr, unsigned int updated_value)
 {
     unsigned int tim_base = get_timx_base(tim_nr);
     WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->sr, updated_value);
 }
 
-unsigned int get_sr(unsigned int tim_nr)
+unsigned int timer_get_sr(unsigned int tim_nr)
 {
     unsigned int tim_base = get_timx_base(tim_nr);
     return READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->sr);
 }
 
-unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
+unsigned int timer_get_prescaler(__attribute__((unused)) unsigned int tim_nr, unsigned int cycle_length)
 {
     unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f)));
     // @todo: may over/underflow!!
@@ -83,7 +81,7 @@ unsigned int timer_get_prescaler(unsigned int tim_nr, unsigned int cycle_length)
 }
 
 
-void timer_init(unsigned int tim_nr, unsigned int arr, unsigned int *ccr, unsigned int cycle_length)
+void timer_init(unsigned int tim_nr, __attribute__((unused)) unsigned int arr, unsigned int *ccr, unsigned int cycle_length)
 {
     // enable clock
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;

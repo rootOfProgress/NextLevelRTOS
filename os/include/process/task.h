@@ -15,7 +15,7 @@ extern unsigned int pid_of_transferhandler;
 extern unsigned int pid_of_mstat;
 extern unsigned int pid_of_foo;
 
-unsigned int create_task(void (*)(), unsigned int);
+int create_task(void (*)(), unsigned int);
 void do_selfcheck_task(void);
 CpuRegister_t* prepare_cpu_register(unsigned int, unsigned int, void (*)());
 

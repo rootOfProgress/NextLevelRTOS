@@ -27,11 +27,12 @@ typedef struct MemoryStatistic {
     unsigned int ram_size;
     unsigned int total_byte_alloced;
     unsigned int total_byte_used;
-    unsigned int os_data_end;
-    unsigned int free_useable;
-    unsigned int waiting_tasks;
-    unsigned int running_tasks;
-    unsigned int cpu_load;
+    unsigned int git_hash;
+    unsigned int magic;
+    short debug_mode;
+    short systick_enabled;
+    unsigned int failed_tasks : 8, finished_tasks : 8, waiting_tasks : 8, running_tasks : 8;
+    unsigned int os_version;
 } MemoryStatistic_t;
 
 
@@ -43,13 +44,13 @@ void update_memory_statistic(void);
 void init_allocator(unsigned int,unsigned int*);
 void init_process_allocator(unsigned int*);
 void swap(char*);
-void memset_byte(void*,unsigned int, char);
+void memset_byte(void*, unsigned int, char);
 void defrag(void);
 
 int size_comparator(int, int);
 int offset_comparator(int, int);
 
-extern MemoryStatistic_t mstat;
+extern MemoryStatistic_t volatile mstat;
 extern void lock_mutex(void * mutex);
 extern void release_mutex(void * mutex);
 

@@ -4,6 +4,7 @@
 enum { RccBaseAdress = 0x40023800 };
 
 #define I2C1EN 21
+#define SPI1EN 12
 
 typedef union rcc_cr
 {

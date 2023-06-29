@@ -62,7 +62,10 @@ Queue_t* new_queue(void)
 {
     Queue_t* queue = (Queue_t*) allocate(sizeof(Queue_t));
     if (queue == NULL)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return NULL;
+    }
     queue->size = 0;
     queue->head = NULL;
     queue->tail = NULL;
@@ -141,12 +144,15 @@ void move_node(Queue_t* target_queue, Node_t* node)
     target_queue->size++;
 }
 
-void enqueue_element(Queue_t* queue, void* data)
+int enqueue_element(Queue_t* queue, void* data)
 {
     Node_t* new_node = (Node_t*) allocate(sizeof(Node_t));
 
     if (new_node == NULL)
+    {
         invoke_panic(OUT_OF_MEMORY);
+        return -1;
+    }
         
     new_node->next = NULL;
     new_node->data = data;
@@ -168,4 +174,5 @@ void enqueue_element(Queue_t* queue, void* data)
         queue->head->prev = queue->tail;
     }
     queue->size++;
+    return 1;
 }
