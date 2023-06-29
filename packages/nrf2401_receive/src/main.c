@@ -88,15 +88,15 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     set_pin_off(&orange_led);
 
     
-    Nrf24l01Registers_t nrf_registers;
-    Nrf24l01Registers_t nrf_cfg;
+    Nrf24l01Registers_t nrf_startup_config;
+    Nrf24l01Registers_t nrf_current_config;
 
 
-    memset_byte((void*) &nrf_cfg, sizeof(Nrf24l01Registers_t), 0x0);
-    memset_byte((void*) &nrf_registers, sizeof(Nrf24l01Registers_t), 0x0);
+    memset_byte((void*) &nrf_current_config, sizeof(Nrf24l01Registers_t), 0x0);
+    memset_byte((void*) &nrf_startup_config, sizeof(Nrf24l01Registers_t), 0x0);
 
-    apply_nrf_config(&nrf_registers);
-    configure_device(&nrf_registers, SLAVE);
+    apply_nrf_config(&nrf_startup_config);
+    configure_device(&nrf_startup_config, SLAVE);
     sleep(10);
     
     nrf_flush_rx();
@@ -109,18 +109,18 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     while (1)
     {
         // todo: status & rpd is sufficient
-        get_nrf_config(&nrf_cfg);
+        // get_nrf_config(&nrf_cfg);
 
-        // if (/* nrf_cfg.rpd */ get_nrf_rpd() == (char) 1)
-        // {
-        //     set_pin_on(&orange_led);
-        // }
-        // else 
-        // {
-        //     set_pin_off(&orange_led);
-        // }
+        if (/* nrf_cfg.rpd */ get_nrf_rpd() == (char) 1)
+        {
+            set_pin_on(&orange_led);
+        }
+        else 
+        {
+            set_pin_off(&orange_led);
+        }
         int pipe = 7;
-        pipe = (nrf_cfg.status >> 1) & 0x7;
+        pipe = (/* nrf_cfg.status */ get_nrf_status() >> 1) & 0x7;
         // sleep(10);
         if(pipe >= 0 && pipe <= 5)
         {
@@ -130,23 +130,23 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
             switch (pipe)
             {
             case 0:
-                nrf_receive_payload(nrf_cfg.rx_pw_p0, rx_answer);
+                nrf_receive_payload(nrf_startup_config.rx_pw_p0, rx_answer);
                 break;
             case 1:
-                nrf_receive_payload(nrf_cfg.rx_pw_p1, rx_answer);
+                nrf_receive_payload(nrf_startup_config.rx_pw_p1, rx_answer);
                 asm("bkpt");
                 break;
             case 2:
-                nrf_receive_payload(nrf_cfg.rx_pw_p2, rx_answer);
+                nrf_receive_payload(nrf_startup_config.rx_pw_p2, rx_answer);
                 break;
             case 3:
-                nrf_receive_payload(nrf_cfg.rx_pw_p3, rx_answer);
+                nrf_receive_payload(nrf_startup_config.rx_pw_p3, rx_answer);
                 break;
             case 4:
-                nrf_receive_payload(nrf_cfg.rx_pw_p4, rx_answer);
+                nrf_receive_payload(nrf_startup_config.rx_pw_p4, rx_answer);
                 break;
             case 5:
-                nrf_receive_payload(nrf_cfg.rx_pw_p5, rx_answer);
+                nrf_receive_payload(nrf_startup_config.rx_pw_p5, rx_answer);
                 break;
             default:
                 break;
