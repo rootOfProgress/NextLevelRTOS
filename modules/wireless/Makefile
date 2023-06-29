@@ -12,7 +12,7 @@ CFLAGS = -O0  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-TARGET := template2
+TARGET := wireless 
 
 all: $(TARGET)
 
@@ -26,4 +26,4 @@ link_objects:
 	make -C ./buildscripts
 
 clean:
-	rm -f $(OUTDIR)/*.o ./build/$(TARGET)*
+	rm -f $(OUTDIR)/*.o $(OUTDIR)/$(TARGET)
