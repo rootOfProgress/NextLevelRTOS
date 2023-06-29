@@ -93,5 +93,7 @@ void nrf_power_on(void);
 char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
 void get_nrf_config(Nrf24l01Registers_t*);
 void nrf_transmit(char*, unsigned int);
+char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
+
 
 #endif

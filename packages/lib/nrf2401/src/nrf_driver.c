@@ -157,3 +157,43 @@ void nrf_receive_payload(unsigned int payload_length, char* buffer)
     transfer_read_wbuffer(-1, payload_length, RRxPayload, buffer);
 }
 
+char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer)
+{
+        char ret = 1;
+        int pipe = 7;
+        pipe = (get_nrf_status() >> 1) & 0x7;
+        if(pipe >= 0 && pipe <= 5)
+        {
+            stop_listening();
+
+            switch (pipe)
+            {
+            case 0:
+                nrf_receive_payload(config->rx_pw_p0, response_buffer);
+                break;
+            case 1:
+                nrf_receive_payload(config->rx_pw_p1, response_buffer);
+                break;
+            case 2:
+                nrf_receive_payload(config->rx_pw_p2, response_buffer);
+                break;
+            case 3:
+                nrf_receive_payload(config->rx_pw_p3, response_buffer);
+                break;
+            case 4:
+                nrf_receive_payload(config->rx_pw_p4, response_buffer);
+                break;
+            case 5:
+                nrf_receive_payload(config->rx_pw_p5, response_buffer);
+                break;
+            default:
+                break;
+            }
+            start_listening();
+        }
+        else
+        {
+            ret = 0;
+        }
+        return ret;
+}

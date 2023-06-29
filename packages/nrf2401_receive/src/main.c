@@ -108,63 +108,21 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     sleep(10);
     while (1)
     {
-        // todo: status & rpd is sufficient
-        // get_nrf_config(&nrf_cfg);
-
-        if (/* nrf_cfg.rpd */ get_nrf_rpd() == (char) 1)
+        sleep(1);
+        while (!(get_nrf_fifo() & 1))
         {
-            set_pin_on(&orange_led);
-        }
-        else 
-        {
-            set_pin_off(&orange_led);
-        }
-        int pipe = 7;
-        pipe = (/* nrf_cfg.status */ get_nrf_status() >> 1) & 0x7;
-        // sleep(10);
-        if(pipe >= 0 && pipe <= 5)
-        {
-            set_pin_on(&blue_led);
-            stop_listening();
-
-            switch (pipe)
+            if (check_for_received_data(&nrf_startup_config, rx_answer))
             {
-            case 0:
-                nrf_receive_payload(nrf_startup_config.rx_pw_p0, rx_answer);
-                break;
-            case 1:
-                nrf_receive_payload(nrf_startup_config.rx_pw_p1, rx_answer);
                 asm("bkpt");
-                break;
-            case 2:
-                nrf_receive_payload(nrf_startup_config.rx_pw_p2, rx_answer);
-                break;
-            case 3:
-                nrf_receive_payload(nrf_startup_config.rx_pw_p3, rx_answer);
-                break;
-            case 4:
-                nrf_receive_payload(nrf_startup_config.rx_pw_p4, rx_answer);
-                break;
-            case 5:
-                nrf_receive_payload(nrf_startup_config.rx_pw_p5, rx_answer);
-                break;
-            default:
-                break;
             }
-            
-            sleep(1);
-
-            // get_nrf_config(&nrf_cfg);
-            // todo: check first if fifo is empty
-            clear_rx_dr_flag();
-            start_listening();
-            sleep(1);
-
         }
-        else
-        {
-            set_pin_off(&blue_led);
-        }
+
+        // get_nrf_config(&nrf_cfg);
+        // todo: check first if fifo is empty
+        // clear_rx_dr_flag();
+        // start_listening();
+        sleep(1);
+
 
         SV_YIELD_TASK;
     }
