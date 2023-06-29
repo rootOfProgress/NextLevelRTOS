@@ -6,18 +6,10 @@
 
 
 
-typedef enum OperatingMode {
-    SLAVE,
-    MASTER
-} OperatingMode_t;
 
 void spin(int);
 void power_on();
 
-#define R_RX_PAYLOAD 0x61 
-#define W_TX_PAYLOAD 0xA0 
-#define FLUSH_TX 0xE1
-#define FLUSH_RX 0xE2
 
 typedef struct Nrf24l01Registers {
     char config;
@@ -48,13 +40,13 @@ typedef struct Nrf24l01Registers {
     char feature;
 } Nrf24l01Registers_t;
 
-enum {
-    TX_BUFFER_SIZE = 32,
-    RX_BUFFER_SIZE = sizeof(Nrf24l01Registers_t)
-};
 
-extern char receive_buffer[RX_BUFFER_SIZE];
-extern char tx_buffer[TX_BUFFER_SIZE];
+
+typedef enum OperatingMode {
+    SLAVE,
+    MASTER
+} OperatingMode_t;
+
 
 extern Nrf24l01Registers_t nrf24l01_regs;
 
@@ -87,20 +79,18 @@ typedef enum Nrf24l01RegisterNames {
     FEATURE = 0x1D
 } Nrf24l01RegisterNames_t;
 
-void set_bit_nrf_register(Nrf24l01RegisterNames_t, char);
-void clear_bit_nrf_register(Nrf24l01RegisterNames_t, char);
-char get_nrf_register(Nrf24l01RegisterNames_t);
 void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
-void replace_nrf_register(Nrf24l01RegisterNames_t, char);
-// void transfer(char, char*, unsigned int, TransferType_t,char*); 
-void set_nrf_register_long(Nrf24l01RegisterNames_t, char*);
+char get_nrf_register(Nrf24l01RegisterNames_t);
 void clear_ir_maxrt_flag(void);
-void unset_ce(void);
-void set_ce(void);
 void start_listening(void);
 void stop_listening(void);
 void nrf_flush_rx(void);
-void nrf_receive_payload(char*, unsigned int, char*);
+void nrf_receive_payload(unsigned int, char*);
 void clear_rx_dr_flag(void);
+void nrf_power_off(void);
+void nrf_power_on(void);
+char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
+void get_nrf_config(Nrf24l01Registers_t*);
+void nrf_transmit(char*, unsigned int);
 
 #endif

@@ -43,6 +43,7 @@
     "math.h": "c",
     "scheduler.h": "c",
     "cpu.h": "c",
-    "parameters.h": "c"
+    "parameters.h": "c",
+    "*.old": "c"
   }
 }

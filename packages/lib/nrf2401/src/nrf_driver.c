@@ -1,5 +1,6 @@
 #include "nrf24l01.h"
 #include "nrf_driver.h"
+#include "nrf24l01_privates.h"
 #include "gpio.h"
 
 // Nrf24l01Registers_t current_nrf_config;
@@ -115,15 +116,15 @@ void stop_listening()
 
 void nrf_flush_rx(void)
 {
-    transfer(-1, (char[1]) {0}, 0, FlushRX, (void*) 0);
+    transfer_write(-1, 0, FlushRX, (void*) 0);
 }
 
 void nrf_transmit(char* payload, unsigned int payload_length)
 {
-    transfer(-1, (char[1]) {0}, 0, FlushTX, (void*) 0);
+    transfer_write(-1, 0, FlushTX, (void*) 0);
     clear_ir_maxrt_flag();
     
-    transfer(-1, payload, payload_length, WTxPayload, (void*) 0);
+    transfer_write(-1, payload_length, WTxPayload, payload);
 
     set_ce();
 
@@ -140,10 +141,10 @@ void clear_rx_dr_flag(void)
     set_bit_nrf_register(STATUS, 6);   
 }
 
-void nrf_receive_payload(char* payload, unsigned int payload_length, char* buffer)
+void nrf_receive_payload(unsigned int payload_length, char* buffer)
 {
     // clear_rx_dr_flag();
-    transfer(-1, payload, payload_length, RRxPayload, buffer);
+    transfer_read_wbuffer(-1, payload_length, RRxPayload, buffer);
 
 
     for (int i = 0; i < 2000; i++)

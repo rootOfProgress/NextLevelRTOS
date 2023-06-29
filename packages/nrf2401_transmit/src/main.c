@@ -15,8 +15,8 @@
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
 
-char receive_buffer[RX_BUFFER_SIZE];
-char tx_buffer[TX_BUFFER_SIZE];
+// char receive_buffer[RX_BUFFER_SIZE];
+// char tx_buffer[TX_BUFFER_SIZE];
 Nrf24l01Registers_t nrf24l01_regs;
 
 
@@ -51,9 +51,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     init_spi();
-
-    memset_byte((void*) &receive_buffer, sizeof(receive_buffer), 0x0);
-
+    
    
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);

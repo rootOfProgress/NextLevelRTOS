@@ -4,94 +4,81 @@
 #include "nrf_driver.h"
 #include "nrf24l01_privates.h"
 
+char rx_buffer[RX_BUFFER_SIZE];
 
-void spi_transfer_raw(char target_register, unsigned int length, TransferType_t t)
+void transfer_write(char target_register, unsigned int length, TransferType_t t, char* payload)
 {
     char tx_buffer[PackageBufferSize];
 
     configure_package_type(target_register, t, tx_buffer);
+
+    for (unsigned int i = 0; i < length && i < TX_BUFFER_SIZE; i++)
+        tx_buffer[i+1] = payload[i];
+
+    spi_write(tx_buffer, length + 1, rx_buffer);
 }
 
-void transfer(char target_register, char *data, unsigned int length, TransferType_t t, char* aux_receive_buffer) 
+void transfer_read(char target_register, unsigned int length, TransferType_t t)
 {
-    memset_byte((void*) tx_buffer, TX_BUFFER_SIZE, 0);
-    switch (t)
-    {
-    case ReadRegister:
-        tx_buffer[0] = target_register & ~(0b111 << 5);
-        break;
-    case WriteRegister:
-        tx_buffer[0] = ((char) (1 << 5) | target_register) & ~(0b11 << 6);
-        break;
-    case RRxPayload:
-        tx_buffer[0] = R_RX_PAYLOAD;
-        break;
-    case WTxPayload:
-        tx_buffer[0] = W_TX_PAYLOAD;
-        break;
-    case FlushTX:
-        tx_buffer[0] = FLUSH_TX;
-        break;
-    case FlushRX:
-        tx_buffer[0] = FLUSH_RX;
-        break;
-    default:
-        return;
-    }
-    
+    char tx_buffer[PackageBufferSize];
+
+    configure_package_type(target_register, t, tx_buffer);
+
     for (unsigned int i = 0; i < length && i < TX_BUFFER_SIZE; i++)
-        tx_buffer[i+1] = data[i];
+        tx_buffer[i+1] = 0;
 
-    if (aux_receive_buffer)
-    {
-        spi_write(tx_buffer, length + 1, aux_receive_buffer);
+    spi_write(tx_buffer, length + 1, rx_buffer);
+}
 
-    }
-    else
-        spi_write(tx_buffer, length + 1, receive_buffer);
+void transfer_read_wbuffer(char target_register, unsigned int length, TransferType_t t, char* custom_buffer)
+{
+    char tx_buffer[PackageBufferSize];
+
+    configure_package_type(target_register, t, tx_buffer);
+
+    for (unsigned int i = 0; i < length && i < TX_BUFFER_SIZE; i++)
+        tx_buffer[i+1] = 0;
+
+    spi_write(tx_buffer, length + 1, custom_buffer);
 }
 
 char get_nrf_register(Nrf24l01RegisterNames_t reg_type)
 {
-    char empty = 0;
-    transfer(reg_type, &empty, sizeof(char), ReadRegister, (void*) 0);
+    transfer_read(reg_type, sizeof(char), ReadRegister);
     
-    return receive_buffer[1];
+    return rx_buffer[1];
 }
 
 void get_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long)
 {
-    char empty[5] = {0,0,0,0,0};
-    
-    transfer(reg_type, empty, sizeof(empty)/sizeof(char), ReadRegister, (void*) 0);
+    transfer_read(reg_type, 5 * sizeof(char), ReadRegister);
 
-    for (unsigned int i = 0; i < sizeof(empty)/sizeof(char); i++)
+    for (unsigned int i = 0; i <  5 * sizeof(char); i++)
     {
-        register_long[i] = receive_buffer[i+1];
+        register_long[i] = rx_buffer[i+1];
     }
 }
 
-void set_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* register_long)
+void set_nrf_register_long(Nrf24l01RegisterNames_t reg_type, char* payload)
 {
-    transfer(reg_type, register_long, 5 /* sizeof(register_long)/sizeof(char) */, WriteRegister, (void*) 0);
+    transfer_write(reg_type, 5, WriteRegister, payload);
 }
 
 void set_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
 {
     char current_value = get_nrf_register(reg_type);
     char new_value = { current_value | 1 << bit_position }; 
-    transfer(reg_type, &new_value, 1, WriteRegister, (void*) 0);   
+    transfer_write(reg_type, 1, WriteRegister, &new_value);   
 }
 
 void clear_bit_nrf_register(Nrf24l01RegisterNames_t reg_type, char bit_position)
 {
     char current_value = get_nrf_register(reg_type);
     char new_value = { current_value & ~(1 << bit_position) }; 
-    // asm("bkpt");
-    transfer(reg_type, &new_value, 1, WriteRegister, (void*) 0);   
+    transfer_write(reg_type, 1, WriteRegister, &new_value);   
 }
 
 void replace_nrf_register(Nrf24l01RegisterNames_t reg_type, char new_value)
 {
-    transfer(reg_type, &new_value, 1, WriteRegister, (void*) 0);
+    transfer_write(reg_type, 1, WriteRegister, &new_value);   
 }

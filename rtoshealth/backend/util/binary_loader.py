@@ -26,7 +26,7 @@ def recompile_binary(final_adress, package_name, size):
 
 def upload_binary(package_name):
     logging.print_info("Set default size in linker script...")
-    cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(10000) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
+    cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(15000) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
     os.system(cmd)
 
     logging.print_info("Compile programm...")
