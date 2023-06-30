@@ -26,12 +26,13 @@ void am2302_init_peripherials(unsigned int gpio_pin, char gpio_port)
 }
 
 
-Am2302Readings_t* am2302_do_measurement(void)
+void am2302_do_measurement(Am2302Readings_t* result)
 {
     am2302_send_host_init();
 
     am2302_wait_for_sensor();
-    Am2302Readings_t* ar = am2302_record();
-    asm("bkpt");
-    return ar;
+    am2302_record(result);
+    // @todo: Don't return a local pointer!!
+
+    // return ar;
 }

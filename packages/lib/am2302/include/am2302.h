@@ -56,7 +56,7 @@ static inline __attribute__((always_inline)) void am2302_wait_for_sensor(void)
     while (read_pin(&gpio)) {}    
 }
 
-static inline __attribute__((always_inline)) Am2302Readings_t* am2302_record(void)
+static inline __attribute__((always_inline)) void am2302_record(Am2302Readings_t* measurement_results)
 {
     unsigned int prev_state = 0;
     unsigned int elapsed;
@@ -88,18 +88,16 @@ static inline __attribute__((always_inline)) Am2302Readings_t* am2302_record(voi
     }
     timer_stop(timerNumber);
 
-    readings.rh = (unsigned short) (result >> 24);
-    readings.temp = (unsigned short) (result >> 8) & 0xFFFF;
-    readings.crc = (char) result & 0xFF;
-    readings.is_valid = 0;
+    measurement_results->rh = (unsigned short) (result >> 24);
+    measurement_results->temp = (unsigned short) (result >> 8) & 0xFFFF;
+    measurement_results->crc = (char) result & 0xFF;
+    measurement_results->is_valid = 0;
 
-    if ((char)((readings.rh & 0xFF) + (readings.rh >> 8) + (readings.temp & 0xFF) + (readings.temp >> 8)) == readings.crc)
-        readings.is_valid = 1;
-
-    return &readings;
+    if ((char)((measurement_results->rh & 0xFF) + (measurement_results->rh >> 8) + (measurement_results->temp & 0xFF) + (measurement_results->temp >> 8)) == measurement_results->crc)
+        measurement_results->is_valid = 1;
 }
 
 void am2302_init_peripherials(unsigned int, char); 
-Am2302Readings_t* am2302_do_measurement(void);
+void am2302_do_measurement(Am2302Readings_t*);
 
 #endif
