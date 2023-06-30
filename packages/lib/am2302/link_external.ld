@@ -1,5 +1,5 @@
-STARTADRESS = 0x20001587;
-SIZE = 2533;
+STARTADRESS = 0x20001b8b;
+SIZE = 15000;
 
 MEMORY
 {
@@ -28,7 +28,7 @@ SECTIONS
     _ebss = .;
   } > RAM
 
-  .data :
+  .data : AT(ADDR(.rodata) + SIZEOF(.rodata))
   {
     _sdata = .;
     *(.data .data.*);

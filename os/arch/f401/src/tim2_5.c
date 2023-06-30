@@ -75,7 +75,8 @@ unsigned int timer_get_sr(unsigned int tim_nr)
 
 unsigned int timer_get_prescaler(__attribute__((unused)) unsigned int tim_nr, unsigned int cycle_length)
 {
-    unsigned int target_frequency = ((unsigned int) (1.0 / ((float)cycle_length / 1000000.0f)));
+    unsigned int target_frequency = ((unsigned int) (1.0f / ((float)cycle_length / 1000000.0f)));
+    // unsigned int target_frequency = 1;
     // @todo: may over/underflow!!
     return (ahbFrequency / target_frequency) - 1;
 }

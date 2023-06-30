@@ -6,12 +6,12 @@ OUTDIR := ./build
 
 CFLAGS = -O0  \
 	 -g -mcpu=cortex-m4 -mthumb \
-	 -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
+	 -nostartfiles -ffunction-sections  -Wall -Wextra -mfloat-abi=soft -static -nostdlib  \
 
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-TARGET = nrf2401
+TARGET := am2302
 all: $(TARGET)
 
 $(TARGET): clean compile_c build_platform_f401 archive 

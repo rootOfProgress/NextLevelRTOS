@@ -34,18 +34,18 @@ static inline __attribute__((always_inline)) void am2302_send_host_init(void)
 {
     set_pin_off(&gpio);
     timer_start(timerNumber);
-    while (read_counter(timerNumber) < HostPullsLow) {}
+    while (timer_read_counter(timerNumber) < HostPullsLow) {}
     timer_stop(timerNumber);
 
-    flush_counter(timerNumber);
+    timer_flush_counter(timerNumber);
 
 
     timer_start(timerNumber);
     set_pin_on(&gpio);
-    while (read_counter(timerNumber) < SensorOutputZero) {}
+    while (timer_read_counter(timerNumber) < SensorOutputZero) {}
     set_pin_off(&gpio);
     timer_stop(timerNumber);
-    flush_counter(timerNumber);
+    timer_flush_counter(timerNumber);
 }
 
 static inline __attribute__((always_inline)) void am2302_wait_for_sensor(void)
@@ -67,18 +67,18 @@ static inline __attribute__((always_inline)) Am2302Readings_t* am2302_record(voi
     unsigned int t_now; 
     timer_start(timerNumber);
     
-    while ((elapsed = read_counter(timerNumber)) < 10000) // 10 ms
+    while ((elapsed = timer_read_counter(timerNumber)) < 10000) // 10 ms
     {
         // rising edge
         if (prev_state < read_pin(&gpio))
         {
-            t_now = read_counter(timerNumber);
+            t_now = timer_read_counter(timerNumber);
             prev_state = read_pin(&gpio);
         } 
         // falling edge
         else if (prev_state > read_pin(&gpio))
         {
-            if (!((read_counter(timerNumber) - t_now) < SensorOutputZero))
+            if (!((timer_read_counter(timerNumber) - t_now) < SensorOutputZero))
             {
                 result |= (1ULL << iteration);
             }
