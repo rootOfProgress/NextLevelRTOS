@@ -13,7 +13,6 @@
 #include "process/scheduler.h"
 #include "runtime.h"
 #include "lang.h"
-#include "startup.h"
 
 extern void dma2_stream5_ir_handler(void);              //!< Interrupt service routine for DMA2 Controller */
 extern void pendsv_isr(void);                           //!< Interrupt service routine for pending SV Call */
