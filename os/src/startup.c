@@ -29,7 +29,6 @@ extern unsigned int _sidata;                            //!< Defined in linker s
 extern unsigned int ram_size;                           //!< Defined in linker script. Needed for internal statistic purposes */
 extern unsigned int stack_top;                          //!< Defined in linker script. Needed to reset main stack pointer after bootstrapping system */
 
-BootFlags_t *boot_flags;
 
 void bootstrap(void)
 {

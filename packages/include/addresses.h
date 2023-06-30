@@ -1,11 +1,11 @@
 #ifndef OS_HEADER_H
 #define OS_HEADER_H
-#define allocate_addr 0x80018c9
-#define deallocate_addr 0x8001825
-#define create_task_addr 0x8002e71
-#define timer_init_addr 0x80030ed
-#define task_sleep_addr 0x8002929
-#define create_task_addr 0x8002e71
-#define join_task_addr 0x80021a1
-#define memset_byte_addr 0x8001ac5
+#define allocate_addr 0x8000865
+#define deallocate_addr 0x80007c1
+#define create_task_addr 0x8001c51
+#define timer_init_addr 0x8001d71
+#define task_sleep_addr 0x80018c5
+#define create_task_addr 0x8001c51
+#define join_task_addr 0x800113d
+#define memset_byte_addr 0x8000a61
 #endif
