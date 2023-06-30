@@ -28,7 +28,7 @@ typedef enum sensorTimings {
 
 extern Am2302Readings_t readings;
 extern GpioObject_t gpio;
-enum { timerNumber = 3 };
+enum { timerNumber = 2 };
 
 static inline __attribute__((always_inline)) void am2302_send_host_init(void) 
 {

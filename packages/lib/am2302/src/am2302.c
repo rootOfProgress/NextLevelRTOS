@@ -18,7 +18,9 @@ void am2302_init_peripherials(unsigned int gpio_pin, char gpio_port)
     gpio.pin = gpio_pin;
     gpio.port = gpio_port;
     init_am2302_gpio(&gpio);
+
     set_pin_on(&gpio);
+
     // resolution: 
     timer_init(timerNumber, 1, (unsigned int[4]) {0,0,0,0}, 1);    
 }
@@ -27,6 +29,7 @@ void am2302_init_peripherials(unsigned int gpio_pin, char gpio_port)
 Am2302Readings_t* am2302_do_measurement(void)
 {
     am2302_send_host_init();
+
     am2302_wait_for_sensor();
     Am2302Readings_t* ar = am2302_record();
     asm("bkpt");
