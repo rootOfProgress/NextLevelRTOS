@@ -49,7 +49,8 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
-    init_spi();
+    // now done in driver!
+    // init_spi();
     
    
     Nrf24l01Registers_t nrf_registers;
