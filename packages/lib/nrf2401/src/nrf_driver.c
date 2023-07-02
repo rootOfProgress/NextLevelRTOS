@@ -63,6 +63,7 @@ void get_nrf_config(Nrf24l01Registers_t* current_nrf_config)
 void clear_ir_maxrt_flag(void)
 {
     set_bit_nrf_register(STATUS, 4);
+    // asm("bkpt");
 }
 
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
@@ -80,17 +81,17 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
     if (mode == SLAVE)
     {
         // PRIM_RX
-        set_bit_nrf_register(CONFIG, 0);
+        // set_bit_nrf_register(CONFIG, 0);
 
-        replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
     }
     else
     {
-        clear_bit_nrf_register(CONFIG, 0);
+        // clear_bit_nrf_register(CONFIG, 0);
     } 
+    replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
 
     // disable crc
-    clear_bit_nrf_register(CONFIG, 3);
+    // clear_bit_nrf_register(CONFIG, 3);
 
     set_nrf_register_long(RX_ADDR_P0, nrf_regs->rx_addr_p0);
     set_nrf_register_long(RX_ADDR_P1, nrf_regs->rx_addr_p1);
@@ -101,6 +102,11 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
     replace_nrf_register(RX_PW_P1, nrf_regs->rx_pw_p1);
     set_nrf_register_long(TX_ADDR, nrf_regs->tx_addr);
 
+
+    replace_nrf_register(CONFIG, nrf_regs->config);
+    replace_nrf_register(DYNDP, nrf_regs->dyndp);
+    replace_nrf_register(FEATURE, nrf_regs->feature);
+    replace_nrf_register(SETUP_RETR, nrf_regs->setup_retr);
     replace_nrf_register(RF_CH, nrf_regs->rf_ch);
     replace_nrf_register(RF_SETUP, nrf_regs->rf_setup);
     replace_nrf_register(EN_AA, nrf_regs->en_aa);

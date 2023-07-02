@@ -34,6 +34,13 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
     /************ Channel 2 ***************/
     nrf_registers->rf_ch = 2;
 
+    // nrf_registers->config = 0;
+    // nrf_registers->config = (1 << 3) | (1 << 2);
+    nrf_registers->config = (1 << 3);
+    nrf_registers->en_rxaddr = 1;
+    nrf_registers->setup_retr = 0x25;
+
+
     // LSB is written first, will result in bfcecccecc
     // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
     char tx[5] = {0x9A, 0x78, 0x56, 0x34, 0x12};
@@ -41,7 +48,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
         nrf_registers->tx_addr[i] = tx[i];
     // for (int i = sizeof(tx)/sizeof(char) - 1; i >= 0 ; i--)
 
-    char rx_p0[5] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
+    char rx_p0[5] = {0x9A, 0x78, 0x56, 0x34, 0x12};
     for (unsigned int i = 0; i < sizeof(rx_p0)/sizeof(char); i++)
         nrf_registers->rx_addr_p0[i] = rx_p0[i];
     // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
@@ -58,8 +65,8 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 
 
     configure_device(&nrf_registers, MASTER);
-    char* p = "hello";
-    nrf_transmit(p, 4);
+    char* p = "aaaaaaaaa";
+    nrf_transmit(p, 6);
     
     return 0;
 }

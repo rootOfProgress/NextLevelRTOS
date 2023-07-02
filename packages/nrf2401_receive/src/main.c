@@ -37,6 +37,8 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
     nrf_registers->rx_pw_p0 = 6;
     nrf_registers->rx_pw_p1 = 6;
 
+    nrf_registers->config = (1 << 3) | 1;
+
     // LSB is written first, will result in bfcecccecc
     // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
     char tx[5] = {0x9A, 0x78, 0x56, 0x34, 0x12};
