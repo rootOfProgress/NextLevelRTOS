@@ -1,7 +1,11 @@
 #include "am2302.h"
 
 GpioObject_t gpio;
-Am2302Readings_t readings;
+
+void am2302_reset_gpio(void)
+{
+
+}
 
 void init_am2302_gpio(GpioObject_t* obj)
 {
@@ -19,7 +23,7 @@ void am2302_init_peripherials(unsigned int gpio_pin, char gpio_port)
     gpio.port = gpio_port;
     init_am2302_gpio(&gpio);
 
-    set_pin_on(&gpio);
+    
 
     // resolution: 
     timer_init(timerNumber, 1, (unsigned int[4]) {0,0,0,0}, 1);    
@@ -28,10 +32,7 @@ void am2302_init_peripherials(unsigned int gpio_pin, char gpio_port)
 
 void am2302_do_measurement(Am2302Readings_t* result)
 {
-    am2302_send_host_init();
-
-    am2302_wait_for_sensor();
-    am2302_record(result);
+    am2302_run(result);
     // @todo: Don't return a local pointer!!
 
     // return ar;
