@@ -23,5 +23,10 @@
         {
             "run" : 0,
             "amount" : 8
+        },
+    "weathernode":
+        {
+            "run" : 0,
+            "amount" : 1
         }
 }

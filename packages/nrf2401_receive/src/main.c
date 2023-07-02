@@ -65,7 +65,8 @@ static unsigned int index = 0;
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
-    init_spi();
+    // driver handels that
+    // init_spi();
     index = 0;
     GpioObject_t orange_led;
     GpioObject_t blue_led;
