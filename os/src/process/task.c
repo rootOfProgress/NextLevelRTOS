@@ -6,7 +6,7 @@
 #include "panic.h"
 #include "data/list.h"
 
-#define STACK_SIZE 1536
+#define STACK_SIZE 3192
 
 unsigned int pid_of_transferhandler;
 unsigned int pid_of_mstat;
