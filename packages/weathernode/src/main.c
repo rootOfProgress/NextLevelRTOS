@@ -7,6 +7,12 @@
 
 Nrf24l01Registers_t nrf24l01_regs;
 
+typedef struct NodeFrame {
+    char id;
+    Am2302Readings_t readings;
+} NodeFrame_t;
+
+NodeFrame_t node_frame;
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 {
@@ -41,14 +47,17 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);
     configure_device(&nrf_registers, MASTER);
-    Am2302Readings_t readings;
+
+    memset_byte((void*) &node_frame, sizeof(NodeFrame_t), 0);
+    node_frame.id = 0xA0;
+
     am2302_init_peripherials(13, 'C');
 
     while (1)
     {
-        am2302_do_measurement(&readings);
-        nrf_transmit((char*) &readings, sizeof(Am2302Readings_t));
+        am2302_do_measurement(&node_frame.readings);
+        if (node_frame.readings.is_valid)
+            nrf_transmit((char*) &node_frame, sizeof(NodeFrame_t));
         sleep(5000);
-
     } 
 }
