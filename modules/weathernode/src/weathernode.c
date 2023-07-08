@@ -44,7 +44,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
     // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
 }
 
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) weathernode(void)
 {   
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);
