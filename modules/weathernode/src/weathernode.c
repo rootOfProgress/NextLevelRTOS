@@ -33,7 +33,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 
     // LSB is written first, will result in bfcecccecc
     // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
-    char tx[5] = {0x9A, 0x78, 0x56, 0x34, 0x12};
+    char tx[5] = {0x9B, 0x78, 0x56, 0x34, 0x13};
     for (unsigned int i = 0; i < sizeof(tx)/sizeof(char); i++)
         nrf_registers->tx_addr[i] = tx[i];
     // for (int i = sizeof(tx)/sizeof(char) - 1; i >= 0 ; i--)
@@ -52,7 +52,7 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
     
     memset_byte((void*) &node_frame, sizeof(NodeFrame_t), 0);
 
-    node_frame.id = 0xA0;
+    node_frame.id = 0xA1;
 
     am2302_init_peripherials(13, 'C');
 
