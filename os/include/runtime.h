@@ -1,7 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#define GIT_HASH 0x1103901f;
+#define GIT_HASH 0xea53afc4;
 #define OS_VERSION 12062023;
 
 typedef enum KernelErrorCodes {
