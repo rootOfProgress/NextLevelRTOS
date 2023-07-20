@@ -21,7 +21,7 @@ def recompile_binary(final_adress, package_name, size):
     logging.print_info("recompile programm...")
     cmd = "make clean -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
-    cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null"
+    cmd = "make -C " + path_suffix + "packages/" + package_name + " TARGET=" + package_name + " > /dev/null" 
     os.system(cmd)
 
 def upload_binary(package_name):

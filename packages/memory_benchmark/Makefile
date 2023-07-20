@@ -13,7 +13,7 @@ OBJ:=$(wildcard ./build/*.o)
 
 all: $(TARGET)
 
-$(TARGET): compile_c build_platform_f401 link convert_elf
+$(TARGET): clean compile_c build_platform_f401 link convert_elf
 
 prepare:
 	cp -v ../templates/link_external.ld .
@@ -27,7 +27,7 @@ build_platform_f401:
 	mv ../../os/arch/f401/build/*.o ./build
 
 link: 
-	make -C $(OUTDIR) TARGET=$(TARGET)
+	make -C ./buildscripts TARGET=$(TARGET)
 
 convert_elf:
 	$(OBJCP) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)_binary -O binary
