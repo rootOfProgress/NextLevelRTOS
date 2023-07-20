@@ -2,6 +2,8 @@
 #include "rcc.h"
 #define BREAK asm("bkpt") 
 
+timerConfiguration_t timer_configurations[5];
+
 void reset_timer(unsigned int tim_nr)
 {
     SET_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));    
@@ -10,8 +12,8 @@ void reset_timer(unsigned int tim_nr)
 
 void timer_start(unsigned int tim_nr)
 {
-    unsigned int tim_base = get_timx_base(tim_nr);
-    SET_BIT(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
+    // unsigned int tim_base = get_timx_base(tim_nr);
+    SET_BIT(&(timer_configurations[tim_nr].tim_registermap)->cr1, 1 << CEN);
 }
 
 void timer_stop(unsigned int tim_nr)
@@ -81,6 +83,14 @@ unsigned int timer_get_prescaler(__attribute__((unused)) unsigned int tim_nr, un
     return (ahbFrequency / target_frequency) - 1;
 }
 
+void timer_enable_pwm()
+{
+    // @todo: gpio config
+    // @todo: enable channels in tim_ccmr - which gpios are associated??
+    // @todo: enable capture compare in tim_ccer
+    // @todo: gpio config
+}
+
 
 void timer_init(unsigned int tim_nr, __attribute__((unused)) unsigned int arr, unsigned int *ccr, unsigned int cycle_length)
 {
@@ -97,6 +107,10 @@ void timer_init(unsigned int tim_nr, __attribute__((unused)) unsigned int arr, u
         set_ccr(tim_nr, ccr[i], i);
     }
     timer_flush_counter(tim_nr);
+
+    timer_configurations[tim_nr].tim_nr = tim_nr;
+    timer_configurations[tim_nr].tim_registermap = (timer25RegisterMap_t*) get_timx_base(tim_nr);
+
 }
 
 void enable_ccx_ir(unsigned int tim_nr, unsigned int ccr_nr)
