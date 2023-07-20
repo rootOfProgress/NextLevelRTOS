@@ -118,7 +118,7 @@ def run_all():
     print(sha_short, hex(git_version_on_device))
     if not (sha_short == git_version_on_device):
         logging.print_fail("Version mismatch")
-        repo.git.checkout(git_version_on_device)
+        repo.git.checkout(f'{git_version_on_device:x}')
     while 1:
         pass
 
