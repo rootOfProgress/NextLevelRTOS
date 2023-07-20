@@ -113,10 +113,10 @@ def run_all():
     logging.print_info("Check if os version matches running version")
     repo = git.Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
-    sha_short = repo.git.rev_parse(sha, short=8)
+    git_vesion_in_repo = repo.git.rev_parse(sha, short=8)
 
-    print(sha_short, hex(git_version_on_device))
-    if not (sha_short == git_version_on_device):
+    print(git_vesion_in_repo, hex(git_version_on_device))
+    if not (git_vesion_in_repo == git_version_on_device):
         logging.print_fail("Version mismatch")
         repo.git.checkout(f'{git_version_on_device:x}')
     while 1:
