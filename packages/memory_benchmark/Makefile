@@ -13,10 +13,10 @@ OBJ:=$(wildcard ./build/*.o)
 
 all: $(TARGET)
 
-$(TARGET): clean prepare compile_c build_platform_f401 link convert_elf 
+$(TARGET): compile_c build_platform_f401 link convert_elf
 
 prepare:
-	cp ../templates/link_external.ld .
+	cp -v ../templates/link_external.ld .
 
 compile_c: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
@@ -33,4 +33,4 @@ convert_elf:
 	$(OBJCP) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)_binary -O binary
 
 clean:
-	rm -f $(OUTDIR)/*.o
+	rm -fv $(OUTDIR)/*.o

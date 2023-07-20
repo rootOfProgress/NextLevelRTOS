@@ -25,7 +25,7 @@ void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(unsi
     measurements->results[round] = timer_read_counter(2);  
 }
 
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
     timer_init(2, 1, (unsigned int[4]) {0,0,0,0}, 1);
@@ -35,4 +35,5 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
         benchmark(alloc_chunks[j], &measurements, j);
     }
     print((char*) &measurements.results, 32 * sizeof(int));
+    return 0;
 }
