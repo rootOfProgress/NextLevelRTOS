@@ -6,7 +6,7 @@ import test.nrf2401 as nrf2401
 import util.os_health as os_health
 import util.logging as logging
 from enum import Enum
-
+import git
 import json
 
 from datetime import datetime 
@@ -88,6 +88,8 @@ def nrf2401(test_type):
 
     return results
 
+# def checkout_git(hash):
+
 def run_all():
     global num_of_failed
     global num_of_passed
@@ -99,12 +101,26 @@ def run_all():
     test_log = open("test/log/test_" +  datetime.today().strftime('%Y-%m-%d_%H:%M:%S'), "a+")
 
     lifetime = os_health.get_lifetime()
+    git_version_on_device = lifetime["git_hash"]
 
-    meta = "Test running on OS version " + str(lifetime["os_version"]) + " on commit " + str(lifetime["git_hash"]) + "\n"
+    meta = "Test running on OS version " + str(lifetime["os_version"]) + " on commit " + str(git_version_on_device) + "\n"
     test_log.write(meta)
 
     meta = "--Config--\n " + "Debug Mode: " + str(lifetime["debug_mode"]) + "\n" + " Systick Enabled: " + str(lifetime["systick_enabled"]) + "\n"
     test_log.write(meta)
+
+    ''' Check for compatibility '''
+    logging.print_info("Check if os version matches running version")
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
+    sha_short = repo.git.rev_parse(sha, short=8)
+
+    print(sha_short, hex(git_version_on_device))
+    if not (sha_short == git_version_on_device):
+        logging.print_fail("Version mismatch")
+        repo.git.checkout(git_version_on_device)
+    while 1:
+        pass
 
     results = []
     results.append(execute_test(general_tests, test_log, TestType.LOGIC, False))
