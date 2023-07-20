@@ -13,7 +13,10 @@ OBJ:=$(wildcard ./build/*.o)
 
 all: $(TARGET)
 
-$(TARGET): clean compile_c build_platform_f401 link convert_elf 
+$(TARGET): clean prepare compile_c build_platform_f401 link convert_elf 
+
+prepare:
+	cp ../templates/link_external.ld .
 
 compile_c: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 
