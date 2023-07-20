@@ -53,6 +53,7 @@ CFLAGS += -DHWFP=0
 endif
 
 CFLAGS += -DARCH
+CFLAGS += -DGIT_HASH_PARSED="0x"$(shell git rev-parse --short HEAD )
 
 export CFLAGS
 
