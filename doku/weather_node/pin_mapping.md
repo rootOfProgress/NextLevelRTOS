@@ -1,21 +1,20 @@
 **SPI**
-|PIN   |Function|
-|------|--------|
-|CLK   |  PB3   |  
-|MISO  |  PB4   |  
-|MOSI  |  PB5   |  
-|CSL   |  PA15   |  
-|CLK   |  PA3   |  
+|PIN   |Function| Color |
+|------|--------|-------|
+|CLK   |  PB3   | YELLOW|
+|MISO  |  PB4   | GREEN |
+|MOSI  |  PB5   | BLUE  |
+|CSL   |  PA15  | PURPLE|  
 
 **AM2302**
 |PIN   |Function|
 |------|--------|
-|DATA  |  PA0   |  
+|DATA  |  PC13  |  
 
 **nrf2401**
-|PIN   |Function|
-|------|--------|
-|CEN   |  PA5   |  
+|PIN   |Function| Color |
+|------|--------|-------|
+|CE    |  PA5   |ORANGE |
 
 
 **osci mapping**

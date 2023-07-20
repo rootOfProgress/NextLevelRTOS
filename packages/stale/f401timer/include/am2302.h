@@ -32,6 +32,8 @@ enum { timerNumber = 2 };
 
 static inline __attribute__((always_inline)) void am2302_send_host_init(void) 
 {
+    flush_counter(timerNumber);
+
     set_pin_off(&gpio);
     timer_start(timerNumber);
     while (read_counter(timerNumber) < HostPullsLow) {}

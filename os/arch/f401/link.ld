@@ -30,7 +30,7 @@ SECTIONS
 		KEEP(*(.meta))
 	} >META
 
-	.data : AT(_sidata)
+	.data :
 	{
 		_sdata = .;
 		*(.data)

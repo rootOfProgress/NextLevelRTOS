@@ -1,8 +1,10 @@
 #include "nrf24l01.h"
 #include "nrf24l01_privates.h"
 #include "gpio.h"
+#include "spi.h"
 
 GpioObject_t gpio_pa5_ce;
+static unsigned char spi_is_ready = 0;
 
 void nrf_power_off()
 {
@@ -65,6 +67,13 @@ void clear_ir_maxrt_flag(void)
 
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
+    init_spi();
+
+    // if (!spi_is_ready)
+    // {
+    //     init_spi();
+    //     spi_is_ready = 1;
+    // }
     unset_ce();
     nrf_power_off();
 

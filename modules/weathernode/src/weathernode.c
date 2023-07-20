@@ -1,23 +1,20 @@
-#include "gpio.h"
-#include "test.h"
-#include "spi.h"
-#include "nrf24l01.h"
-#include "rcc.h"
-#include "uart.h"
-#include "os_api.h"
-
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
+#include "os_lib.h"
+#include "nrf24l01.h"
+#include "am2302.h"
 
-#define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
-#define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
-
-
-// char receive_buffer[RX_BUFFER_SIZE];
-// char tx_buffer[TX_BUFFER_SIZE];
 Nrf24l01Registers_t nrf24l01_regs;
 
+extern void memset_byte(void*, unsigned int, char);
+
+typedef struct NodeFrame {
+    char id;
+    Am2302Readings_t readings;
+} NodeFrame_t;
+
+NodeFrame_t node_frame;
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 {
@@ -36,7 +33,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 
     // LSB is written first, will result in bfcecccecc
     // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
-    char tx[5] = {0x9A, 0x78, 0x56, 0x34, 0x12};
+    char tx[5] = {0x9B, 0x78, 0x56, 0x34, 0x13};
     for (unsigned int i = 0; i < sizeof(tx)/sizeof(char); i++)
         nrf_registers->tx_addr[i] = tx[i];
     // for (int i = sizeof(tx)/sizeof(char) - 1; i >= 0 ; i--)
@@ -47,19 +44,23 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
     // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
 }
 
-int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) weathernode(void)
 {   
-    // now done in driver!
-    // init_spi();
-    
-   
     Nrf24l01Registers_t nrf_registers;
     apply_nrf_config(&nrf_registers);
-
-
     configure_device(&nrf_registers, MASTER);
-    char* p = "hello";
-    nrf_transmit(p, 4);
     
-    return 0;
+    memset_byte((void*) &node_frame, sizeof(NodeFrame_t), 0);
+
+    node_frame.id = 0xA1;
+
+    am2302_init_peripherials(13, 'C');
+
+    while (1)
+    {
+        am2302_do_measurement(&node_frame.readings);
+        if (node_frame.readings.is_valid)
+            nrf_transmit((char*) &node_frame, sizeof(NodeFrame_t));
+        task_sleep(5000);
+    } 
 }
