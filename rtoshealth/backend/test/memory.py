@@ -23,19 +23,19 @@ def test_memory001_alloc_benchmark():
     package_name = "memory_benchmark"
     target_path = path_suffix + "packages/" + package_name + "/include/parameters.h"
 
+    template_path = path_suffix + "packages/" + package_name + "/include/parameters.template"
+    os.system("cp " + template_path + " " + target_path)
+
     random_numbers = ""
 
     for r in range(0,32):
         alloc_chunk = random.randrange(256)
         random_numbers += str(alloc_chunk) + ","
       
-    sed_command = "sed -i 's/{\([0-9]*,\)*};/{" + random_numbers + "};/g' " + target_path  
+    sed_command = "sed -i 's/{\([0-9]*,\)*};/{" + random_numbers + "};/g' " + target_path
 
     os.system(sed_command)
 
-
-    # # sed_command = "sed -i 's/{([0-9]*,)*[0-9]*,[0-9]*,[0-9]*,}/{" + random_numbers + "}/g' " + target_path           
-    # # return {}
     test_util.prepare_device()
     binary_loader.upload_binary("memory_benchmark")
     receiver = Thread(target = uart_receiver.device_rx, args=(128,))

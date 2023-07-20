@@ -11,7 +11,6 @@ CFLAGS = -O0  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-TARGET := memory_benchmark
 all: $(TARGET)
 
 $(TARGET): clean compile_c build_platform_f401 link convert_elf 
@@ -25,10 +24,10 @@ build_platform_f401:
 	mv ../../os/arch/f401/build/*.o ./build
 
 link: 
-	make -C $(OUTDIR)
+	make -C $(OUTDIR) TARGET=$(TARGET)
 
 convert_elf:
 	$(OBJCP) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)_binary -O binary
 
 clean:
-	rm -f $(OUTDIR)/*.o ./build/$(TARGET)*
+	rm -f $(OUTDIR)/*.o

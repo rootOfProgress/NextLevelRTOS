@@ -29,8 +29,8 @@ def upload_binary(package_name):
     cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(15000) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
     os.system(cmd)
 
-    logging.print_info("Compile programm...")
-    cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null" 
+    logging.print_info("Compile programm..." + package_name)
+    cmd = "make -C " + path_suffix + "packages/" + package_name + " TARGET=" + package_name + " > /dev/null" 
     os.system(cmd)
 
     logging.print_info("Get Actual Size...")
