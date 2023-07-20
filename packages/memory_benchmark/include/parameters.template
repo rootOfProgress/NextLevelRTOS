@@ -1,0 +1,8 @@
+#ifndef PARAMETERS_H
+#define PARAMETERS_H
+
+static unsigned int alloc_chunks[32] = {62,151,210,213,214,139,172,157,84,165,74,154,135,213,18,237,47,87,161,129,192,102,72,9,178,102,148,16,142,177,27,42,};
+
+#endif
+
+
