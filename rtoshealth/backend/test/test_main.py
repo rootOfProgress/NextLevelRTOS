@@ -107,10 +107,10 @@ def run_all():
     test_log.write(meta)
 
     results = []
-    # results.append(execute_test(general_tests, test_log, TestType.LOGIC, False))
-    # results.append(execute_test(memory_tests, test_log, TestType.LOGIC, True))
-    # results.append(execute_test(scheduler_tests, test_log, TestType.LOGIC, True))
-    # results.append(execute_test(scheduler_benchmarks, test_log, TestType.BENCHMARK))
+    results.append(execute_test(general_tests, test_log, TestType.LOGIC, False))
+    results.append(execute_test(memory_tests, test_log, TestType.LOGIC, True))
+    results.append(execute_test(scheduler_tests, test_log, TestType.LOGIC, True))
+    results.append(execute_test(scheduler_benchmarks, test_log, TestType.BENCHMARK))
     results.append(execute_test(memory_benchmarks, test_log, TestType.BENCHMARK))
 
     if (failed_tests):

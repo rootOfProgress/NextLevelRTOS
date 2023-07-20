@@ -43,6 +43,7 @@ char Subtest002_000_memset_byte(void)
 char Subtest002_001_alloc_zero_or_less(void)
 {
     void* zero = (void*) allocate(0);
+    asm("bkpt");
     void* negative = (void*) allocate(-1);
     if (zero || negative)
         return 0;
