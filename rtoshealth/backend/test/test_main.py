@@ -115,12 +115,16 @@ def run_all():
     sha = repo.head.object.hexsha
     git_vesion_in_repo = repo.git.rev_parse(sha, short=8)
 
-    print(git_vesion_in_repo, hex(git_version_on_device))
     if not (git_vesion_in_repo == git_version_on_device):
         logging.print_fail("Version mismatch")
-        repo.git.checkout(f'{git_version_on_device:x}')
-    while 1:
-        pass
+        return [{ 
+            "Message" : "Git Version Mismatch",
+            "Expected" : f'{git_version_on_device:x}',
+            "Check out" : git_vesion_in_repo
+        }]
+
+    # @todo: too complicated right now
+    #repo.git.checkout(f'{git_version_on_device:x}')
 
     results = []
     results.append(execute_test(general_tests, test_log, TestType.LOGIC, False))
