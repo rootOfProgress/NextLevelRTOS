@@ -226,7 +226,9 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size) {
     lock_mutex((void*) &mutex);
     unsigned int next_useable_chunk = 0;
 
-    if (size <= 0)
+    // 32kbyte is max locateable chunk
+    // @todo: count total alloced etc
+    if (size == 0 || size > 32768)
         return NULL;
 
     while ((size % 4) != 0) { size++; }
