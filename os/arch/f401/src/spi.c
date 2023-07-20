@@ -37,20 +37,22 @@ void init_spi_gpio(GpioObject_t* obj)
     set_moder(obj, AlternateFunctionMode);
     into_af(obj, 5);
 
+    GpioObject_t portA;
+    portA.port = 'A';
+    init_gpio(&portA);
+
     // csl
-    obj->pin = 15;
-    obj->port = 'A';
-    set_pupdr(obj, PullUp);
-    set_otyper(obj, PushPull);
-    set_moder(obj, AlternateFunctionMode);
-    into_af(obj, 5);
+    portA.pin = 15;
+    set_pupdr(&portA, PullUp);
+    set_otyper(&portA, PushPull);
+    set_moder(&portA, AlternateFunctionMode);
+    into_af(&portA, 5);
 
     // // cen
-    obj->pin = 5;
-    obj->port = 'A';
-    set_pupdr(obj, PullDown);
-    set_moder(obj, GeneralPurposeOutputMode);
-    set_pin_off(obj);
+    portA.pin = 5;
+    set_pupdr(&portA, PullDown);
+    set_moder(&portA, GeneralPurposeOutputMode);
+    set_pin_off(&portA);
 }
 
 void init_spi(void)
