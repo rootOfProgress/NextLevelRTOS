@@ -25,16 +25,11 @@ def generate_os_version():
     os_version = 12062023
 
     path = os.getcwd() + "/../include/runtime.h"
-    # os.system("cat " + path + "/../include/runtime.h")
+    sed_command_githash = "sed -i '/GIT_HASH/c\#define GIT_HASH 0x" + sha_short + ";'" + " " + path         
+    sed_command_osversion = "sed -i '/OS_VERSION/c\#define OS_VERSION " + str(os_version) + ";'" + " " + path         
 
-    sed_command_githash = "sed -ie '/GIT_HASH/c\#define GIT_HASH 0x" + sha_short + ";'" + " " + path         
-    sed_command_osversion = "sed -ie '/OS_VERSION/c\#define OS_VERSION " + str(os_version) + ";'" + " " + path         
-    # print(sed_command)
     os.system(sed_command_githash)
     os.system(sed_command_osversion)
-
-    # print(sha)
-    # print(repo.git.rev_parse(sha, short=8))
 
 if __name__ == '__main__':
 

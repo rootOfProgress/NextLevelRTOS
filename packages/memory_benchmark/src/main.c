@@ -11,14 +11,6 @@
 #include "tim2_5.h"
 #include "parameters.h"
 
-static unsigned int start_measurement = 0b010;
-static unsigned int stop_measurement = 0b111;
-
-void spin()
-{
-
-        
-}
 typedef struct MeasurementResults {
     unsigned int results[32]; 
 } MeasurementResults_t;
@@ -33,14 +25,15 @@ void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(unsi
     measurements->results[round] = timer_read_counter(2);  
 }
 
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
-    timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
+    timer_init(2, 1, (unsigned int[4]) {0,0,0,0}, 1);
 
     for (int j = 0; j < 32; j++)
     {
         benchmark(alloc_chunks[j], &measurements, j);
     }
-    print(&measurements.results, 32 * sizeof(int));
+    print((char*) &measurements.results, 32 * sizeof(int));
+    return 0;
 }

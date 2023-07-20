@@ -3,3 +3,5 @@ build/
 virt/
 packages/legacy_drivers/prepare
 tmp
+.vscode/launch.json
+rtoshealth/backend/test/log/*

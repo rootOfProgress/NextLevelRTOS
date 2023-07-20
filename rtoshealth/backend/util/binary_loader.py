@@ -21,16 +21,20 @@ def recompile_binary(final_adress, package_name, size):
     logging.print_info("recompile programm...")
     cmd = "make clean -C " + path_suffix + "packages/" + package_name
     os.system(cmd)
-    cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null"
+    cmd = "make -C " + path_suffix + "packages/" + package_name + " TARGET=" + package_name + " > /dev/null" 
     os.system(cmd)
 
 def upload_binary(package_name):
-    logging.print_info("Set default size in linker script...")
-    cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(15000) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
+    # logging.print_info("Set default size in linker script...")
+    # cmd = "sed -i \"2 s/.*/SIZE\ =\ " + str(15000) + ";/\"" + " ../../packages/" + package_name + "/link_external.ld"
+    # os.system(cmd)
+
+    logging.print_info("Copy default linker script to package location...")
+    cmd = "cp -v ../../packages/templates/link_external.ld ../../packages/" + package_name
     os.system(cmd)
 
-    logging.print_info("Compile programm...")
-    cmd = "make -C " + path_suffix + "packages/" + package_name + " > /dev/null" 
+    logging.print_info("Compile programm..." + package_name)
+    cmd = "make -C " + path_suffix + "packages/" + package_name + " TARGET=" + package_name + " > /dev/null" 
     os.system(cmd)
 
     logging.print_info("Get Actual Size...")
@@ -73,7 +77,6 @@ def upload_binary(package_name):
 
     start_adress = uart_receiver.process_result("memadress")
     recompile_binary(start_adress, package_name, size)
-    # time.sleep(1)
 
     logging.print_info("upload binary to target...")
     cmd = "dd if=" + path_suffix + "packages/" + package_name + "/build/" + package_name + "_binary" + " of=/dev/" + uart_receiver.device_address + " iflag=direct,skip_bytes"
