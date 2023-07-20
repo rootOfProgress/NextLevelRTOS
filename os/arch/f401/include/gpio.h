@@ -4,10 +4,12 @@
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
 // page 38
-#define GPIO_A_BASE 0x40020000
-#define GPIO_B_BASE 0x40020400
-#define GPIO_C_BASE 0x40020800
-#define GPIO_D_BASE 0x40020C00
+enum {
+    GpioABase = 0x40020000,
+    GpioBBase = 0x40020400,
+    GpioCBase = 0x40020800,
+    GpioDBase = 0x40020C00,
+};
 
 #define INPUT 0b00
 #define GENERALPURPOSEOUTPUT 0b01
@@ -56,6 +58,7 @@ typedef struct GpioObject {
     char port;
     unsigned int pin;
     unsigned int *base_adress;
+    GpioRegisters_t *gpio_regs;
 } GpioObject_t;
 
 typedef struct GpioActions {
@@ -69,46 +72,27 @@ void toggle_output_pin(GpioObject_t*);
 void init_gpio(GpioObject_t*);
 void set_pupdr(GpioObject_t*, PullTypes_t);
 void set_speed(GpioObject_t*, SpeedModes_t);
+void gpio_set_registermap(GpioObject_t* t);
 
-static inline __attribute__((always_inline)) GpioRegisters_t* get_registers(GpioObject_t* t)
-{
-    switch (t->port)
-    {
-    case 'A':
-        return (GpioRegisters_t*) ((unsigned int*) GPIO_A_BASE);
-    case 'B':
-        return (GpioRegisters_t*) ((unsigned int*) GPIO_B_BASE);
-    case 'C':
-        return (GpioRegisters_t*) ((unsigned int*) GPIO_C_BASE);
-    case 'D':
-        return (GpioRegisters_t*) ((unsigned int*) GPIO_D_BASE);
-    default:
-        return (GpioRegisters_t*) ((unsigned int*) GPIO_A_BASE);
-    }
-}
 
 static inline __attribute__((always_inline)) void set_pin_on(GpioObject_t* gpio) 
 {
-    GpioRegisters_t* gpio_regs = get_registers(gpio);
-    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) | (1 << gpio->pin));
+    WRITE_REGISTER((unsigned int*) &(gpio->gpio_regs->odr), READ_REGISTER(&(gpio->gpio_regs->odr)) | (1 << gpio->pin));
 }
 
 static inline __attribute__((always_inline)) void set_pin_off(GpioObject_t* gpio) 
 {
-    GpioRegisters_t* gpio_regs = get_registers(gpio);
-    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, READ_REGISTER(&gpio_regs->odr) & ~(1 << gpio->pin));
+    WRITE_REGISTER((unsigned int*) &(gpio->gpio_regs->odr), READ_REGISTER(&(gpio->gpio_regs->odr)) & ~(1 << gpio->pin));
 }
 
 static inline __attribute__((always_inline)) void set_pin_bulk(GpioObject_t* gpio, unsigned int mask) 
 {
-    GpioRegisters_t* gpio_regs = get_registers(gpio);
-    WRITE_REGISTER((unsigned int*) &gpio_regs->odr, mask);
+    WRITE_REGISTER((unsigned int*) &(gpio->gpio_regs->odr), mask);
 }
 
 static inline __attribute__((always_inline)) unsigned int read_pin(GpioObject_t* gpio) 
 {
-    GpioRegisters_t* gpio_regs = get_registers(gpio);
-    return READ_REGISTER(&gpio_regs->idr) & (1 << gpio->pin);
+    return READ_REGISTER(&(gpio->gpio_regs->idr)) & (1 << gpio->pin);
 }
 
 #endif
