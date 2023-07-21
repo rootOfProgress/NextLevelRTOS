@@ -28,7 +28,7 @@ def generate_os_version():
     sed_command_githash = "sed -i '/GIT_HASH/c\#define GIT_HASH 0x" + sha_short + ";'" + " " + path         
     sed_command_osversion = "sed -i '/OS_VERSION/c\#define OS_VERSION " + str(os_version) + ";'" + " " + path         
 
-    os.system(sed_command_githash)
+    # os.system(sed_command_githash)
     os.system(sed_command_osversion)
 
 if __name__ == '__main__':
