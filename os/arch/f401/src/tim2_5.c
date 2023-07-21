@@ -1,5 +1,6 @@
 #include "tim2_5.h"
 #include "rcc.h"
+#include "gpio.h"
 #define BREAK asm("bkpt") 
 
 timerConfiguration_t timer_configurations[5];
@@ -12,8 +13,8 @@ void reset_timer(unsigned int tim_nr)
 
 void timer_start(unsigned int tim_nr)
 {
-    // unsigned int tim_base = get_timx_base(tim_nr);
-    SET_BIT(&(timer_configurations[tim_nr].tim_registermap)->cr1, 1 << CEN);
+    unsigned int tim_base = get_timx_base(tim_nr);
+    SET_BIT(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
 }
 
 void timer_stop(unsigned int tim_nr)
@@ -69,6 +70,13 @@ void timer_set_sr(unsigned int tim_nr, unsigned int updated_value)
     WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->sr, updated_value);
 }
 
+void timer_set_arr(unsigned int tim_nr, unsigned int arr)
+{
+    unsigned int tim_base = get_timx_base(tim_nr);
+    WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->arr, arr);
+}
+
+
 unsigned int timer_get_sr(unsigned int tim_nr)
 {
     unsigned int tim_base = get_timx_base(tim_nr);
@@ -83,12 +91,68 @@ unsigned int timer_get_prescaler(__attribute__((unused)) unsigned int tim_nr, un
     return (ahbFrequency / target_frequency) - 1;
 }
 
-void timer_enable_pwm()
+void apply_gpio_pwm_setting(GpioObject_t *gpio)
 {
-    // @todo: gpio config
-    // @todo: enable channels in tim_ccmr - which gpios are associated??
+    set_otyper(gpio, OpenDrain);
+    set_pupdr(gpio, PullUp);
+    set_moder(gpio, AlternateFunctionMode);
+    into_af(gpio, 1);
+}
+
+void timer_pwm_init(unsigned int tim_nr, unsigned int arr)
+{
+    // timer_configurations[2].tim_nr = tim_nr;
+    // timer_configurations[2].tim_registermap = (timer25RegisterMap_t*) get_timx_base(tim_nr);
+
+    RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
+    WRITE_REGISTER(&rcc_regs->apb1enr, READ_REGISTER(&rcc_regs->apb1enr) | 1 << (tim_nr - 2));
+    
+    // @todo: gpio config: use tim2, 
+    // PA0 - TIM2_CH1, 
+    // PA1 - TIM2_CH2, 
+    // PA2 - TIM2_CH3, 
+    // PA3 - TIM2_CH4,
+    // AF01 
+    GpioObject_t gpio_a;
+    gpio_a.port = 'A';
+    init_gpio(&gpio_a);
+
+    for (unsigned int i = 0; i < 4; i++)
+    {
+        gpio_a.pin = i;
+        apply_gpio_pwm_setting(&gpio_a);
+    }
+    
+    // @todo: rm hardcoded 2
+    unsigned int tim_base = get_timx_base(2);
+    timer25RegisterMap_t *tim2 = (timer25RegisterMap_t*) tim_base;
+    // @todo: enable channels in tim_ccmr
+    // tim_ccmr is activated by default
+    WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccmr1, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccmr1) | (1 << 3) | (0b110) << 4 | (0b110) << 12);
+    WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccmr2, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccmr1) | (1 << 3) | (0b110) << 4 | (0b110) << 12);
+
     // @todo: enable capture compare in tim_ccer
-    // @todo: gpio config
+    // CCxE
+    WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccer, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccer) | (1 << 12) | (1 << 8) | (1 << 4) | (1 << 0));
+    
+    // psc = 2, aka 8mhz freq
+    set_prescaler(2, 1 + 1);
+    
+    for (unsigned int i = 1; i <= 4; i++)
+    {
+        set_ccr(2, 4000, i);
+    }
+        set_ccr(2, 1000, 1);
+
+    //
+    // example: 1kHz
+    // 8000 * (1/8Mhz) = 1000Hz (aka. 3ms period)
+    //
+    //
+    timer_set_arr(2, 8000);
+
+    set_udis(~2);
+    
 }
 
 
@@ -99,9 +163,17 @@ void timer_init(unsigned int tim_nr, __attribute__((unused)) unsigned int arr, u
     WRITE_REGISTER(&rcc_regs->apb1enr, READ_REGISTER(&rcc_regs->apb1enr) | 1 << (tim_nr - 2));
     
     reset_timer(tim_nr);
+
     set_prescaler(tim_nr, timer_get_prescaler(tim_nr, cycle_length));
+    
     generate_ue(tim_nr);
+
+    // timer_set_arr(tim_nr, arr);
+
+
+    
     set_udis(tim_nr);
+    
     for (unsigned int i = 1; i <= 4; i++)
     {
         set_ccr(tim_nr, ccr[i], i);
