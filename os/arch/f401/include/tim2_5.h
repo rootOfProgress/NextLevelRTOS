@@ -5,14 +5,15 @@
 #include "lang.h"
 
 
-enum { tim2Base = 0x40000000, tim3Base = 0x40000400 };
+enum { 
+    tim1Base = 0x40010000, 
+    tim2Base = 0x40000000, 
+    tim3Base = 0x40000400, 
+    tim4Base = 0x40000800
+};
 
 // 16 mhz
 enum { ahbFrequency = 16000000 };
-
-#define TIM3_BASE 0x40000400
-#define TIM4_BASE 0x40000800
-#define TIM5_BASE 0x40000C00
 
 #define CEN 0
 #define UDIS 1
@@ -42,9 +43,15 @@ typedef struct timer25RegisterMap
     unsigned int dcr; // 0x
     unsigned int dmar; // 0x4c
     unsigned int tim2_or; // 0x
-    unsigned int tim5_orccr4; // 0x40
-    
+    unsigned int tim5_orccr4; // 0x40    
 } timer25RegisterMap_t;
+
+typedef struct timerConfiguration {
+    unsigned int tim_nr;
+    timer25RegisterMap_t *tim_registermap;
+} timerConfiguration_t;
+
+extern timerConfiguration_t timer_configurations[5];
 
 static inline __attribute__((always_inline)) unsigned int get_timx_base(unsigned int tim_nr)
 {
@@ -54,6 +61,8 @@ static inline __attribute__((always_inline)) unsigned int get_timx_base(unsigned
         return tim2Base;
     case 3:
         return tim3Base;
+    case 4:
+        return tim4Base;
     default:
         return 0;
     }        
@@ -97,5 +106,6 @@ void set_udis(unsigned int);
 void enable_ccx_ir(unsigned int,unsigned int);
 unsigned int timer_get_sr(unsigned int);
 void timer_set_sr(unsigned int,unsigned int);
-
+void timer_pwm_init(unsigned int tim_nr, unsigned int arr);
+void timer_set_arr(unsigned int tim_nr, unsigned int arr);
 #endif
