@@ -26,6 +26,8 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
     for (unsigned int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
         create_task(func_ptr[i], 0);
 
+    create_task(&external_io_runner, 0);
+
     ST_ENABLE;
 
     while (1)
@@ -58,6 +60,7 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
     if ((kernel_pids.idle_task = create_task(&idle_runner, 0)) == -1)
         return TASK_CREATION_FAILED;
 
+    // @todo: start those from pid0 (idle_runner), not during boot
     if ((kernel_pids.transfer_handler = create_task(&transfer_handler, 0)) == -1)
         return TASK_CREATION_FAILED;
 

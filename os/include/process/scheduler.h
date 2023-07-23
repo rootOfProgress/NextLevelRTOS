@@ -24,6 +24,7 @@ typedef struct KernelPids {
     signed char transfer_handler;
     signed char statistic_manager;
     signed char generic_printer;
+    signed char external_io_runner;
 } KernelPids_t;
 
 enum { ResolutionForSysLogging = 5 };       // <! Task runtimes are measured in 5 usec ticks 
@@ -90,6 +91,8 @@ static inline __attribute__((always_inline)) void block_current_task(void)
     SV_YIELD_TASK;
 }
 
+// @todo: add possibility to pass Node_t pointer directly instead of iterating
+// over waiting list. Node_t pointer could be stored within kernel pid struct? 
 static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
     ST_DISABLE;

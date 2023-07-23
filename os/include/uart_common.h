@@ -33,5 +33,5 @@ void init_isr(void);
 void setup_transfer(char*, unsigned int);
 void init_transfer_handler(void);
 void transfer_handler(void);
-
+void external_io_runner(void);
 #endif
