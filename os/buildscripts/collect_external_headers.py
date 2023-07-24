@@ -11,7 +11,9 @@ public_functions = [
     'task_sleep',
     'create_task',
     'join_task',
-    'memset_byte'
+    'memset_byte',
+    'link_exti_src',
+    'execute_priviledged'
 ]
 
 arch = list(sys.argv)[1]

@@ -45,6 +45,7 @@
     "cpu.h": "c",
     "parameters.h": "c",
     "*.old": "c",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "addresses.h": "c"
   }
 }

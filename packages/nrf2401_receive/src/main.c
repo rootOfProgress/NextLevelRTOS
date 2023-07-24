@@ -5,6 +5,8 @@
 #include "rcc.h"
 #include "uart.h"
 #include "os_api.h"
+#include "exti.h"
+#include "syscfg.h"
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
@@ -63,6 +65,24 @@ typedef struct rxinfo {
 rxinfo_t rx_data[32];
 static unsigned int index = 0;
 
+void bar()
+{
+    while (1)
+    {
+            asm("bkpt");
+
+        /* code */
+    }
+    
+}
+
+void enable_nvic_interrupt(unsigned nvic_number)
+{
+    asm("bkpt");
+    WRITE_REGISTER(0xE000EF00, 0x6);
+}
+
+
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     // driver handels that
@@ -101,20 +121,39 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     sleep(10);
     
     nrf_flush_rx();
+    clear_rx_dr_flag();
 
     start_listening();
     char rx_answer[16];
+
+    GpioObject_t pinb;
+    pinb.pin = 0;
+    pinb.port = 'B';
+
+    link_exti_src(bar, &pinb);
+    syscfg_enable_clock();
+    syscfg_exti_config_0_3(1, 0);
+    exti_activate_ir_line(6);
+    exti_detect_falling_edge(6);
+    asm("bkpt");
+
+    // execute_priviledged(&enable_nvic_interrupt);
 
 
     sleep(10);
     while (1)
     {
         sleep(1);
+
+        // @todo: can be omitted, interrupt goes LOW if data is available!
+        // @todo: implement os 'link ir handler to gpio' feature
+        // should receive which pin and a function address as callback 
         while (!(get_nrf_fifo() & 1))
         {
             if (check_for_received_data(&nrf_startup_config, rx_answer))
             {
-                asm("bkpt");
+                // asm("bkpt");
+                clear_rx_dr_flag();
             }
         }
 
