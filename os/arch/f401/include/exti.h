@@ -20,8 +20,8 @@ typedef struct ExtiRegisterMap {
     unsigned int pr2;
 } ExtiRegisterMap_t;
 
-void exti_activate_ir_line(unsigned int line_number);
-void exti_detect_rising_edge(unsigned int line_number);
-void exti_detect_falling_edge(unsigned int line_number);
-
+void exti_activate_ir_line(unsigned int exti_number);
+void exti_detect_rising_edge(unsigned int exti_number);
+void exti_detect_falling_edge(unsigned int exti_number);
+void exti_acknowledge_interrupt(unsigned int exti_number);
 #endif
