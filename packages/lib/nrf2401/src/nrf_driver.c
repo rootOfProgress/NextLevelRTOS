@@ -4,7 +4,6 @@
 #include "spi.h"
 
 GpioObject_t gpio_pa5_ce;
-static unsigned char spi_is_ready = 0;
 
 void nrf_power_off()
 {
@@ -68,12 +67,9 @@ void clear_ir_maxrt_flag(void)
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
     init_spi();
-
-    // if (!spi_is_ready)
-    // {
-    //     init_spi();
-    //     spi_is_ready = 1;
-    // }
+    gpio_pa5_ce.port = 'A';
+    gpio_pa5_ce.pin = 5;
+    init_gpio(&gpio_pa5_ce);
     unset_ce();
     nrf_power_off();
 
@@ -112,15 +108,11 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
 
 void unset_ce()
 {
-    gpio_pa5_ce.pin = 5;
-    gpio_pa5_ce.port = 'A';
     set_pin_off(&gpio_pa5_ce);
 }
 
 void set_ce()
 {
-    gpio_pa5_ce.pin = 5;
-    gpio_pa5_ce.port = 'A';
     set_pin_on(&gpio_pa5_ce);
 }
 

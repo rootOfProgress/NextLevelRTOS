@@ -1,6 +1,8 @@
 #ifndef EXTI_H
 #define EXTI_H
 
+#include "gpio.h"
+
 enum {
     ExtiBaseRegister = 0x40013C00
 };
@@ -20,8 +22,8 @@ typedef struct ExtiRegisterMap {
     unsigned int pr2;
 } ExtiRegisterMap_t;
 
-void exti_activate_ir_line(unsigned int exti_number);
-void exti_detect_rising_edge(unsigned int exti_number);
-void exti_detect_falling_edge(unsigned int exti_number);
-void exti_acknowledge_interrupt(unsigned int exti_number);
+void exti_activate_ir_line(GpioObject_t* gpio);
+void exti_detect_rising_edge(GpioObject_t* gpio);
+void exti_detect_falling_edge(GpioObject_t* gpio);
+void exti_acknowledge_interrupt(GpioObject_t* gpio);
 #endif

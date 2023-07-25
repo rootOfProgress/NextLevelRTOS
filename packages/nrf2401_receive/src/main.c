@@ -66,7 +66,7 @@ typedef struct rxinfo {
 rxinfo_t rx_data[32];
 static unsigned int index = 0;
 
-void bar()
+void rx_receive_isr()
 {
     asm("bkpt");
     char rx_answer[16];
@@ -98,14 +98,13 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 {   
     // driver handels that
     // init_spi();
-
+    char rx_answer[16];
     index = 0;
     
     // Nrf24l01Registers_t nrf_startup_config;
     Nrf24l01Registers_t nrf_current_config;
 
     memset_byte((void*) &nrf_current_config, sizeof(Nrf24l01Registers_t), 0x0);
-
     memset_byte((void*) &nrf_startup_config, sizeof(Nrf24l01Registers_t), 0x0);
 
     apply_nrf_config(&nrf_startup_config);
@@ -124,11 +123,11 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     pinb.pin = 0;
     pinb.port = 'B';
 
-    link_exti_src(bar, &pinb);
+    link_exti_src(rx_receive_isr, &pinb);
     syscfg_enable_clock();
-    syscfg_exti_config_0_3(1, 0);
-    exti_activate_ir_line(0);
-    exti_detect_falling_edge(0);
+    syscfg_exti_config_0_3(&pinb);
+    exti_activate_ir_line(&pinb);
+    exti_detect_falling_edge(&pinb);
     while (1)
     {
         SV_YIELD_TASK;

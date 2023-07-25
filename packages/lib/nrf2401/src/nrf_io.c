@@ -1,6 +1,5 @@
 #include "nrf24l01.h"
 #include "spi.h"
-#include "os_api.h"
 #include "nrf24l01_privates.h"
 
 char rx_buffer[RX_BUFFER_SIZE];

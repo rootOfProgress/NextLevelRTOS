@@ -1,6 +1,8 @@
 #ifndef SYSCFG_H
 #define SYSCFG_H
 
+#include "gpio.h"
+
 enum { SysCfgBaseAdress = 0x40013800 };
 
 typedef struct SysCfgRegisterMap {
@@ -13,8 +15,16 @@ typedef struct SysCfgRegisterMap {
     unsigned int cmpcr;
 } SysCfgRegisterMap_t;
 
+enum {
+    PAx = 0,
+    PBx,
+    PCx,
+    PDx,
+    PEx,    
+};
+
 void syscfg_enable_clock(void);
-void syscfg_exti_config_0_3(unsigned int pin, unsigned int exti_number);
+int syscfg_exti_config_0_3(GpioObject_t* gpio);
 
 
 #endif
