@@ -2,7 +2,7 @@
 #define AM2302_H
 
 #include "tim2_5.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 typedef struct am2302_readings {
     unsigned short rh;

@@ -2,6 +2,9 @@
 #define OS_API_H
 #include "addresses.h"
 
+// @todo forwarddeclaration is a workaround!!
+typedef struct GpioObject GpioObject_t;
+
 #define BREAK asm("bkpt") 
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))

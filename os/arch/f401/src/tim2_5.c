@@ -1,6 +1,6 @@
 #include "tim2_5.h"
 #include "rcc.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 #define BREAK asm("bkpt") 
 
 timerConfiguration_t timer_configurations[5];

@@ -4,7 +4,7 @@
 #include "lang.h"
 #include "memory.h"
 #include "process/task.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 #define MAGIC 0x123456
 #define BUFFERSIZE 4

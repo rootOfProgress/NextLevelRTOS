@@ -1,7 +1,7 @@
 #include "uart.h"
 #include "rcc.h"
 #include "lang.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "dma.h"
 
 void init_uart(GpioObject_t* obj)

@@ -1,6 +1,6 @@
 #include "nrf24l01.h"
 #include "nrf24l01_privates.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "spi.h"
 
 GpioObject_t gpio_pa5_ce;

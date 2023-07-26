@@ -1,7 +1,7 @@
 #ifndef SYSCFG_H
 #define SYSCFG_H
 
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 enum { SysCfgBaseAdress = 0x40013800 };
 

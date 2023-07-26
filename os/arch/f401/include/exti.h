@@ -1,7 +1,7 @@
 #ifndef EXTI_H
 #define EXTI_H
 
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 enum {
     ExtiBaseRegister = 0x40013C00

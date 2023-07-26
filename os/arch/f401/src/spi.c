@@ -1,5 +1,5 @@
 #include "spi.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "rcc.h"
 #include "lang.h"
 
