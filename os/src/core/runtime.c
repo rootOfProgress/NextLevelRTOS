@@ -9,6 +9,8 @@
 #include "externals.h"
 #include "uart.h"
 
+IoChannel_t type_of_io_handler; 
+void (*io_handler) (unsigned int uart_rx_buffer);
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {
@@ -24,62 +26,77 @@ void NO_OPT external_io_runner(void)
 {
     while (1)
     {
-        switch (state)
+        // @todo Currently 10 IDs reserved for OS, sufficient?
+        if (state < 10)
         {
-            case PREPARE_TASK_TRANSFER:        
-                tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer) >> 8; 
-                tInfo.start_adress = allocate(tInfo.task_size); 
-                
-                if (!tInfo.start_adress)
-                    invoke_panic(OUT_OF_MEMORY);
+            switch (state)
+            {
+                case PREPARE_TASK_TRANSFER:        
+                    tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer) >> 8; 
+                    tInfo.start_adress = allocate(tInfo.task_size); 
+                    
+                    if (!tInfo.start_adress)
+                        invoke_panic(OUT_OF_MEMORY);
 
-                // notify host to recompile with correct offset
-                print((char*) &tInfo.start_adress, 4);
+                    // notify host to recompile with correct offset
+                    print((char*) &tInfo.start_adress, 4);
 
-                DmaTransferSpecifics_t dt;
-            
-                dt.chsel = 4;
-                dt.minc = 1;
-                dt.ndtr = tInfo.task_size;
-                dt.destination_address = (unsigned int) tInfo.start_adress;
-                dt.stream_number = 5;
-                dt.tcie = 1;    
-                dt.dma_job_type = DmaWaitsForExternalTask;
+                    DmaTransferSpecifics_t dt;
                 
-                dma_interrupt_action = DmaWaitsForExternalTask;
-                dma_transfer(&dt, PeripherialToMemory, UART);
-                break;
-            case REQUEST_STATISTIC:
-                wakeup_pid(kernel_pids.statistic_manager);
-                break;
-            case REBOOT:
-                soft_reset();
-                break;
-            default:
-                state = RX_READY;
-                break;
+                    dt.chsel = 4;
+                    dt.minc = 1;
+                    dt.ndtr = tInfo.task_size;
+                    dt.destination_address = (unsigned int) tInfo.start_adress;
+                    dt.stream_number = 5;
+                    dt.tcie = 1;    
+                    dt.dma_job_type = DmaWaitsForExternalTask;
+                    
+                    dma_interrupt_action = DmaWaitsForExternalTask;
+                    dma_transfer(&dt, PeripherialToMemory, UART);
+                    break;
+                case REQUEST_STATISTIC:
+                    wakeup_pid(kernel_pids.statistic_manager);
+                    break;
+                case REBOOT:
+                    soft_reset();
+                    break;
+                default:
+                    state = RX_READY;
+                    break;
+            }
+        }
+        else
+        {
+            // exec callback
+            if (io_handler)
+            {
+                io_handler((unsigned int) *((unsigned int*) uart_rx_buffer));
+            }
         }
         block_current_task();
     }
 }
 
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
-{
-    ST_DISABLE;
-    
+{    
     // execute non-os modules
     for (unsigned int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
+    {
         create_task(func_ptr[i], 0);
+    }
 
     // @todo: create subtask (function pointer) to save ram space
     kernel_pids.external_io_runner = create_task(&external_io_runner, 0);
 
-    ST_ENABLE;
+    type_of_io_handler = OsInternalIo;
+    io_handler = NULL;
 
     while (1)
     {
         if (process_stats.clean_up_requests)
+        {
             search_invalidate_tasks();
+        }
 
         if (dma_interrupt_action & DmaTransferedExternalTask)
         {
@@ -92,7 +109,9 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
         // in sleep mode. in this case, the system would freezen for the systick interval.
         // now, os enters sleep only if the idle runner is the only one in line.
         if (running_tasks->size == 1)
+        {
             sleep();
+        }
         
         block_current_task();
     }

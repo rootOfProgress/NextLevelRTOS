@@ -1,6 +1,6 @@
 #include "uart.h"
 #include "lang.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 void init_uart(__attribute__((unused)) GpioObject_t* o)
 {

@@ -1,6 +1,6 @@
 #ifndef UART_H
 #define UART_H
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "lang.h"
 
 enum { Usart1Baseadress = 0x40011000 };

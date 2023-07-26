@@ -7,6 +7,7 @@
 #include "uart_common.h"
 #include "uart.h"
 #include "process/scheduler.h"
+#include "runtime.h"
 
 volatile unsigned int svc_number = 0;
 // volatile unsigned int systick_cnt = 0;
@@ -146,6 +147,14 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
     __asm__("mov %0, r9" : "=r"(function_adress));
     void (*priv_fn)() = (void (*)()) (function_adress | 1);
     priv_fn();
+    restore_psp();
+    return;
+  case SET_EXT_IO_CALLBACK:
+    // @todo: really needed? 
+    // type_of_io_handler = ModExternalIo;
+    unsigned int io_callback_adress;
+    __asm__("mov %0, r9" : "=r"(io_callback_adress));
+    io_handler = (void (*) (unsigned int)) io_callback_adress;
     restore_psp();
     return;
   default:

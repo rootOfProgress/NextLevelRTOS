@@ -20,6 +20,10 @@
 #define SV_STE __asm volatile ("mov r6, 4\n" \
                                   "svc 0\n")
 
+#define SV_SET_EXT_IO_CALLBACK __asm volatile ("mov r6, 8\n" \
+                                  "mov r9, r0\n"\
+                                  "svc 0\n")
+
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
                                   "mov r9, r0\n"\
                                   "svc 0\n")
@@ -68,7 +72,8 @@ typedef enum {
     STE,
     RESET,
     EXEC_PRIV,
-    SLEEP
+    SLEEP,
+    SET_EXT_IO_CALLBACK
 } TrapType_t;
 
 typedef struct UsageFaultStatus {
