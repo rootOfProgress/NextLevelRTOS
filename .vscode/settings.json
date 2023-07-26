@@ -47,5 +47,6 @@
     "*.old": "c",
     "cmath": "cpp",
     "addresses.h": "c"
+    "uart_common.h": "c"
   }
 }

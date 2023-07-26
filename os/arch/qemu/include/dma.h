@@ -2,6 +2,7 @@
 #define DMA_H
 
 #include "lang.h"
+#include "dma_types.h"
 
 // ISR dma2 stream 5 specifics
 enum {
@@ -83,7 +84,8 @@ void dma_init(void);
 
 static inline __attribute__((always_inline)) void dma_transfer(
     __attribute__((unused)) DmaTransferSpecifics_t *dma_transfer_config,
-    __attribute__((unused)) DmaModes_t dma_mode)
+    __attribute__((unused)) DmaModes_t dma_mode,
+    __attribute__((unused)) SourcePeripherial_t source)
 {
 }
 
