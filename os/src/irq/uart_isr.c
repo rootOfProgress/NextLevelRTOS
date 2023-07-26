@@ -80,17 +80,7 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
     uart_rx_buffer[bytes_received++] = read_data_register();
     if (bytes_received != BUFFERSIZE)
         return;
-
-    // @todo: throw out 'magic", just useless here. 
-    // idea: action [0] | args [1 - 3]
-    // PREPARE_TASK_TRANSFER : 01 00 23 11
-    // REQUEST_STATISTIC : 03 00 00 00
-    // REBOOT : 06 00 00 00
-    // 
-    // i.e., fill uart buffer, if bytes_received != 4, set state, 
-    // wake up uart_isr_worker
-    //
-
+        
     state = *((unsigned int*)uart_rx_buffer) & 0xFF;
     wakeup_pid(kernel_pids.external_io_runner);
     bytes_received = 0;
