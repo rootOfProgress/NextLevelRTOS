@@ -29,6 +29,9 @@ typedef enum {
     // UNKNOWN = 0x3,
 } UartStates_t;
 
+extern UartStates_t state;
+extern unsigned char uart_rx_buffer[BUFFERSIZE];
+
 void init_isr(void);
 void setup_transfer(char*, unsigned int);
 void init_transfer_handler(void);

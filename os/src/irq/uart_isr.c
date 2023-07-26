@@ -69,53 +69,6 @@ void init_isr(void)
         uart_rx_buffer[i] = 0;
 }
 
-// @todo: rename to general worker because nrf2401 will use that , too
-void external_io_runner(void)
-{
-    while (1)
-    {
-        switch (state)
-        {
-            case PREPARE_TASK_TRANSFER:        
-                tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer); 
-                tInfo.start_adress = allocate(tInfo.task_size); 
-                
-                if (!tInfo.start_adress)
-                    invoke_panic(OUT_OF_MEMORY);
-
-                // notify host to recompile with correct offset
-                print((char*) &tInfo.start_adress, 4);
-
-                DmaTransferSpecifics_t dt;
-            
-                dt.chsel = 4;
-                dt.minc = 1;
-                dt.ndtr = tInfo.task_size;
-
-                // uart rx
-                dt.source_address = (unsigned int) &((UartRegisterMap_t*) Usart1Baseadress)->dr;
-                // dt.source_address = 0x40011004;
-                dt.destination_address = (unsigned int) tInfo.start_adress;
-                dt.stream_number = 5;
-                dt.tcie = 1;    
-                dt.dma_job_type = DmaWaitsForExternalTask;
-                dma_interrupt_action = DmaWaitsForExternalTask;
-                dma_transfer(&dt, PeripherialToMemory);
-                break;
-            case REQUEST_STATISTIC:
-                wakeup_pid(kernel_pids.statistic_manager);
-                break;
-            case REBOOT:
-                soft_reset();
-                break;
-            default:
-                break;
-        }
-        block_current_task();
-    }
-    
-}
-
 void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
     if (READ_REGISTER(USART1_sr) & (1 << 3))

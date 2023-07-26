@@ -3,9 +3,11 @@
 #include "hw/cpu.h"
 #include "memory.h"
 #include "dma.h"
+#include "dma_types.h"
 #include "process/task.h"
 #include "uart_common.h"
 #include "externals.h"
+#include "uart.h"
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
@@ -18,6 +20,49 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   };
 }
 
+void NO_OPT external_io_runner(void)
+{
+    while (1)
+    {
+        switch (state)
+        {
+            case PREPARE_TASK_TRANSFER:        
+                tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer) >> 8; 
+                tInfo.start_adress = allocate(tInfo.task_size); 
+                
+                if (!tInfo.start_adress)
+                    invoke_panic(OUT_OF_MEMORY);
+
+                // notify host to recompile with correct offset
+                print((char*) &tInfo.start_adress, 4);
+
+                DmaTransferSpecifics_t dt;
+            
+                dt.chsel = 4;
+                dt.minc = 1;
+                dt.ndtr = tInfo.task_size;
+                dt.destination_address = (unsigned int) tInfo.start_adress;
+                dt.stream_number = 5;
+                dt.tcie = 1;    
+                dt.dma_job_type = DmaWaitsForExternalTask;
+                
+                dma_interrupt_action = DmaWaitsForExternalTask;
+                dma_transfer(&dt, PeripherialToMemory, UART);
+                break;
+            case REQUEST_STATISTIC:
+                wakeup_pid(kernel_pids.statistic_manager);
+                break;
+            case REBOOT:
+                soft_reset();
+                break;
+            default:
+                state = RX_READY;
+                break;
+        }
+        block_current_task();
+    }
+}
+
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {
     ST_DISABLE;
@@ -26,7 +71,8 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
     for (unsigned int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
         create_task(func_ptr[i], 0);
 
-    create_task(&external_io_runner, 0);
+    // @todo: create subtask (function pointer) to save ram space
+    kernel_pids.external_io_runner = create_task(&external_io_runner, 0);
 
     ST_ENABLE;
 
@@ -60,10 +106,11 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
     if ((kernel_pids.idle_task = create_task(&idle_runner, 0)) == -1)
         return TASK_CREATION_FAILED;
 
-    // @todo: start those from pid0 (idle_runner), not during boot
+    // @todo: make subtask out of it
     if ((kernel_pids.transfer_handler = create_task(&transfer_handler, 0)) == -1)
         return TASK_CREATION_FAILED;
-
+    
+    // @todo: make subtask out of it
     if ((kernel_pids.statistic_manager = create_task(&stat, 0)) == -1)
         return TASK_CREATION_FAILED; 
 

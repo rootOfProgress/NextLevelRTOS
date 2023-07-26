@@ -30,7 +30,7 @@ static inline __attribute__((always_inline)) unsigned int read_data_register(voi
 }
 
 
-// @todo: horrible, plz replace with dma send
+// @todo: horrible, plzzzz replace with dma send
 static inline __attribute__((always_inline)) void print(char* src, unsigned int length)
 {
     for (unsigned int i = 0; i < length; i++)
