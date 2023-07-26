@@ -80,58 +80,8 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
     uart_rx_buffer[bytes_received++] = read_data_register();
     if (bytes_received != BUFFERSIZE)
         return;
-    switch (state)
-    {
-    case RX_READY:
-        if ((*((unsigned int*)uart_rx_buffer) >> 8) == MAGIC)
-        {
-            state = *((unsigned int*)uart_rx_buffer) & 0xFF;
-        }
-        break;
-    case PREPARE_TASK_TRANSFER:        
-        tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer); 
-        tInfo.start_adress = allocate(tInfo.task_size); 
         
-        if (!tInfo.start_adress)
-            invoke_panic(OUT_OF_MEMORY);
-
-        // notify host to recompile with correct offset
-        setup_transfer((char*) &tInfo.start_adress, 4);
-
-        DmaTransferSpecifics_t dt;
-    
-        dt.chsel = 4;
-        dt.minc = 1;
-        dt.ndtr = tInfo.task_size;
-
-        // uart rx
-        dt.source_address = (unsigned int) &((UartRegisterMap_t*) Usart1Baseadress)->dr;
-        // dt.source_address = 0x40011004;
-        dt.destination_address = (unsigned int) tInfo.start_adress;
-        dt.stream_number = 5;
-        dt.tcie = 1;    
-        dt.dma_job_type = DmaWaitsForExternalTask;
-        dma_interrupt_action = DmaWaitsForExternalTask;
-        dma_transfer(&dt, PeripherialToMemory);
-        state = RX_READY;
-        break;
-    case REQUEST_STATISTIC:
-        wakeup_pid(kernel_pids.statistic_manager);
-        state = RX_READY;
-        break;
-    case REBOOT:
-        state = RX_READY;
-        soft_reset();
-        break;
-    case REQUEST_TEST_RESULT:
-        char *test = "DDDDEEEE";
-        print(test, 8);
-        print((char*) 0x20000000, 4);
-        WRITE_REGISTER(0x20000000, 0);
-        return;
-    default:
-        break;
-    }
+    state = *((unsigned int*)uart_rx_buffer) & 0xFF;
+    wakeup_pid(kernel_pids.external_io_runner);
     bytes_received = 0;
-
 }

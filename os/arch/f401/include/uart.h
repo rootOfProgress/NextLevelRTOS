@@ -23,11 +23,14 @@ typedef struct UartRegisterMap {
 
 void init_uart(GpioObject_t*);
 
+
 static inline __attribute__((always_inline)) unsigned int read_data_register(void)
 {
     return *((unsigned int*) (Usart1Baseadress | 0x04));
 }
 
+
+// @todo: horrible, plzzzz replace with dma send
 static inline __attribute__((always_inline)) void print(char* src, unsigned int length)
 {
     for (unsigned int i = 0; i < length; i++)
