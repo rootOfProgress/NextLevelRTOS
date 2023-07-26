@@ -22,6 +22,9 @@ extern void svcall_isr(unsigned int, unsigned int);     //!< Interrupt service r
 extern void systick_isr(void);                          //!< Interrupt service routine for the CortexM4 systick interrupt */
 extern void tim3_isr_handler(void);                     //!< Interrupt service routine for the tim3 device */
 extern void uart_isr_handler(void);                     //!< Interrupt service routine for the usart1 device */
+extern void exti0_isr_handler(void);
+extern void exti1_isr_handler(void);
+
 
 extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
 extern unsigned int _ebss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
@@ -248,13 +251,13 @@ unsigned int *isr_vectors[] =
     (unsigned int *) systick_isr,
     (unsigned int *) dummy, // Pos0
     (unsigned int *) dummy,
+    (unsigned int *) dummy, // Pos2
     (unsigned int *) dummy,
+    (unsigned int *) dummy, // Pos4
     (unsigned int *) dummy,
-    (unsigned int *) dummy,
-    (unsigned int *) dummy,
-    (unsigned int *) dummy,
-    (unsigned int *) dummy,
-    (unsigned int *) dummy,
+    (unsigned int *) exti0_isr_handler, // Pos6
+    (unsigned int *) exti1_isr_handler,
+    (unsigned int *) dummy, // Pos8
     (unsigned int *) dummy,
     (unsigned int *) dummy,
     (unsigned int *) dummy,
@@ -274,7 +277,7 @@ unsigned int *isr_vectors[] =
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,
-    (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr
+    (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr, pos 28
     (unsigned int *) tim3_isr_handler, // tim3 isr
     (unsigned int *) uart_isr_handler,
     (unsigned int *) uart_isr_handler,

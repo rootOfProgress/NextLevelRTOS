@@ -42,6 +42,22 @@ enum {
     CPU_NVIC_ISER7 = 0xE000E11C, 
 };
 
+typedef enum NvicType {
+    NVIC_ENABLE = 0,
+    NVIC_CLEAR,
+    NVIC_SET_PENDING,
+    NVIC_CLEAR_PENDING,
+    NVIC_IS_ACTIVE,
+} NvicType_t;
+
+enum { 
+    CPU_NVIC_ISER_BASE =  0xE000E100,
+    CPU_NVIC_ICER_BASE =  0xE000E180,
+    CPU_NVIC_ISPR_BASE =  0xE000E200,
+    CPU_NVIC_ICPR_BASE =  0xE000E280,
+    CPU_NVIC_IABR_BASE =  0xE000E300,
+};
+
 enum { 
     CPU_SCB_CCR = 0xE000ED14,
 };
@@ -108,6 +124,10 @@ static inline void disable_systick(void)
     WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) & ~1);
 }
 
+unsigned int calculate_nvic_target_register(unsigned int nvic_number, NvicType_t nvic_type);
+
+void enable_nvic_interrupt(unsigned nvic_number);
+void clear_nvic_interrupt(unsigned nvic_number);
 void init_systick(unsigned int);
 void sleep(void);
 

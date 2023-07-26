@@ -5,6 +5,8 @@
 #include "rcc.h"
 #include "uart.h"
 #include "os_api.h"
+#include "exti.h"
+#include "syscfg.h"
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
@@ -16,7 +18,8 @@
 
 
 Nrf24l01Registers_t nrf24l01_regs;
-
+Nrf24l01Registers_t nrf_startup_config;
+// char rx_answer[16];
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 {
@@ -63,35 +66,43 @@ typedef struct rxinfo {
 rxinfo_t rx_data[32];
 static unsigned int index = 0;
 
+void rx_receive_isr()
+{
+    asm("bkpt");
+    char rx_answer[16];
+
+    exti_acknowledge_interrupt(0);
+    while (!(get_nrf_fifo() & 1))
+    {
+        if (check_for_received_data(&nrf_startup_config, rx_answer))
+        {
+            asm("bkpt");
+        }
+        else 
+        {
+            break;
+        }
+    }
+    clear_rx_dr_flag();
+
+}
+
+void enable_nvic_interrupt(unsigned nvic_number)
+{
+    asm("bkpt");
+    // WRITE_REGISTER(0xE000EF00, 0x6);
+}
+
+
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     // driver handels that
     // init_spi();
+    char rx_answer[16];
     index = 0;
-    GpioObject_t orange_led;
-    GpioObject_t blue_led;
-
-    blue_led.pin = 14;
-    blue_led.port = 'C';
     
-    orange_led.pin = 15;
-    orange_led.port = 'C';
-
-
-    init_gpio(&orange_led);
-    init_gpio(&blue_led);
-
-    set_moder(&orange_led, GeneralPurposeOutputMode);
-    set_moder(&blue_led, GeneralPurposeOutputMode);
-
-
-    set_pin_off(&blue_led);
-    set_pin_off(&orange_led);
-
-    
-    Nrf24l01Registers_t nrf_startup_config;
+    // Nrf24l01Registers_t nrf_startup_config;
     Nrf24l01Registers_t nrf_current_config;
-
 
     memset_byte((void*) &nrf_current_config, sizeof(Nrf24l01Registers_t), 0x0);
     memset_byte((void*) &nrf_startup_config, sizeof(Nrf24l01Registers_t), 0x0);
@@ -99,34 +110,49 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     apply_nrf_config(&nrf_startup_config);
     configure_device(&nrf_startup_config, SLAVE);
     sleep(10);
-    
+
     nrf_flush_rx();
+    clear_rx_dr_flag();
 
     start_listening();
-    char rx_answer[16];
 
 
+    #define IRQ
+    #ifdef IRQ
+    GpioObject_t pinb;
+    pinb.pin = 0;
+    pinb.port = 'B';
+
+    link_exti_src(rx_receive_isr, &pinb);
+    syscfg_enable_clock();
+    syscfg_exti_config_0_3(&pinb);
+    exti_activate_ir_line(&pinb);
+    exti_detect_falling_edge(&pinb);
+    while (1)
+    {
+        SV_YIELD_TASK;
+    }
+    
+    #else
     sleep(10);
     while (1)
     {
         sleep(1);
+
         while (!(get_nrf_fifo() & 1))
         {
             if (check_for_received_data(&nrf_startup_config, rx_answer))
             {
                 asm("bkpt");
+                clear_rx_dr_flag();
             }
         }
-
-        // get_nrf_config(&nrf_cfg);
-        // todo: check first if fifo is empty
-        // clear_rx_dr_flag();
-        // start_listening();
         sleep(1);
 
 
         SV_YIELD_TASK;
     }
+    #endif
     
     
     return 0;
