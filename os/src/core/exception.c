@@ -164,6 +164,9 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
     restore_psp();
     return;
   case GET_IO_BUFFER:
+    unsigned int** addr;
+    __asm__("mov %0, r9" : "=r"(addr));
+    *addr = (unsigned int*) &rx_state;   
     return;
   default:
     __builtin_unreachable();

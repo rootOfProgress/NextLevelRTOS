@@ -22,7 +22,7 @@ typedef struct UartRegisterMap {
 } UartRegisterMap_t;
 
 void init_uart(GpioObject_t*);
-
+extern unsigned int* internal_rx_state;
 
 static inline __attribute__((always_inline)) unsigned int read_data_register(void)
 {

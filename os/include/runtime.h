@@ -35,6 +35,6 @@ typedef enum IoChannel {
 
 extern void (*io_handler) (unsigned int uart_rx_buffer);
 extern IoChannel_t type_of_io_handler; 
-
+extern unsigned int rx_state;
 
 #endif

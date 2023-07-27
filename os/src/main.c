@@ -26,7 +26,7 @@ unsigned int __errno = 0;
 void setup_devices(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
-  init_isr();
   init_uart(t);
+  init_isr();
 }
 

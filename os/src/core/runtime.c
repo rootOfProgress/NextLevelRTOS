@@ -11,6 +11,7 @@
 
 IoChannel_t type_of_io_handler; 
 void (*io_handler) (unsigned int uart_rx_buffer);
+unsigned int rx_state;
 
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
@@ -29,9 +30,9 @@ void NO_OPT external_io_runner(void)
     while (1)
     {
         // @todo Currently 10 IDs reserved for OS, sufficient?
-        if (state < 10)
+        if (rx_state < 10)
         {
-            switch (state)
+            switch ((UartStates_t) rx_state)
             {
                 case PREPARE_TASK_TRANSFER:        
                     tInfo.task_size = (unsigned int) *((unsigned int*) uart_rx_buffer) >> 8; 
@@ -63,7 +64,7 @@ void NO_OPT external_io_runner(void)
                     soft_reset();
                     break;
                 default:
-                    state = RX_READY;
+                    rx_state = (unsigned int) RX_READY;
                     break;
             }
         }
