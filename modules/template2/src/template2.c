@@ -33,7 +33,7 @@ void myusarthandler(unsigned int uart_rx_buffer)
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) template2(void)
 {
-   execute_uart_isr(&myusarthandler);
+   // execute_uart_isr(&myusarthandler);
    while (1)
    {
       SV_YIELD_TASK;

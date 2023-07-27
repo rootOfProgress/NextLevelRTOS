@@ -58,6 +58,7 @@ void NO_OPT external_io_runner(void)
                     dma_transfer(&dt, PeripherialToMemory, UART);
                     break;
                 case REQUEST_STATISTIC:
+                    // @todo direct call to stat currently not working, why?
                     wakeup_pid(kernel_pids.statistic_manager);
                     break;
                 case REBOOT:

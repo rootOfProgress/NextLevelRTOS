@@ -6,7 +6,7 @@
 #include "hw/cpu.h"
 #include "lang.h"
 #include "memory.h"
-#include "exception.h"
+#include "core/exception.h"
 #include "panic.h"
 #include "dma.h"
 #include "tim2_5.h"
@@ -151,15 +151,6 @@ static inline __attribute__((always_inline)) void switch_task(void)
     {
         force_pid0_into_running();
     }
-}
-
-static inline __attribute__((always_inline)) void restore_psp()
-{
-      __asm volatile (
-        "mrs r2, psp\n"
-        "ldmfd r2!, {r4-r11}\n"
-        "msr psp, r2\n"
-      );
 }
 
 #endif

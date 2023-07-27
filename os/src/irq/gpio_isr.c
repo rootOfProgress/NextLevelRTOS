@@ -2,7 +2,7 @@
 #include "memory.h"
 #include "lang.h"
 #include "hw/cpu.h"
-#include "exception.h"
+#include "core/exception.h"
 
 GpioIsrConfig gpio_config_exti;
 

@@ -21,8 +21,8 @@
         },
     "template2":
         {
-            "run" : 0,
-            "amount" : 8
+            "run" : 1,
+            "amount" : 1
         },
     "weathernode":
         {

@@ -1,4 +1,5 @@
-#include "exception.h"
+#include "core/exception.h"
+#include "core/exception_inlines.h"
 #include "lang.h"
 #include "hw/cpu.h"
 #include "process/task.h"
@@ -167,6 +168,13 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
     unsigned int** addr;
     __asm__("mov %0, r9" : "=r"(addr));
     *addr = (unsigned int*) &rx_state;   
+    return;
+  case WAKEUP_IO_HANDLER:
+    wakeup_pid(kernel_pids.external_io_runner);
+    // this sv call can be possibly invoked during an interrupt (e.g. 
+    // nrf2401 exti isr), so it needs to checked if there are psp registered
+    // to restored or not 
+    restore_psp_if_threadmode();
     return;
   default:
     __builtin_unreachable();

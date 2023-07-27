@@ -2,7 +2,7 @@
 #include "uart_common.h"
 #include "data/list.h"
 #include "memory.h"
-#include "exception.h"
+#include "core/exception.h"
 #include "process/scheduler.h"
 #include "panic.h"
 #include "dma.h"

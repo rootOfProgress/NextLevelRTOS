@@ -6,8 +6,7 @@
  *
  */
 
-// #include <stdint.h>
-#include "exception.h"
+#include "core/exception.h"
 #include "hw/cpu.h"
 #include "memory.h"
 #include "process/scheduler.h"

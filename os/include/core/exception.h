@@ -17,7 +17,8 @@
 #define SV_STD __asm volatile ("mov r6, 3\n" \
                                   "svc 0\n")
 
-#define SV_STE __asm volatile ("mov r6, 4\n" \
+#define SV_WAKEUP_PID __asm volatile ("mov r6, 7\n" \
+                                  "mov r9, r0\n"\
                                   "svc 0\n")
 
 #define SV_SLEEP __asm volatile ("mov r6, 5\n" \
@@ -38,6 +39,9 @@
 
 #define SV_GET_IO_BUFFER __asm volatile ("mov r6, 9\n" \
                                   "mov r9, r0\n"\
+                                  "svc 0\n")
+
+#define SV_WAKEUP_IO_HANDLER __asm volatile ("mov r6, 10\n" \
                                   "svc 0\n")
 
 #define SV_PRINT __asm volatile ("mov r6, 1\n" \
@@ -62,16 +66,6 @@
 __attribute__((used)) void uprint(volatile unsigned int*);
 __attribute__((used)) void execute_priviledged(unsigned int);
 
-static inline __attribute__((always_inline)) void save_psp_if_threadmode(void)
-{
-  __asm (
-    "TST lr, #4\n"
-    "ITTT NE\n"
-    "MRSNE r2, PSP\n"
-    "STMDBNE r2!, {r4-r11}\n"
-    "MSRNE PSP, r2\n"
-  );
-}
 
 typedef enum {
     EXEC_PSP_TASK = 0,
@@ -84,6 +78,7 @@ typedef enum {
     WAKEUP_PID,
     SET_EXT_IO_CALLBACK = 8,
     GET_IO_BUFFER,
+    WAKEUP_IO_HANDLER,
 } TrapType_t;
 
 typedef struct UsageFaultStatus {
