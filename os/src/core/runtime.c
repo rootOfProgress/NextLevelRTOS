@@ -11,6 +11,8 @@
 
 IoChannel_t type_of_io_handler; 
 void (*io_handler) (unsigned int uart_rx_buffer);
+
+
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
   while (1) {

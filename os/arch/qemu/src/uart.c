@@ -2,7 +2,8 @@
 #include "lang.h"
 #include "gpio/gpio.h"
 
-void init_uart(__attribute__((unused)) GpioObject_t* o)
+
+void NO_OPT init_uart(__attribute__((unused)) GpioObject_t* o)
 {
     *((unsigned int*) USART1_CR) = *((unsigned int*) USART1_CR) | 0x1 << UE | 0x1 << RXNEIE | 0x1 << RE | 0x1 << TE;
     *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 0x1 << 5;

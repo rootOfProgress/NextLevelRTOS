@@ -157,6 +157,14 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
     io_handler = (void (*) (unsigned int)) io_callback_adress;
     restore_psp();
     return;
+  case WAKEUP_PID:
+    unsigned int pid_id;
+    __asm__("mov %0, r9" : "=r"(pid_id));
+    wakeup_pid(pid_id);
+    restore_psp();
+    return;
+  case GET_IO_BUFFER:
+    return;
   default:
     __builtin_unreachable();
     break;

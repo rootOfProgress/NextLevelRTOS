@@ -28,13 +28,13 @@ typedef enum KernelErrorCodes {
  */
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void);
 
-
-
 typedef enum IoChannel {
     OsInternalIo,
     ModExternalIo
 } IoChannel_t;
+
 extern void (*io_handler) (unsigned int uart_rx_buffer);
 extern IoChannel_t type_of_io_handler; 
+
 
 #endif

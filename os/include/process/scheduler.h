@@ -93,6 +93,7 @@ static inline __attribute__((always_inline)) void block_current_task(void)
 
 // @todo: add possibility to pass Node_t pointer directly instead of iterating
 // over waiting list. Node_t pointer could be stored within kernel pid struct? 
+// @todo: Inlining needed here?
 static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
     Node_t *q = get_head_element(waiting_tasks);
