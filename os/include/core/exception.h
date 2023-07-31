@@ -3,35 +3,6 @@
 
 #include "lang.h"
 
-#define svc(code) asm volatile ("mov r6, %[immediate]\n" \
-                                " SVC \#0"::[immediate] "I" (code) \
-                                 : "r6")
-
-
-#define SV_EXEC_PSP_TASK __asm volatile ("mov r6, 0\n" \
-                                  "svc 0\n")
-
-#define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
-                                  "svc 0\n")
-
-#define SV_STD __asm volatile ("mov r6, 3\n" \
-                                  "svc 0\n")
-
-#define SV_WAKEUP_PID __asm volatile ("mov r6, 7\n" \
-                                  "mov r9, r0\n"\
-                                  "svc 0\n")
-
-#define SV_SLEEP __asm volatile ("mov r6, 5\n" \
-                                  "mov r9, r0\n"\
-                                  "svc 0\n")
-                                  
-#define SV_EXEC_PRIV __asm volatile ("mov r6, 6\n" \
-                              "mov r9, r0\n"\
-                              "svc 0\n")
-
-#define SV_WAKEUP_PID __asm volatile ("mov r6, 7\n" \
-                                  "mov r9, r0\n"\
-                                  "svc 0\n")
 
 #define SV_SET_EXT_IO_CALLBACK __asm volatile ("mov r6, 8\n" \
                                   "mov r9, r0\n"\
@@ -41,12 +12,6 @@
                                   "mov r9, r0\n"\
                                   "svc 0\n")
 
-#define SV_WAKEUP_IO_HANDLER __asm volatile ("mov r6, 10\n" \
-                                  "svc 0\n")
-
-#define SV_PRINT __asm volatile ("mov r6, 1\n" \
-                                  "mov r9, r0\n"\
-                                  "svc 0\n")
 
 
 #define ST_DISABLE   __asm volatile(\
@@ -66,25 +31,23 @@
 __attribute__((used)) void uprint(volatile unsigned int*);
 __attribute__((used)) void execute_priviledged(unsigned int);
 
-
 typedef enum {
-    EXEC_PSP_TASK = 0,
-    PRINT_MSG,
-    YIELD_TASK,
-    STD,
-    STE,
-    RESET,
-    EXEC_PRIV,
-    WAKEUP_PID,
-    SET_EXT_IO_CALLBACK = 8,
-    GET_IO_BUFFER,
-    WAKEUP_IO_HANDLER,
+    execPspTask = 0,
+    printMsg,
+    yieldTask,
+    std,
+    ste,
+    reset,
+    execPriv,
+    wakeupPid,
+    setExtIoCallback = 8,
+    getIoBuffer,
+    wakeupIoHandler,
 } TrapType_t;
 
 typedef struct UsageFaultStatus {
   unsigned int undefinstr : 1, invstate : 1, invpc : 1,  nocp : 1,  : 4, unaligned : 1, divbyzero : 1, : 6, : 16;
 } UsageFaultStatus_t;
 
-void do_selfcheck_svc();
 
 #endif

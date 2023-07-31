@@ -21,7 +21,7 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
     update_memory_statistic();
     volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
     uprint((unsigned int*) &t);
-    SV_YIELD_TASK;
+    svcall(yieldTask);
   };
 }
 
@@ -84,7 +84,7 @@ void NO_OPT external_io_runner(void)
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {    
     // execute non-os modules
-    for (unsigned int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
+    for (int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
     {
         create_task(func_ptr[i], 0);
     }

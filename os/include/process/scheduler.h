@@ -7,6 +7,7 @@
 #include "lang.h"
 #include "memory.h"
 #include "core/exception.h"
+#include "core/exception_svc.h"
 #include "panic.h"
 #include "dma.h"
 #include "tim2_5.h"
@@ -88,7 +89,7 @@ static inline __attribute__((always_inline)) void block_current_task(void)
     move_node(waiting_tasks, currently_running);
 
     currently_running = running_tasks->size > 0 ? q : NULL;
-    SV_YIELD_TASK;
+    svcall(yieldTask);
 }
 
 // @todo: add possibility to pass Node_t pointer directly instead of iterating
