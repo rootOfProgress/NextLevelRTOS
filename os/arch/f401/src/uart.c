@@ -4,8 +4,21 @@
 #include "gpio/gpio.h"
 #include "dma.h"
 
+// @todo: invent cleaner solution (e.g. os_api.h)
+#define SV_GET_IO_BUFFER __asm volatile ("mov r6, 9\n" \
+                                  "mov r9, r0\n"\
+                                  "svc 0\n")
+
+unsigned int* internal_rx_state;
+
+USED void get_State(UNUSED unsigned int** internal_rx_state )
+{
+  SV_GET_IO_BUFFER;
+}
+
 void init_uart(GpioObject_t* obj)
 {
+    get_State(&internal_rx_state);
     dma_init();
     // dma 2 stream 5 isr: pos 68
     *((unsigned int*) 0xE000E108) = *((unsigned int*) 0xE000E108) | 1 << 4;

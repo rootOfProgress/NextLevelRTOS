@@ -11,6 +11,10 @@ void spin(int);
 void power_on();
 
 
+/* --------------------------------------------------- */
+/* -------------------Driver Specifics---------------- */
+/* --------------------------------------------------- */
+
 typedef struct Nrf24l01Registers {
     char config;
     char en_aa;
@@ -39,8 +43,6 @@ typedef struct Nrf24l01Registers {
     char dyndp;
     char feature;
 } Nrf24l01Registers_t;
-
-
 
 typedef enum OperatingMode {
     SLAVE,
@@ -95,5 +97,35 @@ void get_nrf_config(Nrf24l01Registers_t*);
 void nrf_transmit(char*, unsigned int);
 char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
 
+/* --------------------------------------------------- */
+/* -------------------Custom Extensions--------------- */
+/* --------------------------------------------------- */
+typedef struct ReceiveHeader {
+    char node_number;
+    char package_type;
+} ReceiveHeader_t;
+
+/** @struct ReceiveBodyOSRequest
+ *  @brief This structure blah blah blah...
+ *  @var ReceiveBodyOSRequest::header 
+ *  Obligatory package information
+ *  @var ReceiveBodyOSRequest::os_command 
+ *  Same format as uart rx payload, 4 Byte i.e. <State><Payload_0><Payload_1><Payload_2>
+ */
+typedef struct ReceiveBodyOSRequest {
+    ReceiveHeader_t header;
+    char os_command;
+} ReceiveBodyOSRequest_t;
+
+typedef struct ReceiveBodyGeneralRequest {
+    ReceiveHeader_t header;
+    char package_size;
+    char* payload;
+} ReceiveBodyGeneralRequest_t;
+
+typedef enum ReceiveRequestTypes {
+    OsRequest = 0x00,
+    GeneralRequest,
+} ReceiveRequestTypes_t;
 
 #endif

@@ -6,7 +6,8 @@
 #include "hw/cpu.h"
 #include "lang.h"
 #include "memory.h"
-#include "exception.h"
+#include "core/exception.h"
+#include "core/exception_svc.h"
 #include "panic.h"
 #include "dma.h"
 #include "tim2_5.h"
@@ -88,11 +89,12 @@ static inline __attribute__((always_inline)) void block_current_task(void)
     move_node(waiting_tasks, currently_running);
 
     currently_running = running_tasks->size > 0 ? q : NULL;
-    SV_YIELD_TASK;
+    svcall(yieldTask);
 }
 
 // @todo: add possibility to pass Node_t pointer directly instead of iterating
 // over waiting list. Node_t pointer could be stored within kernel pid struct? 
+// @todo: Inlining needed here?
 static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid)
 {
     Node_t *q = get_head_element(waiting_tasks);
@@ -150,15 +152,6 @@ static inline __attribute__((always_inline)) void switch_task(void)
     {
         force_pid0_into_running();
     }
-}
-
-static inline __attribute__((always_inline)) void restore_psp()
-{
-      __asm volatile (
-        "mrs r2, psp\n"
-        "ldmfd r2!, {r4-r11}\n"
-        "msr psp, r2\n"
-      );
 }
 
 #endif

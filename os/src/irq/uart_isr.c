@@ -2,12 +2,11 @@
 #include "uart_common.h"
 #include "data/list.h"
 #include "memory.h"
-#include "exception.h"
+#include "core/exception.h"
 #include "process/scheduler.h"
 #include "panic.h"
 #include "dma.h"
 
-UartStates_t state;
 TransferInfo_t transfer_list[MAX_WAITING_TRANSFERS];
 TaskInformation_t tInfo;
 
@@ -62,7 +61,7 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
 void init_isr(void)
 {
     byte_in_id = 4;
-    state = RX_READY;
+    *internal_rx_state = RX_READY;
     in_buffer = 0;
     bytes_received = 0;
     for (unsigned int i = 0; i < BUFFERSIZE; i++)
@@ -81,7 +80,7 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
     if (bytes_received != BUFFERSIZE)
         return;
         
-    state = *((unsigned int*)uart_rx_buffer) & 0xFF;
+    *internal_rx_state = *((unsigned int*)uart_rx_buffer) & 0xFF;
     wakeup_pid(kernel_pids.external_io_runner);
     bytes_received = 0;
 }

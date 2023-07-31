@@ -51,6 +51,7 @@ typedef enum OutputState {
 typedef struct GpioObject {
     char port;
     unsigned int number;
+    unsigned int pin;
     unsigned int *base_adress;
 } GpioObject_t;
 

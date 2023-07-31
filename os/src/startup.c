@@ -6,8 +6,8 @@
  *
  */
 
-// #include <stdint.h>
-#include "exception.h"
+#include "core/exception.h"
+#include "core/exception_svc.h"
 #include "hw/cpu.h"
 #include "memory.h"
 #include "process/scheduler.h"
@@ -105,7 +105,7 @@ void bootstrap(void)
     __asm__(\
         "msr msp, r2\n"\
     );
-    SV_EXEC_PSP_TASK;
+    svcall(execPspTask);
 }
 
 void nmi_handler(void)

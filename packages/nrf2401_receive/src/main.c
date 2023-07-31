@@ -1,4 +1,4 @@
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "test.h"
 #include "spi.h"
 #include "nrf24l01.h"
@@ -71,11 +71,33 @@ void rx_receive_isr()
     asm("bkpt");
     char rx_answer[16];
 
+    //
+    // idea for os communication: 
+    // receive package format :
+    // NodeNumber: XY (char)
+    // PackageType: 00 (char)
+    //     4 Byte: Same format as for UART, store into uart_rx_buffer (?), then wakeup pid external_io_runner
+    // PackageType: 01 (char)
+    // PackageSize: XY (char)
+    //     N Byte (variabel)
+    // 
+
     exti_acknowledge_interrupt(0);
     while (!(get_nrf_fifo() & 1))
     {
         if (check_for_received_data(&nrf_startup_config, rx_answer))
         {
+            ReceiveHeader_t *header = (ReceiveHeader_t*) rx_answer+1;
+            switch (header->package_type)
+            {
+            case OsRequest:
+                // copy request into uart_rx_buffer (@todo: Make that more general)
+                break;
+            case GeneralRequest:
+            default:
+                break;
+            }
+
             asm("bkpt");
         }
         else 
