@@ -41,7 +41,6 @@ void NO_OPT external_io_runner(void)
                     if (!tInfo.start_adress)
                         invoke_panic(OUT_OF_MEMORY);
 
-                    // notify host to recompile with correct offset
                     print((char*) &tInfo.start_adress, 4);
 
                     DmaTransferSpecifics_t dt;
