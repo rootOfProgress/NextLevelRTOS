@@ -74,8 +74,7 @@ void adc_start_conv_regular(void)
     WRITE_REGISTER(cr2, READ_REGISTER(cr2) | (1 << 30));
 }
 
-// dummy
-unsigned int adc_read(void)
+unsigned int adc_read_regular_channel(void)
 {
-    return READ_REGISTER(0x4001204C);
+    return READ_REGISTER(&adc_config.adc_registerset->dr);
 }

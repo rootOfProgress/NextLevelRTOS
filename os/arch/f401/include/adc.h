@@ -56,6 +56,6 @@ void adc_turn_on(void);
 void adc_start_conv_injected(void);
 void adc_acknowledge_interrupt(void);
 void adc_start_conv_regular(void);
-unsigned int adc_read(void);
+unsigned int adc_read_regular_channel(void);
 
 #endif
