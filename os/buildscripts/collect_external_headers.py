@@ -13,7 +13,8 @@ public_functions = [
     'join_task',
     'memset_byte',
     'link_exti_src',
-    'execute_priviledged'
+    'execute_priviledged',
+    'link_adc_src',
 ]
 
 arch = list(sys.argv)[1]

@@ -24,7 +24,7 @@ extern void tim3_isr_handler(void);                     //!< Interrupt service r
 extern void uart_isr_handler(void);                     //!< Interrupt service routine for the usart1 device */
 extern void exti0_isr_handler(void);
 extern void exti1_isr_handler(void);
-
+extern void adc_isr_handler(void);
 
 extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
 extern unsigned int _ebss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
@@ -49,7 +49,7 @@ void bootstrap(void)
     //     boot_flags = (BootFlags_t*) (unsigned int*) 0x20000004;
     //     boot_flags->reinit_uart = 1;
     // }
-    init_allocator( max , (unsigned int*) &ram_size );
+
 
     // enable external interrupt sources for tim2/3
     WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
@@ -71,6 +71,9 @@ void bootstrap(void)
             "ISB\n"
         );
     }
+    
+    init_allocator( max , (unsigned int*) &ram_size );
+
 
     KernelErrorCodes_t kernel_err;
     kernel_err = setup_kernel_runtime();
@@ -267,7 +270,7 @@ unsigned int *isr_vectors[] =
     (unsigned int *) dummy,
     (unsigned int *) dummy,
     (unsigned int *) dummy,
-    (unsigned int *) dummy,
+    (unsigned int *) adc_isr_handler, // 18
     (unsigned int *) dummy,
     (unsigned int *) dummy,
     (unsigned int *) uart_isr_handler,

@@ -23,7 +23,9 @@ static __attribute__((unused)) unsigned int (*join_task)(unsigned int) = (unsign
 static __attribute__((unused)) unsigned int (*memset_byte)(void*, unsigned int, char) = (unsigned int (*)(void* dest, unsigned int number_of_bytes, char pattern)) memset_byte_addr;
 static __attribute__((unused)) void (*link_exti_src)(void (*isr_callback)(), GpioObject_t *gpio_obj) = (unsigned int (*)(void (*isr_callback)(), GpioObject_t *gpio_obj)) link_exti_src_addr;
 static __attribute__((unused)) void (*execute_priviledged)(void (*target_fn)()) = (unsigned int (*)(void (*task_addr)() )) execute_priviledged_addr;
+static __attribute__((unused)) void (*link_adc_isr)(void (*isr_callback)()) = (unsigned int (*)(void (*isr_callback)())) link_adc_src_addr;
 
+#endif
 #ifndef EXCEPTION_SVC_H
 #define EXCEPTION_SVC_H
 
@@ -68,7 +70,5 @@ __asm volatile ("mov r9, %[input]"
 __asm volatile ("svc 0\n");
 
 }
-
-#endif
 
 #endif
