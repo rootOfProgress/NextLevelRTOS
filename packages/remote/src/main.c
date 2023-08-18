@@ -4,10 +4,10 @@
 #include "remote.h"
 #include "nrf24l01.h"
 
-static unsigned int current_reading;
-static unsigned int lower_bound;
-static unsigned int upper_bound;
-
+int current_reading;
+int lower_bound;
+int upper_bound;
+unsigned int mutex;
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 {
 
@@ -54,7 +54,10 @@ void set_upper_bound(void)
 void adc_isr()
 {
     adc_acknowledge_interrupt();
+
+    lock_mutex(&mutex);
     current_reading = adc_read_regular_channel();
+    release_mutex(&mutex);
 }
 
 void init_adc()
@@ -80,11 +83,14 @@ void main_routine(void)
 {
     TxPayload_t tx_payload;
     memset_byte((void*) &tx_payload, sizeof(TxPayload_t), 0);
+    unsigned int round = 0;
+    unsigned int intermediate_reading = 0;
 
     while (1)
     {
         adc_disable_interrupts();
 
+        lock_mutex(&mutex);
         if (current_reading > upper_bound)
         {
             current_reading = upper_bound; 
@@ -93,7 +99,8 @@ void main_routine(void)
         {
             current_reading = lower_bound;
         }
-        
+        release_mutex(&mutex);
+
         crc_reset();
         crc_feed(AdjustSpeed);
         crc_feed(current_reading);
@@ -101,10 +108,12 @@ void main_routine(void)
         tx_payload.cmd_argument = current_reading;
         tx_payload.checksum = (unsigned int) crc_read();
         nrf_transmit(&tx_payload, 13);
-
+        round = 0;
+        intermediate_reading = 0;
+     
         adc_enable_interrupts();
 
-        sleep(200);
+        sleep(50);
     }
 }
 
@@ -131,6 +140,9 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     config_remote_controller();
     set_lower_bound();
     set_upper_bound();
+    mutex = 0;
+    current_reading = 0;
+
     main_routine();
 
   
