@@ -23,12 +23,7 @@ SECTIONS
 		_eromdev = .;
 		_sidata = .;
 	} >FLASH
-
-/* 	.meta :
-	{
-		KEEP(*(.meta))
-	} >META
- */
+	
 	.data :
 	{
 		_sdata = .;
