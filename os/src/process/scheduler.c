@@ -190,6 +190,7 @@ void force_pid0_into_running(void)
 
 void __attribute__ ((hot)) pendsv_isr(void)
 {
+    disable_irq();
     if (DEBUG)
     {
         process_stats.num_of_pendsv++;
@@ -211,6 +212,7 @@ void __attribute__ ((hot)) pendsv_isr(void)
     }
     
     __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
+    enable_irq();
     __asm volatile (
         "ldmfd r2!, {r4-r11}\n"
         "mov.w r0, #3758153728\n"
