@@ -15,10 +15,12 @@ typedef enum {
     setExtIoCallback = 8,
     getIoBuffer,
     wakeupIoHandler,
+    disableIrReception,
+    enableIrReception
 } TrapType_t;
 
 
-static inline __attribute__((always_inline)) NO_OPT void svcall( unsigned int svc_number)
+static inline __attribute__((always_inline)) NO_OPT void svcall(unsigned int svc_number)
 {
 __asm volatile ("mov r6, %[input]"
     : // no C variable outputs

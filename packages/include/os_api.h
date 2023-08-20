@@ -25,6 +25,10 @@ static __attribute__((unused)) void (*link_exti_src)(void (*isr_callback)(), Gpi
 static __attribute__((unused)) void (*execute_priviledged)(void (*target_fn)()) = (unsigned int (*)(void (*task_addr)() )) execute_priviledged_addr;
 static __attribute__((unused)) void (*link_adc_isr)(void (*isr_callback)()) = (unsigned int (*)(void (*isr_callback)())) link_adc_src_addr;
 
+static __attribute__((unused)) unsigned int* (*lock_mutex)(void*) = (unsigned int* (*)(void *mutex)) lock_mutex_addr;
+static __attribute__((unused)) unsigned int* (*release_mutex)(void*) = (unsigned int* (*)(void *mutex)) release_mutex_addr;
+
+
 #endif
 #ifndef EXCEPTION_SVC_H
 #define EXCEPTION_SVC_H
@@ -42,6 +46,8 @@ typedef enum {
     setExtIoCallback = 8,
     getIoBuffer,
     wakeupIoHandler,
+    disableIrReception,
+    enableIrReception
 } TrapType_t;
 
 

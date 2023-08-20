@@ -3,10 +3,17 @@
 #include "gpio/gpio.h"
 
 AdcConfig_t adc_config;
+
 void adc_enable_interrupts(void)
 {
     unsigned int *cr1 = &adc_config.adc_registerset->cr1;
     WRITE_REGISTER(cr1, READ_REGISTER(cr1) | (1 << EOCIE | 1 << JEOCIE));
+}
+
+void adc_disable_interrupts(void)
+{
+    unsigned int *cr1 = &adc_config.adc_registerset->cr1;
+    WRITE_REGISTER(cr1, READ_REGISTER(cr1) &  ~(1 << EOCIE | 1 << JEOCIE));
 }
 
 void adc_init(GpioObject_t* gpio_config)
@@ -18,7 +25,6 @@ void adc_init(GpioObject_t* gpio_config)
 
     init_gpio(gpio_config);
     set_moder(gpio_config, ANALOG);
-    adc_enable_interrupts();
 
     unsigned int *cr2 = &adc_config.adc_registerset->cr2;
     unsigned int *cr1 = &adc_config.adc_registerset->cr1;
@@ -31,7 +37,6 @@ void adc_init(GpioObject_t* gpio_config)
     WRITE_REGISTER(smpr1, READ_REGISTER(smpr1) | (0x07FFFFFF));
     WRITE_REGISTER(smpr2, READ_REGISTER(smpr2) | (0x3FFFFFFF));
 
-
     // ch1
     WRITE_REGISTER(sqr3, READ_REGISTER(sqr3) | 1);
 }
@@ -41,8 +46,14 @@ void adc_turn_on(void)
 {
     unsigned int *cr2 = &adc_config.adc_registerset->cr2;
 
-    WRITE_REGISTER(cr2, READ_REGISTER(cr2) | 1 << 1 | (1 << ADON));
+    WRITE_REGISTER(cr2, READ_REGISTER(cr2) | (1 << ADON));
+}
 
+void adc_setbit_cr2_generic(unsigned int bit_position)
+{
+    unsigned int *cr2 = &adc_config.adc_registerset->cr2;
+
+    WRITE_REGISTER(cr2, READ_REGISTER(cr2) | 1 << bit_position);
 }
 
 

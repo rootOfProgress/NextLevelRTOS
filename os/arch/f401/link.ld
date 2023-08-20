@@ -7,7 +7,7 @@ MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
 	RAM (rwx) : ORIGIN = ram_start, LENGTH = ram_size
-	META (rwx) : ORIGIN = metadata, LENGTH = 8
+	/* META (rwx) : ORIGIN = metadata, LENGTH = 8 */
 }
 
 SECTIONS
@@ -23,12 +23,7 @@ SECTIONS
 		_eromdev = .;
 		_sidata = .;
 	} >FLASH
-
-	.meta :
-	{
-		KEEP(*(.meta))
-	} >META
-
+	
 	.data :
 	{
 		_sdata = .;

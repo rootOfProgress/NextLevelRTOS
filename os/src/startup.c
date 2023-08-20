@@ -24,6 +24,9 @@ extern void tim3_isr_handler(void);                     //!< Interrupt service r
 extern void uart_isr_handler(void);                     //!< Interrupt service routine for the usart1 device */
 extern void exti0_isr_handler(void);
 extern void exti1_isr_handler(void);
+extern void exti2_isr_handler(void);
+extern void exti3_isr_handler(void);
+extern void exti4_isr_handler(void);
 extern void adc_isr_handler(void);
 
 extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
@@ -260,9 +263,9 @@ unsigned int *isr_vectors[] =
     (unsigned int *) dummy,
     (unsigned int *) exti0_isr_handler, // Pos6
     (unsigned int *) exti1_isr_handler,
-    (unsigned int *) dummy, // Pos8
-    (unsigned int *) dummy,
-    (unsigned int *) dummy,
+    (unsigned int *) exti2_isr_handler, // Pos8
+    (unsigned int *) exti3_isr_handler,
+    (unsigned int *) exti4_isr_handler,
     (unsigned int *) dummy,
     (unsigned int *) dummy,
     (unsigned int *) dummy,

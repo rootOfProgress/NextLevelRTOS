@@ -6,6 +6,9 @@ enum { RccBaseAdress = 0x40023800 };
 #define I2C1EN 21
 #define SPI1EN 12
 
+/* SYSCFG */
+enum { SyscfgEn = 14 };
+
 typedef union rcc_cr
 {
     struct

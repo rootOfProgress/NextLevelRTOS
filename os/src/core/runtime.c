@@ -8,6 +8,7 @@
 #include "uart_common.h"
 #include "externals.h"
 #include "uart.h"
+#include "irq/gpio_isr.h"
 
 IoChannel_t type_of_io_handler; 
 void (*io_handler) (unsigned int uart_rx_buffer);
@@ -16,7 +17,8 @@ unsigned int rx_state;
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
-  while (1) {
+  while (1) 
+  {
     block_current_task();
     update_memory_statistic();
     volatile TransferInfo_t t = {.length = sizeof(MemoryStatistic_t), .start_adress = &mstat};
@@ -82,6 +84,8 @@ void NO_OPT external_io_runner(void)
 
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {    
+    init_exti_isr_handling();
+
     // execute non-os modules
     for (int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
     {
@@ -123,7 +127,9 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
 KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) setup_kernel_runtime(void)
 {
     if (init_scheduler() == -1)
+    {
         return SCHEDULER_INIT_FAILED;
+    }
 
     if ((kernel_pids.idle_task = create_task(&idle_runner, 0)) == -1)
         return TASK_CREATION_FAILED;

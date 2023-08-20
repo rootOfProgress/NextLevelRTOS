@@ -72,8 +72,7 @@ void force_pid0_into_running(void);
 
 static inline __attribute__((always_inline)) void block_current_task(void)
 {
-    ST_DISABLE;
-
+    disable_irq();
     ((Tcb_t*) (currently_running->data))->general.task_info.state = WAITING;
 
     // On context switch, task->next is loaded. Jump back one task here ensures that next task is 
@@ -89,6 +88,8 @@ static inline __attribute__((always_inline)) void block_current_task(void)
     move_node(waiting_tasks, currently_running);
 
     currently_running = running_tasks->size > 0 ? q : NULL;
+
+    enable_irq();
     svcall(yieldTask);
 }
 
