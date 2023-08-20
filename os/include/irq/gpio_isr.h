@@ -2,10 +2,22 @@
 #define GPIO_ISR_H
 #include "gpio/gpio.h"
 
-void link_exti_src(void (*isr_callback)(), GpioObject_t *gpio_pin);
+int link_exti_src(void (*isr_callback)(), GpioObject_t *gpio_pin);
+void empty_isr(void);
+void init_exti_isr_handling(void);
+
+enum {
+    Exti0 = 0,
+    Exti1,
+    Exti2,
+    Exti3,
+    Exti4,
+    NumberOfSupportedExtiLines,
+};
+
 
 typedef struct GpioIsrConfig {
-    void (*isr_handler[2])();
+    void (*isr_handler[NumberOfSupportedExtiLines])();
     unsigned int exti_pos_vector_table;
 } GpioIsrConfig;
 

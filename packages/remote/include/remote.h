@@ -25,19 +25,18 @@ typedef struct CrcAppendix
     unsigned int checksum;
 } CrcAppendix_t;
 
-// typedef struct TxPayload
-// {
-//     RemoteCmd_t cmd;
-//     CrcAppendix_t crc;
-// } TxPayload_t;
-
 typedef struct TxPayload
 {
     unsigned int cmd_type;
     unsigned int cmd_argument;
     unsigned int checksum;
-    // unsigned int bla;
 } TxPayload_t;
+
+typedef enum OperatingState
+{
+    Running = 0,
+    Maintenance
+} OperatingState_t;
 
 
 void remote_send_command(TxPayload_t* tx_payload);

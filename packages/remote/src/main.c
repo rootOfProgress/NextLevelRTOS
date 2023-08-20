@@ -3,11 +3,17 @@
 #include "crc.h"
 #include "remote.h"
 #include "nrf24l01.h"
+#include "exti.h"
+#include "syscfg.h"
 
 int current_reading;
 int lower_bound;
 int upper_bound;
 unsigned int mutex;
+TxPayload_t tx_payload;
+GpioObject_t mode_switch;
+OperatingState_t operating_state;
+
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 {
 
@@ -36,7 +42,6 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
     // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
 }
 
-
 void set_lower_bound(void)
 {
     // @todo: activate as soon as button, gpio isr is available
@@ -50,6 +55,37 @@ void set_upper_bound(void)
     // upper_bound = current_reading;
     upper_bound = 2500;
 }
+
+void isr_switch_state(void)
+{
+    asm("bkpt");
+    exti_acknowledge_interrupt(&mode_switch);
+    // #define isRisingEdge 1
+    // #define isFallingEdge 1
+    // if (isRisingEdge)
+    // {
+    //     operating_state = Running;
+    // }
+    // if (isFallingEdge)
+    // {
+    //     operating_state = Maintenance;
+    // }
+
+    // @todo acknowledge exti interrupt
+
+}
+
+
+void fake_gpio_isr1(void)
+{
+    set_upper_bound();
+}
+
+void fake_gpio_isr2(void)
+{
+    set_lower_bound();
+}
+
 
 void adc_isr()
 {
@@ -81,11 +117,6 @@ void init_adc()
 
 void main_routine(void)
 {
-    TxPayload_t tx_payload;
-    memset_byte((void*) &tx_payload, sizeof(TxPayload_t), 0);
-    unsigned int round = 0;
-    unsigned int intermediate_reading = 0;
-
     while (1)
     {
         adc_disable_interrupts();
@@ -108,9 +139,6 @@ void main_routine(void)
         tx_payload.cmd_argument = current_reading;
         tx_payload.checksum = (unsigned int) crc_read();
         nrf_transmit(&tx_payload, 13);
-        round = 0;
-        intermediate_reading = 0;
-     
         adc_enable_interrupts();
 
         sleep(50);
@@ -131,6 +159,31 @@ void config_remote_controller(void)
     /* NRF2401 Config */
     apply_nrf_config(&nrf_registers);
     configure_device(&nrf_registers, MASTER);
+
+    /* Set up ISR Routines */
+
+    // @todo: ports randomly chosen
+    mode_switch.pin = 1;
+    mode_switch.port = 'B';
+
+    // @todo: ports randomly chosen
+    // GpioObject_t mode_set;
+    // mode_switch.pin = 2;
+    // mode_switch.port = 'B';
+
+    init_gpio(&mode_switch);
+    link_exti_src(isr_switch_state, &mode_switch);
+    syscfg_enable_clock();
+    syscfg_exti_config_0_3(&mode_switch);
+    exti_activate_ir_line(&mode_switch);
+    exti_detect_falling_edge(&mode_switch);
+
+    // init_gpio(&mode_set);
+
+    // // @todo: ports randomly chosen
+    // GpioObject_t mode_led;
+    // mode_switch.pin = 2;
+    // mode_switch.port = 'D';
 }
 
 
@@ -138,14 +191,31 @@ void config_remote_controller(void)
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     config_remote_controller();
+    
+    // @todo: currently faked until isr is set up
     set_lower_bound();
     set_upper_bound();
+    memset_byte((void*) &tx_payload, sizeof(TxPayload_t), 0);
+
+    operating_state = Maintenance;
     mutex = 0;
     current_reading = 0;
 
-    main_routine();
-
-  
+    while (1)
+    {
+        switch (operating_state)
+        {
+        case Running:
+            main_routine();
+            break;
+        // served by isr
+        case Maintenance:
+            svcall(yieldTask);
+            break;
+        default:
+            break;
+        }
+    }  
 
     return 0;
 }
