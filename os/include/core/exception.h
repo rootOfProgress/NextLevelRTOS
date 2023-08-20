@@ -31,20 +31,6 @@
 __attribute__((used)) void uprint(volatile unsigned int*);
 __attribute__((used)) void execute_priviledged(unsigned int);
 
-typedef enum {
-    execPspTask = 0,
-    printMsg,
-    yieldTask,
-    std,
-    ste,
-    reset,
-    execPriv,
-    wakeupPid,
-    setExtIoCallback = 8,
-    getIoBuffer,
-    wakeupIoHandler,
-} TrapType_t;
-
 typedef struct UsageFaultStatus {
   unsigned int undefinstr : 1, invstate : 1, invpc : 1,  nocp : 1,  : 4, unaligned : 1, divbyzero : 1, : 6, : 16;
 } UsageFaultStatus_t;
