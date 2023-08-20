@@ -80,4 +80,7 @@ typedef struct Rcc {
     unsigned int dckcfgr;
 } RccRegisterMap_t;
 
+void activate_crc_clock(void);
+
+
 #endif
