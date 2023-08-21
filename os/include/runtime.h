@@ -4,11 +4,7 @@
 #define GIT_HASH GIT_HASH_PARSED;
 #define OS_VERSION 12062023;
 
-typedef enum KernelErrorCodes {
-    SCHEDULER_INIT_FAILED,
-    TASK_CREATION_FAILED,
-    KERNEL_INIT_SUCCEDED
-} KernelErrorCodes_t;
+#include "runtime_types.h"
 
 /**
  * 
