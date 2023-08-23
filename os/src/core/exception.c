@@ -12,55 +12,9 @@
 #include "runtime.h"
 
 volatile unsigned int svc_number = 0;
-// volatile unsigned int systick_cnt = 0;
-// volatile unsigned int logging[32];
+
 void ISR systick_isr()
 {
-  // disable systick
-  ST_DISABLE;
-
-  save_psp_if_threadmode();
-  // systick_cnt++;
-  if (DEBUG && currently_running)
-  {
-    // logging[systick_cnt % 32] = (unsigned int) currently_running->data->general.task_info.pid;
-    // logging[systick_cnt % 32] = systick_cnt % 32;
-    Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
-    tcb_of_current_task->lifetime_info[0].lifetime.forced_interrupts++;
-    process_stats.num_of_systick_interrupts++;
-
-    if (DEBUG == 2)
-    {
-        tcb_of_current_task->lifetime_info[0].lifetime.cpu_time += timer_read_counter(TimerForSysLogging); 
-    }
-  }
-
-  __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
-
-  switch_task();
-  if (DEBUG == 2)
-  {
-      timer_flush_counter(TimerForSysLogging);
-      timer_start(TimerForSysLogging);
-  }
-  unsigned int next = ((Tcb_t*) currently_running->data)->sp;
-
-  unsigned int ram_upperbound = mstat.ram_size + RAM_START;
-
-  __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (next));
-  __asm volatile ("mov r3, %[ram_top]":: [ram_top] "r" (ram_upperbound));
-
-  __asm volatile (
-    "ldmfd r2!, {r4-r11}\n"
-    "msr psp, r2\n"
-    "msr msp, r3\n"
-    // enable systick
-    "mov.w	r0, #3758153728\n"
-    "ldr	r1, [r0, #16]\n"
-    "orr.w	r1, r1, #1\n"
-    "str	r1, [r0, #16]\n"  
-    "bx lr\n"
-  );
 }
 
 USED void uprint(UNUSED volatile unsigned int* transfer_info )
