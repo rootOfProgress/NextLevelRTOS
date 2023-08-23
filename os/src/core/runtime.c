@@ -9,11 +9,13 @@
 #include "externals.h"
 #include "uart.h"
 #include "health.h"
+#include "irq/gpio_isr.h"
 
 typedef enum RebootTypes RebootTypes_t;
 
 IoChannel_t type_of_io_handler;
 OsLifetime_t lifetime_statistic;
+
 
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
@@ -21,7 +23,7 @@ unsigned int rx_state;
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
-  while (1)
+  while (1) 
   {
     block_current_task();
     update_memory_statistic(&lifetime_statistic.memoryStat);
@@ -78,7 +80,6 @@ void NO_OPT external_io_runner(void)
     }
     else
     {
-      // exec callback
       if (io_handler)
       {
         io_handler((unsigned int) * ((unsigned int*) uart_rx_buffer));
@@ -90,10 +91,12 @@ void NO_OPT external_io_runner(void)
 
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {
+  init_exti_isr_handling();
+
   // execute non-os modules
   for (int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
   {
-    create_task(func_ptr[i], 0);
+      create_task(func_ptr[i], 0);
   }
 
   if (!(boot_flags.reboot_type == RebootRequestedByOperatorKeepStat))

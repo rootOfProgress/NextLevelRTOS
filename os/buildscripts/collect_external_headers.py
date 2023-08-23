@@ -13,7 +13,10 @@ public_functions = [
     'join_task',
     'memset_byte',
     'link_exti_src',
-    'execute_priviledged'
+    'execute_priviledged',
+    'link_adc_src',
+    'lock_mutex',
+    'release_mutex'
 ]
 
 arch = list(sys.argv)[1]
@@ -42,8 +45,13 @@ if __name__ == '__main__':
 
     for function in public_functions:
         cmd = "cat " + path_prefix + arch + " | grep -w \"" + function + "\" | tail -n +2 | awk \'{ print $1 }\'"
-        result = int(str(os.popen(cmd).read()).strip(), 16) | 1
+        result = 0
 
+        try:
+            result = int(str(os.popen(cmd).read()).strip(), 16) | 1
+        except:
+            cmd = "cat " + path_prefix + arch + " | grep -w \"" + function + "\" | tail -n +1 | awk \'{ print $1 }\'"
+            result = int(str(os.popen(cmd).read()).strip(), 16) | 1
         header += "#define " + function + "_addr " + hex(result) + "\n"
 
     header += "#endif\n"

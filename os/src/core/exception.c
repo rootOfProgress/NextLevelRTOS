@@ -117,6 +117,14 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
     // to restored or not 
     restore_psp_if_threadmode();
     return;
+  case disableIrReception:
+    disable_irq();
+    restore_psp();
+    return;
+  case enableIrReception:
+    enable_irq();
+    restore_psp();
+    return;
   default:
     __builtin_unreachable();
     break;

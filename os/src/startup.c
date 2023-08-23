@@ -25,9 +25,14 @@ extern void tim3_isr_handler(void);                     //!< Interrupt service r
 extern void uart_isr_handler(void);                     //!< Interrupt service routine for the usart1 device */
 extern void exti0_isr_handler(void);
 extern void exti1_isr_handler(void);
+extern void exti2_isr_handler(void);
+extern void exti3_isr_handler(void);
+extern void exti4_isr_handler(void);
+
 extern void usage_fault_handler(void);
 extern void hardfault_handler(void);
 
+extern void adc_isr_handler(void);
 extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
 extern unsigned int _ebss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
 extern unsigned int _sidata;                            //!< Defined in linker script. Containts address */
@@ -56,7 +61,6 @@ void bootstrap(void)
     boot_flags.isColdStart = 1;
     boot_flags.reboot_type = IsColdStart;
 
-    // @todo: Use prepared function for that calculate_nvic_target_register() / cpu.h
     // enable external interrupt sources for tim2/3
     WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
 
@@ -84,7 +88,6 @@ void bootstrap(void)
     default:
       break;
     }
-
   }
   init_allocator( max, (unsigned int*) &ram_size );
 
@@ -125,12 +128,6 @@ void bootstrap(void)
   }
 
   setup_devices();
-  // if (boot_flags->reinit_uart)
-  // {
-  //     setup_devices();
-  //     boot_flags->reinit_uart = 0;
-  // }
-
   __asm volatile ("mov r2, %[stack_top]":: [stack_top] "r" ((unsigned int) &stack_top));
   __asm__(\
           "msr msp, r2\n"\
@@ -163,92 +160,92 @@ void dummy(void)
 __attribute((section(".isr_vector")))
 unsigned int *isr_vectors[] =
 {
-  (unsigned int *) &stack_top,
-  (unsigned int *) bootstrap,
-  (unsigned int *) nmi_handler,
-  (unsigned int *) hardfault_handler,
-  (unsigned int *) memfault_handler,
-  (unsigned int *) busfault_handler,
-  (unsigned int *) usage_fault_handler,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) svcall_isr,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) pendsv_isr,
-  (unsigned int *) systick_isr,
-  (unsigned int *) dummy, // Pos0
-  (unsigned int *) dummy,
-  (unsigned int *) dummy, // Pos2
-  (unsigned int *) dummy,
-  (unsigned int *) dummy, // Pos4
-  (unsigned int *) dummy,
-  (unsigned int *) exti0_isr_handler, // Pos6
-  (unsigned int *) exti1_isr_handler,
-  (unsigned int *) dummy, // Pos8
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr, pos 28
-  (unsigned int *) tim3_isr_handler, // tim3 isr
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) uart_isr_handler,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dummy,
-  (unsigned int *) dma2_stream5_ir_handler, // position_68
-  (unsigned int *) NULL,
-  (unsigned int *) NULL,
-  (unsigned int *) NULL,
+    (unsigned int *) &stack_top,
+    (unsigned int *) bootstrap,
+    (unsigned int *) nmi_handler,
+    (unsigned int *) hardfault_handler,
+    (unsigned int *) memfault_handler,
+    (unsigned int *) busfault_handler,
+    (unsigned int *) usage_fault_handler,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) svcall_isr,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) pendsv_isr,
+    (unsigned int *) systick_isr,
+    (unsigned int *) dummy, // Pos0
+    (unsigned int *) dummy,
+    (unsigned int *) dummy, // Pos2
+    (unsigned int *) dummy,
+    (unsigned int *) dummy, // Pos4
+    (unsigned int *) dummy,
+    (unsigned int *) exti0_isr_handler, // Pos6
+    (unsigned int *) exti1_isr_handler,
+    (unsigned int *) exti2_isr_handler, // Pos8
+    (unsigned int *) exti3_isr_handler,
+    (unsigned int *) exti4_isr_handler,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) adc_isr_handler, // 18
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr, pos 28
+    (unsigned int *) tim3_isr_handler, // tim3 isr
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) uart_isr_handler,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dummy,
+    (unsigned int *) dma2_stream5_ir_handler, // position_68
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
 };

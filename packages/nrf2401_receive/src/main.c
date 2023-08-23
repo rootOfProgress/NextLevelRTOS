@@ -19,6 +19,8 @@
 
 Nrf24l01Registers_t nrf24l01_regs;
 Nrf24l01Registers_t nrf_startup_config;
+GpioObject_t pinb;
+
 // char rx_answer[16];
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
@@ -82,7 +84,7 @@ void rx_receive_isr()
     //     N Byte (variabel)
     // 
 
-    exti_acknowledge_interrupt(0);
+    exti_acknowledge_interrupt(&pinb);
     while (!(get_nrf_fifo() & 1))
     {
         if (check_for_received_data(&nrf_startup_config, rx_answer))
@@ -141,7 +143,6 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 
     #define IRQ
     #ifdef IRQ
-    GpioObject_t pinb;
     pinb.pin = 0;
     pinb.port = 'B';
 

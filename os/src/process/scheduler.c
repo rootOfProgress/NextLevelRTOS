@@ -231,15 +231,11 @@ void force_pid0_into_running(void)
 
 void __attribute__ ((hot)) pendsv_isr(void)
 {
+  disable_irq();
   if (DEBUG)
   {
-    process_stats.num_of_pendsv++;
-    Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
-
-    if (DEBUG == 2)
-    {
-      tcb_of_current_task->lifetime_info[0].lifetime.cpu_time += timer_read_counter(TimerForSysLogging);
-    }
+      process_stats.num_of_pendsv++;
+      Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
   }
 
   __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
@@ -252,6 +248,7 @@ void __attribute__ ((hot)) pendsv_isr(void)
   }
 
   __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
+  enable_irq();
   // @todo what is that???
   __asm volatile (
     "ldmfd r2!, {r4-r11}\n"

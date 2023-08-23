@@ -15,6 +15,7 @@
 |PIN   |Function| Color |
 |------|--------|-------|
 |CE    |  PA5   |ORANGE |
+|IRQ   |  PB0   |BROWN  |
 
 
 **osci mapping**

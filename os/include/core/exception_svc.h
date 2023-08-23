@@ -3,7 +3,24 @@
 
 #include "lang.h"
 
-static inline __attribute__((always_inline)) NO_OPT void svcall( unsigned int svc_number)
+typedef enum {
+    execPspTask = 0,
+    printMsg,
+    yieldTask,
+    std,
+    ste,
+    reset,
+    execPriv,
+    wakeupPid,
+    setExtIoCallback = 8,
+    getIoBuffer,
+    wakeupIoHandler,
+    disableIrReception,
+    enableIrReception
+} TrapType_t;
+
+
+static inline __attribute__((always_inline)) NO_OPT void svcall(unsigned int svc_number)
 {
 __asm volatile ("mov r6, %[input]"
     : // no C variable outputs
@@ -13,7 +30,7 @@ __asm volatile ("mov r6, %[input]"
 __asm volatile ("svc 0\n");
 }
 
-static inline __attribute__((always_inline)) NO_OPT void svcall_param(UNUSED unsigned int svc_number, UNUSED unsigned int parameter)
+static inline __attribute__((always_inline)) NO_OPT void svcall_param(unsigned int svc_number,unsigned int parameter)
 {
 __asm volatile ("mov r6, %[input]"
     : // no C variable outputs

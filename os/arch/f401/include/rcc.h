@@ -6,6 +6,9 @@ enum { RccBaseAdress = 0x40023800 };
 #define I2C1EN 21
 #define SPI1EN 12
 
+/* SYSCFG */
+enum { SyscfgEn = 14 };
+
 typedef union rcc_cr
 {
     struct
@@ -79,5 +82,8 @@ typedef struct Rcc {
     unsigned int plli2scfgr;
     unsigned int dckcfgr;
 } RccRegisterMap_t;
+
+void activate_crc_clock(void);
+
 
 #endif
