@@ -11,6 +11,7 @@ typedef enum panic {
 
 extern PanicTypes_t panic_state;
 
-void invoke_panic(PanicTypes_t panic_type);
-
+void set_panic(PanicTypes_t panic_type);
+void reset_panic(void);
+void execute_panic(void);
 #endif

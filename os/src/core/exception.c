@@ -125,6 +125,16 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
     enable_irq();
     restore_psp();
     return;
+  case setDebugPanic:
+    unsigned int panic_type;
+    __asm__("mov %0, r9" : "=r"(panic_type));
+    set_panic((PanicTypes_t) panic_type);
+    restore_psp();
+    return;
+  case releaseDebugPanic:
+    reset_panic();
+    restore_psp();
+    return;
   default:
     __builtin_unreachable();
     break;

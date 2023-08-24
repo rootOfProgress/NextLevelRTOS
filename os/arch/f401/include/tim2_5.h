@@ -104,8 +104,11 @@ void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void set_udis(unsigned int);
 void enable_ccx_ir(unsigned int,unsigned int);
+void disable_ccx_ir(unsigned int,unsigned int);
 unsigned int timer_get_sr(unsigned int);
 void timer_set_sr(unsigned int,unsigned int);
 void timer_pwm_init(unsigned int tim_nr, unsigned int arr);
 void timer_set_arr(unsigned int tim_nr, unsigned int arr);
+
+
 #endif

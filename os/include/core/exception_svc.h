@@ -16,7 +16,9 @@ typedef enum {
     getIoBuffer,
     wakeupIoHandler,
     disableIrReception,
-    enableIrReception
+    enableIrReception,
+    setDebugPanic,
+    releaseDebugPanic
 } TrapType_t;
 
 
@@ -25,7 +27,7 @@ static inline __attribute__((always_inline)) NO_OPT void svcall(unsigned int svc
 __asm volatile ("mov r6, %[input]"
     : // no C variable outputs
     : [input] "r" (svc_number)
-    : "r6"   // tell the compiler r9 is modified
+    : "r6"   // tell the compiler r6 is modified
       );
 __asm volatile ("svc 0\n");
 }
@@ -35,7 +37,7 @@ static inline __attribute__((always_inline)) NO_OPT void svcall_param(unsigned i
 __asm volatile ("mov r6, %[input]"
     : // no C variable outputs
     : [input] "r" (svc_number)
-    : "r9"   // tell the compiler r9 is modified
+    : "r6"   // tell the compiler r9 is modified
       );
 __asm volatile ("mov r9, %[input]"
     : // no C variable outputs

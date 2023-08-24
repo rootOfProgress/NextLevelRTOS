@@ -47,7 +47,9 @@ typedef enum {
     getIoBuffer,
     wakeupIoHandler,
     disableIrReception,
-    enableIrReception
+    enableIrReception,
+    setDebugPanic,
+    releaseDebugPanic
 } TrapType_t;
 
 

@@ -19,7 +19,7 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
     if (!cpu_register)
     {
-        invoke_panic(OUT_OF_MEMORY);
+        set_panic(OUT_OF_MEMORY);
         return NULL;
     }
 
@@ -35,20 +35,11 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
 int create_task(void (*task_function)(), unsigned int ram_location)
 {
-    if (SYSTICK)
-    {
-        __asm volatile(
-            "mov.w	r2, #3758153728\n"
-            "ldr	r3, [r2, #16]\n"
-            "bic.w	r3, r3, #1\n"
-            "str	r3, [r2, #16]\n"
-        );
-    }
     unsigned int task_stack_start_address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
     
     if (!task_stack_start_address)
     {
-        invoke_panic(OUT_OF_MEMORY);
+        set_panic(OUT_OF_MEMORY);
         return -1;
     }
 
@@ -61,7 +52,7 @@ int create_task(void (*task_function)(), unsigned int ram_location)
 
     if (!tcb)
     {
-        invoke_panic(OUT_OF_MEMORY);
+        set_panic(OUT_OF_MEMORY);
         return -1;
     }
     else
@@ -92,12 +83,18 @@ int create_task(void (*task_function)(), unsigned int ram_location)
     tcb->join_pid = -1;
 
     if (!currently_running)
+    {
         tcb->parent_task = NULL;
+    }
     else
+    {
         tcb->parent_task = currently_running->data;
+    }
     
     if (currently_running)
+    {
         single_list_push(currently_running->data->child_tasks, (void*) &tcb);
+    }
     
     tcb->child_tasks = new_list();
     
@@ -122,15 +119,6 @@ int create_task(void (*task_function)(), unsigned int ram_location)
     if (insert_scheduled_task((Tcb_t*) tcb) == -1)
     {
         return -1;
-    }
-    if (SYSTICK)
-    {
-      __asm volatile(
-          "mov.w	r2, #3758153728\n"
-          "ldr	r3, [r2, #16]\n"
-          "orr.w	r3, r3, #1\n"
-          "str	r3, [r2, #16]\n"
-      );
     }
     return tcb->general.task_info.pid;
 }

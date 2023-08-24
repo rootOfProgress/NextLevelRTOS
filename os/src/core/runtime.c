@@ -15,7 +15,7 @@ typedef enum RebootTypes RebootTypes_t;
 
 IoChannel_t type_of_io_handler;
 OsLifetime_t lifetime_statistic;
-
+GpioObject_t general_error_led;
 
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
@@ -48,7 +48,9 @@ void NO_OPT external_io_runner(void)
         tInfo.start_adress = allocate(tInfo.task_size);
 
         if (!tInfo.start_adress)
-          invoke_panic(OUT_OF_MEMORY);
+        {
+          set_panic(OUT_OF_MEMORY);
+        }
 
         // notify host to recompile with correct offset
         print((char*) &tInfo.start_adress, 4);
@@ -92,6 +94,13 @@ void NO_OPT external_io_runner(void)
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void)
 {
   init_exti_isr_handling();
+
+  // init error signaling
+  general_error_led.pin = 0;
+  general_error_led.port = 'A';
+  init_gpio(&general_error_led);
+  set_moder(&general_error_led, GeneralPurposeOutputMode);
+  set_pin_off(&general_error_led);
 
   // execute non-os modules
   for (int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)

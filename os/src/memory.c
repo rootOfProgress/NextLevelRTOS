@@ -157,6 +157,12 @@ void init_allocator(unsigned int start_os_section, unsigned int* ram_size)
   }
   mutex = 0;
   mstat_local.ram_size = (unsigned int) ram_size;
+
+  if (DEBUG)
+  {
+    mstat_local.num_of_allocs = 0;
+    mstat_local.num_of_deallocs = 0;
+  }
 }
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address)
@@ -303,9 +309,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
       memory_entry->mementry_fields.base_offset = next_useable_chunk;
       memory_entry->mementry_fields.chunk_size = size;
       memory_entry->mementry_fields.is_occupied = 1;
-      // memory_entry->mementry_fields.is_dirty = 1;
 
-      // write back changes
       *(MEM_TABLE_START + index) = memory_entry->raw;
 
       if (DEBUG)

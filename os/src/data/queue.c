@@ -8,7 +8,7 @@ Queue_t* new_queue(void)
   Queue_t* queue = (Queue_t*) allocate(sizeof(Queue_t));
   if (queue == NULL)
   {
-    invoke_panic(OUT_OF_MEMORY);
+    set_panic(OUT_OF_MEMORY);
     return NULL;
   }
   queue->size = 0;
@@ -100,7 +100,7 @@ int enqueue_element(Queue_t* queue, void* data)
 
   if (new_node == NULL)
   {
-    invoke_panic(OUT_OF_MEMORY);
+    set_panic(OUT_OF_MEMORY);
     return -1;
   }
 

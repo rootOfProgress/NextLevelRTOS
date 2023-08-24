@@ -193,7 +193,7 @@ int run_scheduler(void)
   {
     if (!(wakeup_pid(kernel_pids.idle_task)))
     {
-      invoke_panic(SCHEDULER_NOT_INITIALIZED);
+      set_panic(SCHEDULER_NOT_INITIALIZED);
       return -1;
     }
   }
@@ -202,7 +202,7 @@ int run_scheduler(void)
 
   if (!currently_running)
   {
-    invoke_panic(SCHEDULER_NOT_INITIALIZED);
+    set_panic(SCHEDULER_NOT_INITIALIZED);
     return -1;
   }
 
@@ -321,23 +321,27 @@ void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
   if (t->general.task_info.is_external)
   {
     if (!deallocate((unsigned int*) t->code_section))
-      invoke_panic(MEMORY_DEALLOC_FAILED);
+    {
+      set_panic(MEMORY_DEALLOC_FAILED);
+    }
   }
 
   if (!deallocate((unsigned int*) t->stacksection_lower_bound))
   {
-    invoke_panic(MEMORY_DEALLOC_FAILED);
+    set_panic(MEMORY_DEALLOC_FAILED);
   }
 
   if (!deallocate((unsigned int*) t))
   {
-    invoke_panic(MEMORY_DEALLOC_FAILED);
+    set_panic(MEMORY_DEALLOC_FAILED);
   }
 
   Node_t* old_element = dequeue_element(running_tasks, obsolete_node);
 
   if (!deallocate((unsigned int*) old_element))
-    invoke_panic(MEMORY_DEALLOC_FAILED);
+  {
+    set_panic(MEMORY_DEALLOC_FAILED);
+  }
 }
 
 void search_invalidate_tasks(void)
