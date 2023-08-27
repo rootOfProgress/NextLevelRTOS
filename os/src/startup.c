@@ -90,7 +90,18 @@ void bootstrap(void)
     }
   }
   init_allocator( max, (unsigned int*) &ram_size );
+  WRITE_REGISTER(0x20000000, 0x12345678);
+  boot_flags.isColdStart = 1;
+  boot_flags.reboot_type = IsColdStart;
 
+  // enable external interrupt sources for tim2/3
+  WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
+
+  // CCR DIV_0_TRP , UNALIGN_ TRP
+  WRITE_REGISTER(CPU_SCB_CCR, READ_REGISTER(CPU_SCB_CCR) | 3 << 3);
+
+  // enable memfaults etc.
+  WRITE_REGISTER(CPU_SCB_SHCSR, READ_REGISTER(CPU_SCB_SHCSR) | (0x1 << 16) | (0x1 << 17) | (0x1 << 18));
 
   if (HWFP)
   {

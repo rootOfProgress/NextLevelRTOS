@@ -30,6 +30,8 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
 
   process_lifetime->tasks_cleanup_pending = num_of_pending_tasks;
   process_lifetime->running_tasks = running_tasks->size - num_of_pending_tasks;
+  process_lifetime->finished_tasks = process_stats.num_of_finished_tasks;
+  process_lifetime->failed_tasks = process_stats.num_of_failed_tasks;
 }
 
 int init_scheduler(void)

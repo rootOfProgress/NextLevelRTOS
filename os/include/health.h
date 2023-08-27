@@ -21,11 +21,11 @@ typedef struct OsMetaInformation
 
 typedef struct ProcessLifetime
 {
-    unsigned int tasks_cleanup_pending : 4, 
-                 failed_tasks : 4, 
-                 finished_tasks : 8, 
-                 waiting_tasks : 8, 
-                 running_tasks : 8;  
+    char tasks_cleanup_pending; 
+    char failed_tasks; 
+    char finished_tasks; 
+    char waiting_tasks; 
+    char running_tasks;  
 } ProcessLifetime_t;
 
 typedef struct OsLifetime 
