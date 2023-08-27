@@ -53,3 +53,8 @@ void timer_init(__attribute__((unused)) unsigned int tim_nr, __attribute__((unus
 void enable_ccx_ir(__attribute__((unused)) unsigned int tim_nr, __attribute__((unused)) unsigned int ccr_nr)
 {
 }
+
+void disable_ccx_ir(__attribute__((unused)) unsigned int,__attribute__((unused)) unsigned int)
+{
+
+}

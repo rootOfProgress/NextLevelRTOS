@@ -177,7 +177,9 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
     return TASK_CREATION_FAILED;
 
   if (run_scheduler() == -1)
+  {
     return SCHEDULER_INIT_FAILED;
+  }
 
   return KERNEL_INIT_SUCCEDED;
 }

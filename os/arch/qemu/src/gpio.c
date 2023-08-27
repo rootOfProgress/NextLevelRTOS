@@ -33,3 +33,11 @@ void toggle_output_pin(__attribute__((unused)) GpioObject_t* t)
 {
 }
 
+void set_pin_off(GpioObject_t*)
+{
+    
+}
+void set_pin_on(GpioObject_t*)
+{
+    
+}

@@ -95,6 +95,7 @@ void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void set_udis(unsigned int);
 void enable_ccx_ir(unsigned int,unsigned int);
+void disable_ccx_ir(unsigned int,unsigned int);
 unsigned int timer_get_sr(unsigned int);
 void timer_set_sr(unsigned int,unsigned int);
 

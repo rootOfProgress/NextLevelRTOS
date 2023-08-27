@@ -14,6 +14,7 @@
 #include "runtime.h"
 #include "lang.h"
 #include "startup.h"
+#include "lang.h"
 
 extern void dma2_stream5_ir_handler(void);              //!< Interrupt service routine for DMA2 Controller */
 extern void pendsv_isr(void);                           //!< Interrupt service routine for pending SV Call */
@@ -41,7 +42,7 @@ extern unsigned int stack_top;                          //!< Defined in linker s
 
 BootFlags_t boot_flags;
 
-void bootstrap(void)
+void NO_OPT bootstrap(void)
 {
   unsigned int max = (unsigned int) &_ebss;
 
@@ -74,6 +75,15 @@ void bootstrap(void)
   else
   {
     boot_flags.isColdStart = 0;
+    // enable external interrupt sources for tim2/3
+    WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
+
+    // CCR DIV_0_TRP , UNALIGN_ TRP
+    WRITE_REGISTER(CPU_SCB_CCR, READ_REGISTER(CPU_SCB_CCR) | 3 << 3);
+
+    // enable memfaults etc.
+    WRITE_REGISTER(CPU_SCB_SHCSR, READ_REGISTER(CPU_SCB_SHCSR) | (0x1 << 16) | (0x1 << 17) | (0x1 << 18));
+
     switch (boot_flags.reboot_type)
     {
     case RebootRequestedByOperator:

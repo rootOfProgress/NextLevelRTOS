@@ -103,6 +103,7 @@ static inline __attribute__((always_inline)) void timer_flush_counter(unsigned i
 void set_ccr(unsigned int,unsigned int,unsigned int);
 void set_prescaler(unsigned int,unsigned int);
 void set_udis(unsigned int);
+void generate_ue(unsigned int tim_nr);
 void enable_ccx_ir(unsigned int,unsigned int);
 void disable_ccx_ir(unsigned int,unsigned int);
 unsigned int timer_get_sr(unsigned int);

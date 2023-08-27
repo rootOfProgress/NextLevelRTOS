@@ -46,7 +46,9 @@ int create_task(void (*task_function)(), unsigned int ram_location)
     CpuRegister_t *cpu_register = prepare_cpu_register(task_stack_start_address, STACK_SIZE, task_function);
     
     if (!cpu_register)
+    {
         return -1;
+    }
 
     Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
 

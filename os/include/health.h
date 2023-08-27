@@ -26,6 +26,8 @@ typedef struct ProcessLifetime
     char finished_tasks; 
     char waiting_tasks; 
     char running_tasks;  
+    char num_of_pendsv;
+    char num_of_svcalls;
 } ProcessLifetime_t;
 
 typedef struct OsLifetime 

@@ -41,6 +41,11 @@ void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
   save_psp_if_threadmode();
   __asm__("mov %0, r6" : "=r"(svc_number));
 
+  if (DEBUG)
+  {
+    process_stats.num_of_svcalls++;
+  }
+
   switch (svc_number)
   {
   case execPspTask:

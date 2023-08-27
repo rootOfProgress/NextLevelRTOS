@@ -1,5 +1,5 @@
 ram_size = 64K;
-ram_start = 0x20000000;
+ram_start = 0x20000004;
 EXTERN(bootstrap)
 ENTRY(bootstrap)
 

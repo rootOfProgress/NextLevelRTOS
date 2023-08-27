@@ -21,15 +21,20 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
 
   for (unsigned int j = 0; j < running_tasks->size; j++)
   {
-    Tcb_t* n = (Tcb_t*) currently_running->data;
+    Tcb_t* n = (Tcb_t*) q->data;
     if (n->general.task_info.state == FINISHED)
     {
       num_of_pending_tasks++;
     }
+    q = q->next;
   }
 
   process_lifetime->tasks_cleanup_pending = num_of_pending_tasks;
   process_lifetime->running_tasks = running_tasks->size - num_of_pending_tasks;
+  process_lifetime->finished_tasks = process_stats.num_of_finished_tasks;
+  process_lifetime->failed_tasks = process_stats.num_of_failed_tasks;
+  process_lifetime->num_of_pendsv = process_stats.num_of_pendsv;
+  process_lifetime->num_of_svcalls = process_stats.num_of_svcalls;
 }
 
 int init_scheduler(void)
@@ -235,7 +240,6 @@ void __attribute__ ((hot)) pendsv_isr(void)
   if (DEBUG)
   {
       process_stats.num_of_pendsv++;
-      Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
   }
 
   __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
@@ -248,15 +252,18 @@ void __attribute__ ((hot)) pendsv_isr(void)
   }
 
   __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
+    unsigned int ram_upperbound = 0x20009000;
+
+  __asm volatile ("mov r3, %[ram_top]":: [ram_top] "r" (ram_upperbound));
   enable_irq();
   // @todo what is that???
   __asm volatile (
+    "msr msp, r3\n"
     "ldmfd r2!, {r4-r11}\n"
-    "mov.w r0, #3758153728\n"
-    "ldr   r1, [r0, #16]\n"
-    "orr.w r1, r1, #1\n"
-    "str   r1, [r0, #16]\n"
     "msr psp, r2\n"
+    "mov r1, 0xfffffffd\n"
+    "mov lr, 0xfffffffd\n"
+    "bx lr\n"
   );
 }
 
