@@ -10,6 +10,9 @@ int current_reading;
 int lower_bound;
 int upper_bound;
 unsigned int mutex;
+static int hyst;
+unsigned int idx;
+unsigned int isr_calls[5];
 TxPayload_t tx_payload;
 GpioObject_t mode_switch;
 OperatingState_t operating_state;
@@ -58,20 +61,24 @@ void set_upper_bound(void)
 
 void isr_switch_state(void)
 {
-    asm("bkpt");
+    isr_calls[idx]++;
+    // asm("bkpt");
     exti_acknowledge_interrupt(&mode_switch);
-    // #define isRisingEdge 1
-    // #define isFallingEdge 1
-    // if (isRisingEdge)
-    // {
-    //     operating_state = Running;
-    // }
-    // if (isFallingEdge)
-    // {
-    //     operating_state = Maintenance;
-    // }
+    if (operating_state == Running)
+    {
+        idx++;
+        operating_state = Maintenance;
+    }
+    else
+    {
+        idx++;
+        operating_state = Running;
+    }
 
-    // @todo acknowledge exti interrupt
+    if (idx > 4)
+    {
+        idx = 0;
+    }
 
 }
 
@@ -117,32 +124,31 @@ void init_adc()
 
 void main_routine(void)
 {
-    while (1)
+
+    adc_disable_interrupts();
+
+    lock_mutex(&mutex);
+    if (current_reading > upper_bound)
     {
-        adc_disable_interrupts();
-
-        lock_mutex(&mutex);
-        if (current_reading > upper_bound)
-        {
-            current_reading = upper_bound; 
-        }
-        else if (current_reading < lower_bound)
-        {
-            current_reading = lower_bound;
-        }
-        release_mutex(&mutex);
-
-        crc_reset();
-        crc_feed(AdjustSpeed);
-        crc_feed(current_reading);
-        tx_payload.cmd_type = (unsigned int) AdjustSpeed;
-        tx_payload.cmd_argument = current_reading;
-        tx_payload.checksum = (unsigned int) crc_read();
-        nrf_transmit(&tx_payload, 13);
-        adc_enable_interrupts();
-
-        sleep(50);
+        current_reading = upper_bound; 
     }
+    else if (current_reading < lower_bound)
+    {
+        current_reading = lower_bound;
+    }
+    release_mutex(&mutex);
+
+    crc_reset();
+    crc_feed(AdjustSpeed);
+    crc_feed(current_reading);
+    tx_payload.cmd_type = (unsigned int) AdjustSpeed;
+    tx_payload.cmd_argument = current_reading;
+    tx_payload.checksum = (unsigned int) crc_read();
+    nrf_transmit(&tx_payload, 13);
+    adc_enable_interrupts();
+
+    sleep(50);
+
 }
 
 void config_remote_controller(void)
@@ -163,8 +169,8 @@ void config_remote_controller(void)
     /* Set up ISR Routines */
 
     // @todo: ports randomly chosen
-    mode_switch.pin = 1;
-    mode_switch.port = 'B';
+    mode_switch.pin = 6;
+    mode_switch.port = 'A';
 
     // @todo: ports randomly chosen
     // GpioObject_t mode_set;
@@ -172,7 +178,11 @@ void config_remote_controller(void)
     // mode_switch.port = 'B';
 
     init_gpio(&mode_switch);
+
+
     link_exti_src(isr_switch_state, &mode_switch);
+
+
     syscfg_enable_clock();
     syscfg_exti_config_0_3(&mode_switch);
     exti_activate_ir_line(&mode_switch);
@@ -191,14 +201,20 @@ void config_remote_controller(void)
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
     config_remote_controller();
+    for (int i = 0; i < 5; i++)
+    {
+        isr_calls[i] = 0;
+    }
     
+    idx = 0;
     // @todo: currently faked until isr is set up
     set_lower_bound();
     set_upper_bound();
     memset_byte((void*) &tx_payload, sizeof(TxPayload_t), 0);
 
-    operating_state = Maintenance;
+    operating_state = Running;
     mutex = 0;
+    hyst = 0;
     current_reading = 0;
 
     while (1)

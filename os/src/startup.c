@@ -28,6 +28,7 @@ extern void exti1_isr_handler(void);
 extern void exti2_isr_handler(void);
 extern void exti3_isr_handler(void);
 extern void exti4_isr_handler(void);
+extern void exti9_5_isr_handler(void);
 
 extern void usage_fault_handler(void);
 extern void hardfault_handler(void);
@@ -206,26 +207,26 @@ unsigned int *isr_vectors[] =
     (unsigned int *) dummy,
     (unsigned int *) dummy,
     (unsigned int *) adc_isr_handler, // 18
-    (unsigned int *) dummy,
-    (unsigned int *) dummy,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
+    (unsigned int *) NULL, // 19, those are undefined
+    (unsigned int *) NULL, // those are undefined 
+    (unsigned int *) NULL, // those are undefined
+    (unsigned int *) NULL, // 23, those are undefined
+    (unsigned int *) exti9_5_isr_handler,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
     (unsigned int *) (void(*)()) (0x20005000 | 1), // tim2 isr, pos 28
     (unsigned int *) tim3_isr_handler, // tim3 isr
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
+    (unsigned int *) NULL,
     (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
-    (unsigned int *) uart_isr_handler,
+    (unsigned int *) NULL,
     (unsigned int *) dummy,
     (unsigned int *) dummy,
     (unsigned int *) dummy,

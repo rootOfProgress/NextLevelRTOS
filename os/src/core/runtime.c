@@ -174,7 +174,7 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
 }
 
 // @todo: Untested
-void  __attribute__((optimize("O3"))) hardfault_handler(void)
+void NO_OPT hardfault_handler(void)
 {
   process_stats.num_of_hardfaults++;
   invalidate_current_task();

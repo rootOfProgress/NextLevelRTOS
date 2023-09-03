@@ -12,6 +12,7 @@ enum {
     Exti2,
     Exti3,
     Exti4,
+    Exti9_5,
     NumberOfSupportedExtiLines,
 };
 

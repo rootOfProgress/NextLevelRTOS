@@ -28,7 +28,17 @@
 |CH4   |  CE    |  
 
 **uart**
+|PIN   |Function| Color |
+|------|--------|-------|
+|PA9   |  TX    | WHITE | 
+|PA10  |  RX    |  RED  |
+
+**ADC Mapping**
 |PIN   |Function|
 |------|--------|
-|PA9   |  TX    |  
-|PA10  |  RX    | 
+|PA1   | ADC IN |  
+
+**Taster**
+|PIN   |  Function  |
+|------|------------|
+|PA6   | GENERIC IN |  

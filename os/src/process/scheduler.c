@@ -82,8 +82,10 @@ void reboot(RebootTypes_t reboot_type)
   soft_reset();
 }
 
-void invalidate_current_task(void)
+void NO_OPT invalidate_current_task(void)
 {
+  // @todo: move task
+  asm("bkpt");
   ((Tcb_t*) (currently_running->data))->general.task_info.state = INVALID;
   if (DEBUG)
   {
