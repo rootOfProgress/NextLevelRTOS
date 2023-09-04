@@ -10,37 +10,55 @@
 #include "tim2_5.h"
 #include "parameters.h"
 
-static unsigned char loop_was_triggered;
+static unsigned int cnt_var;
+unsigned int mutex;
 
 typedef struct MeasurementResults {
-    char Subtest006_000_append_loop_task;
-    char reserved[31];
+    char Subtest002_000_mutex; 
+    char reserved[31]; 
 } MeasurementResults_t;
 
-void __attribute__((__noipa__))  __attribute__((optimize("O0"))) loop(void)
+void counter_unprotected(void)
 {
     while (1)
     {
-        loop_was_triggered = 1;
+        if (cnt_var == 200000000)
+        {
+            return;
+        }
+        cnt_var++;
     }
-   
 }
 
-char Subtest006_000_append_loop_task(void)
+void counter_protected(void)
 {
-    create_task(&loop, 0);
-    SV_YIELD_TASK;
-    return 1;
+    while (1)
+    {
+        lock_mutex((void*) &mutex);
+        if (cnt_var == 200000000)
+        {
+            release_mutex((void*) &mutex);
+            return;
+        }
+        cnt_var++;
+        release_mutex((void*) &mutex);
+    }
 }
+
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
     memset_byte((void*) &measurements, sizeof(MeasurementResults_t), 0);
+    cnt_var = 0;
+    mutex = 0;
 
-    loop_was_triggered = 0;
-    measurements.Subtest006_000_append_loop_task = Subtest006_000_append_loop_task() & loop_was_triggered;
     
+    void* dummy = allocate(4);
+    if (((unsigned int) dummy - (unsigned int) t.address) == 4)
+    {
+        measurements.Subtest002_004_alloc_gap = 1;
+    }
 
     print((char*) &measurements, sizeof(MeasurementResults_t));
     return 0;

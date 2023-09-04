@@ -17,6 +17,7 @@ TARGET = os
 all: $(TARGET)
 
 $(TARGET): 	clean \
+			prepare_environment \
 			build_non_os_src \
 			build_base_kernel \
 			compile_asm build_platform_$(ARCH) \
@@ -64,13 +65,12 @@ build_non_os_src:
 # stage1: check for necessary modules
 	python $(NON_OS_SRC)/collect_activated_modules.py $(CURDIR)
 # stage2: build sources from results
-#	make -C $(NON_OS_SRC) ARCH=$(ARCH) HWFP=$(HWFP)
 	make -C $(NON_OS_SRC)
 
 stage_export_os_api:
 
-move_objects:
-	mv *.o ./build
+prepare_environment:
+	mkdir -p ./build
 
 build_base_kernel: $(SRC)
 	$(CC) $(CFLAGS) $(INC) -c $^ 

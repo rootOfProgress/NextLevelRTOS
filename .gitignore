@@ -1,5 +1,4 @@
-build/
-!build/Makefile
+build
 virt/
 packages/legacy_drivers/prepare
 tmp

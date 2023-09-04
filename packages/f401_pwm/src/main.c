@@ -6,7 +6,7 @@
 
 #include "os_api.h"
 #include "rcc.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "uart.h"
 #include "tim2_5.h"
 

@@ -1,4 +1,4 @@
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "spi.h"
 #include "rcc.h"
 #include "uart.h"
