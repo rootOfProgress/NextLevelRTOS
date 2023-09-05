@@ -35,7 +35,7 @@ char Subtest002_000_memset_byte(void)
     dt.a0 = 0x12345678;
     dt.a1 = 0xaaaaaaaa;
     dt.a2[0] = 'c';
-
+    
     memset_byte((void*) &dt, sizeof(DummyStruct_t), 0);
     
     if (dt.a0 == 0 || dt.a1 == 0 || dt.a2[0] == 0 || dt.a2[3] == 0)
@@ -58,9 +58,13 @@ char Subtest002_003_alloc_4byte(MemTestInfo_t *result)
 {
     result->address = (void*) allocate(4);
     if (result->address)
+    {
         result->passed = 1;
+    }
     else 
+    {
         result->passed = 0;
+    }
     
 }
 

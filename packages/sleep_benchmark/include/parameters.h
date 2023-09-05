@@ -1,7 +1,7 @@
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
-static unsigned int sleep_times[4] = {782,1134,1737,865,};
+static unsigned int sleep_times[4] = {1742,891,1845,964,};
 
 #endif
 

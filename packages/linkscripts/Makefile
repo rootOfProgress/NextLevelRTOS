@@ -1,5 +1,5 @@
 CC := arm-none-eabi-gcc
-LINK = ./link_external.ld
+LINK = ../$(TARGET)/link_external.ld
 
 CFLAGS = -O0  \
          -mcpu=cortex-m4 -mthumb \

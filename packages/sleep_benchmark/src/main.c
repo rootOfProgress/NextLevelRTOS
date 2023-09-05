@@ -19,6 +19,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 {
     MeasurementResults_t measurements;
     timer_init(2, 1, (unsigned int[4]) {0,0,0,0}, 1);
+    asm("bkpt");
     for (int j = 0; j < 4; j++)
     {
         timer_flush_counter(2);

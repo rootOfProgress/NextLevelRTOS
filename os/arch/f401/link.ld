@@ -6,7 +6,7 @@ ENTRY(bootstrap)
 MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
-	RAM (rwx) : ORIGIN = ram_start, LENGTH = ram_size - 0x8
+	RAM (rwx) : ORIGIN = ram_start, LENGTH = ram_size
 }
 
 SECTIONS

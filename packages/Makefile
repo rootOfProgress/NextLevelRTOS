@@ -19,7 +19,6 @@ $(TARGET): compile_c build_platform_f401 build_platform_f401 link convert_elf
 compile_c: $(SRC)
 	echo "Executing compile_c..."
 	mkdir -p ./$(TARGET)/build
-	cp -v ./templates/link_external.ld ./linkscripts
 	$(CC) $(CFLAGS) $(INC) -c $^ 
 	mv *.o $(OUTDIR)
 
