@@ -16,14 +16,12 @@ typedef enum RebootTypes RebootTypes_t;
 IoChannel_t type_of_io_handler;
 OsLifetime_t lifetime_statistic;
 
-
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
 
-
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
-  while (1) 
+  while (1)
   {
     block_current_task();
     update_memory_statistic(&lifetime_statistic.memoryStat);
@@ -96,14 +94,13 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
   // execute non-os modules
   for (int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
   {
-      create_task(func_ptr[i], 0);
+    create_task(func_ptr[i], 0);
   }
 
   if (!(boot_flags.reboot_type == RebootRequestedByOperatorKeepStat))
   {
-    memset_byte((void*) &lifetime_statistic, sizeof(OsLifetime_t), 0); 
+    memset_byte((void*) &lifetime_statistic, sizeof(OsLifetime_t), 0);
   }
-
 
   lifetime_statistic.osMeta.git_hash = GIT_HASH;
   lifetime_statistic.osMeta.os_version = OS_VERSION;
@@ -157,7 +154,6 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
   {
     return TASK_CREATION_FAILED;
   }
-   
 
   // @todo: remove this tasks
   if ((kernel_pids.transfer_handler = create_task(&transfer_handler, 0)) == -1)
@@ -184,7 +180,7 @@ void NO_OPT hardfault_handler(void)
 // @todo: Untested
 void ISR usage_fault_handler(void)
 {
-  
+
   // fatal
   if (currently_running->data->general.task_info.pid == kernel_pids.idle_task)
   {
@@ -197,15 +193,15 @@ void ISR usage_fault_handler(void)
   // activate fpu
   if (usagefault_status->nocp)
   {
-      __asm(
-          "LDR.W R0, =0xE000ED88\n"
-          "LDR R1, [R0]\n"
-          "ORR R1, R1, #(0xF << 20)\n"
-          "STR R1, [R0]\n"
-          "DSB\n"
-          "ISB\n"
-      );
-      return;
+    __asm(
+      "LDR.W R0, =0xE000ED88\n"
+      "LDR R1, [R0]\n"
+      "ORR R1, R1, #(0xF << 20)\n"
+      "STR R1, [R0]\n"
+      "DSB\n"
+      "ISB\n"
+    );
+    return;
   }
 
   // check sanity of other tasks
