@@ -36,9 +36,16 @@ void NO_OPT kprint(void)
   setup_transfer((char*) t->start_adress, t->length);
 }
 
-void NO_OPT __attribute__ ((interrupt("SWI"))) svcall_isr()
+void svcall_isr()
 {  
-  save_psp_if_threadmode();
+  __asm volatile (
+    "TST lr, #4\n"
+    "ITTT NE\n"
+    "MRSNE r2, PSP\n"
+    "STMDBNE r2!, {r4-r11}\n"
+    "MSRNE PSP, r2\n"
+  );
+  // save_psp_if_threadmode();
   __asm__("mov %0, r6" : "=r"(svc_number));
 
   switch (svc_number)
