@@ -27,7 +27,7 @@ def generate_os_version():
     sha = repo.head.object.hexsha
     sha_short = repo.git.rev_parse(sha, short=8)
 
-    os_version = 12062023
+    os_version = 18032024
 
     path = os.getcwd() + "/../include/runtime.h"
     sed_command_githash = "sed -i '/GIT_HASH/c\#define GIT_HASH 0x" + sha_short + ";'" + " " + path         
