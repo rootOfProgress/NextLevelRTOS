@@ -25,10 +25,27 @@
  */
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void);
 
+/**
+ * @brief Schedule a kernel subtask.
+ * 
+ * This function schedules a kernel subtask identified by its task number.
+ * 
+ * @param task_number The task number of the kernel subtask to be scheduled.
+ */
+void schedule_kernel_subtask(unsigned int task_number);
+
 typedef enum IoChannel {
     OsInternalIo,
     ModExternalIo
 } IoChannel_t;
+
+enum KernelTasks
+{
+    statisticManager = 0,
+    transferManager = 1,
+};
+
+enum { maxNumOfWaitingKernelSubtasks = 3 };
 
 extern void (*io_handler) (unsigned int uart_rx_buffer);
 extern IoChannel_t type_of_io_handler; 

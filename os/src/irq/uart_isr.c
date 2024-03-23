@@ -41,6 +41,7 @@ void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int 
     num_of_waiting_transfers++;
 }
 
+// @todo remove this task
 void __attribute__((optimize("O0"))) transfer_handler(void)
 {
     init_transfer_handler();
@@ -53,8 +54,6 @@ void __attribute__((optimize("O0"))) transfer_handler(void)
             num_of_waiting_transfers--;
         }
         block_current_task();
-        // SV_YIELD_TASK;
-        // @todo : wake up task on DMA finish
     }    
 }
 

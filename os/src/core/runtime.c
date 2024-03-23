@@ -20,18 +20,35 @@ OsLifetime_t lifetime_statistic = { .version.version_number = 0, .version.size_o
 
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
+void (*subtasks[maxNumOfWaitingKernelSubtasks])();
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
 {
-  while (1)
+  update_memory_statistic(&lifetime_statistic.memoryStat);
+  update_process_statistic(&lifetime_statistic.processStat);
+  print((char*) &lifetime_statistic, sizeof(OsLifetime_t));
+}
+
+void schedule_kernel_subtask(unsigned int task_number)
+{
+  unsigned int idx = 0;
+  void (*subtask)() = NULL;
+
+  while(idx++ < maxNumOfWaitingKernelSubtasks && subtasks[idx]){}
+
+  switch (task_number)
   {
-    block_current_task();
-    update_memory_statistic(&lifetime_statistic.memoryStat);
-    update_process_statistic(&lifetime_statistic.processStat);
-    volatile TransferInfo_t t = {.length = sizeof(OsLifetime_t), .start_adress = &lifetime_statistic};
-    uprint((unsigned int*) &t);
-    svcall(yieldTask);
-  };
+  case statisticManager:
+    subtask = stat;
+    break;
+  default:
+    break;
+  }
+
+  if (idx < maxNumOfWaitingKernelSubtasks)
+  {
+    subtasks[idx] = subtask;
+  }
 }
 
 void NO_OPT external_io_runner(void)
@@ -67,8 +84,7 @@ void NO_OPT external_io_runner(void)
         dma_transfer(&dt, PeripherialToMemory, UART);
         break;
       case REQUEST_STATISTIC:
-        // @todo direct call to stat currently not working, why?
-        wakeup_pid(kernel_pids.statistic_manager);
+        schedule_kernel_subtask(statisticManager);
         break;
       case REBOOT:
         reboot(RebootRequestedByOperator);
@@ -123,6 +139,14 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
   type_of_io_handler = OsInternalIo;
   io_handler = NULL;
 
+  {
+    unsigned int idx = 0;
+    while(idx++ < maxNumOfWaitingKernelSubtasks)
+    {
+      subtasks[idx] = NULL;
+    }
+  }
+
   while (1)
   {
     if (process_stats.clean_up_requests)
@@ -135,6 +159,16 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
       create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
       dma_interrupt_action = DmaIsIdle;
     }
+
+    {
+      unsigned int idx = 0;
+      while(idx++ < maxNumOfWaitingKernelSubtasks && subtasks[idx])
+      {
+        subtasks[idx]();
+        subtasks[idx] = NULL;
+      }
+    }
+
     // this check is if the idle runner is woken up by dma isr to create incoming task.
     // if there are other tasks to be scheduled (i.e. task count > 1, because 1 is the idle_runner)
     // it would make no sense to set the system
@@ -160,14 +194,6 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
   {
     return TASK_CREATION_FAILED;
   }
-
-  // @todo: remove this tasks
-  if ((kernel_pids.transfer_handler = create_task(&transfer_handler, 0)) == -1)
-    return TASK_CREATION_FAILED;
-
-  // @todo: remove this tasks
-  if ((kernel_pids.statistic_manager = create_task(&stat, 0)) == -1)
-    return TASK_CREATION_FAILED;
 
   if (run_scheduler() == -1)
     return SCHEDULER_INIT_FAILED;

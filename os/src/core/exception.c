@@ -33,7 +33,7 @@ void NO_OPT kprint(void)
   __asm__("mov %0, r9" : "=r"(general_service_register));
 
   volatile TransferInfo_t* t = (TransferInfo_t*) general_service_register;
-  setup_transfer((char*) t->start_adress, t->length);
+  print((char*) t->start_adress, t->length);
 }
 
 void svcall_isr()
@@ -45,7 +45,7 @@ void svcall_isr()
     "STMDBNE r2!, {r4-r11}\n"
     "MSRNE PSP, r2\n"
   );
-  // save_psp_if_threadmode();
+  
   __asm__("mov %0, r6" : "=r"(svc_number));
 
   switch (svc_number)
@@ -64,8 +64,6 @@ void svcall_isr()
     __asm volatile ("mov lr, 0xfffffffd");
     __asm volatile ("bx lr");
 
-    // __asm volatile ("str r1, [sp, #4]");
-    // ST_ENABLE;
     return;
   case printMsg:
     kprint();
