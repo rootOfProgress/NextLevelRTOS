@@ -2,7 +2,7 @@
 #define RUNTIME_H
 
 #define GIT_HASH GIT_HASH_PARSED;
-#define OS_VERSION 12062023;
+#define OS_VERSION 23032024;
 
 #include "runtime_types.h"
 
