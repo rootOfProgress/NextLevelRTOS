@@ -1,6 +1,7 @@
 import os
 import sys
 import git
+import subprocess
 
 path_prefix = '../build/memmap.'
 public_functions = [
@@ -23,18 +24,29 @@ arch = list(sys.argv)[1]
 header = ""
 
 def generate_os_version():
+    # collect git revision
     repo = git.Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
     sha_short = repo.git.rev_parse(sha, short=8)
 
-    os_version = 18032024
+    # collect os version 
+    os_version = 23032024
 
+    # collect gcc version
+    raw_output = subprocess.check_output(['arm-none-eabi-gcc', '--version'])
+    raw_output_split_by_line = raw_output.decode('utf-8').split('\n')
+    raw_output_split_by_whitespace = raw_output_split_by_line[0].split(' ')
+    gcc_version = raw_output_split_by_whitespace[3].replace('.','')
+
+    # write into os header
     path = os.getcwd() + "/../include/runtime.h"
     sed_command_githash = "sed -i '/GIT_HASH/c\#define GIT_HASH 0x" + sha_short + ";'" + " " + path         
     sed_command_osversion = "sed -i '/OS_VERSION/c\#define OS_VERSION " + str(os_version) + ";'" + " " + path         
+    sed_command_gccversion = "sed -i '/GCC_VERSION/c\#define GCC_VERSION " + str(gcc_version) + ";'" + " " + path         
 
-    # os.system(sed_command_githash)
+    os.system(sed_command_githash)
     os.system(sed_command_osversion)
+    os.system(sed_command_gccversion)
 
 if __name__ == '__main__':
 

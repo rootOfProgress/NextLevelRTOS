@@ -104,6 +104,7 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
 
   lifetime_statistic.osMeta.git_hash = GIT_HASH;
   lifetime_statistic.osMeta.os_version = OS_VERSION;
+  lifetime_statistic.osMeta.gcc_version = GCC_VERSION;
   lifetime_statistic.osMeta.magic = 0x12345678;
   lifetime_statistic.osMeta.debug_mode = DEBUG ? 1 : 0;
   lifetime_statistic.osMeta.systick_enabled = SYSTICK ? 1 : 0;

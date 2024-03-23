@@ -16,7 +16,8 @@ typedef struct OsMetaInformation
     unsigned int magic;
     short debug_mode;
     short systick_enabled;
-    unsigned int os_version;   
+    unsigned int os_version;
+    unsigned int gcc_version;
 } OsMetaInformation_t;
 
 typedef struct ProcessLifetime
