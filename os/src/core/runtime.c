@@ -14,7 +14,9 @@
 typedef enum RebootTypes RebootTypes_t;
 
 IoChannel_t type_of_io_handler;
-OsLifetime_t lifetime_statistic;
+
+// @todo: Initialization does not work yet because whole structure lies in ram.
+OsLifetime_t lifetime_statistic = { .version.version_number = 0, .version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t), { .0 } };
 
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
@@ -108,6 +110,9 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
   lifetime_statistic.osMeta.magic = 0x12345678;
   lifetime_statistic.osMeta.debug_mode = DEBUG ? 1 : 0;
   lifetime_statistic.osMeta.systick_enabled = SYSTICK ? 1 : 0;
+
+  lifetime_statistic.version.size_of_struct = 1;
+  lifetime_statistic.version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t);
 
   update_memory_statistic(&lifetime_statistic.memoryStat);
   update_process_statistic(&lifetime_statistic.processStat);

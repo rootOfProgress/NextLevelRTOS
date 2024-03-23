@@ -1,6 +1,8 @@
 #ifndef HEALTH_H
 #define HEALTH_H
 
+#include "common.h"
+
 typedef struct MemoryLifetime
 {
     unsigned int num_of_allocs;
@@ -31,6 +33,7 @@ typedef struct ProcessLifetime
 
 typedef struct OsLifetime 
 {
+    VersionOfStructure_t version;
     MemoryLifetime_t memoryStat;
     OsMetaInformation_t osMeta;
     ProcessLifetime_t processStat;
