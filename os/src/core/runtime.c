@@ -111,7 +111,7 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
   lifetime_statistic.osMeta.debug_mode = DEBUG ? 1 : 0;
   lifetime_statistic.osMeta.systick_enabled = SYSTICK ? 1 : 0;
 
-  lifetime_statistic.version.size_of_struct = 1;
+  lifetime_statistic.version.version_number = 1;
   lifetime_statistic.version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t);
 
   update_memory_statistic(&lifetime_statistic.memoryStat);
