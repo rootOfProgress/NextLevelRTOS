@@ -15,6 +15,14 @@ char is_first_round = 1;
 
 MemoryStatisticLocal_t mstat_local;
 
+typedef struct MemoryCacheEntry
+{
+  int index;
+  int addressOfNextFreeChunk;
+} MemoryCacheEntry_t;
+
+MemoryCacheEntry_t mem_cache;
+
 void swap(char* buffer)
 {
   // char* p = (char*) buffer;
@@ -99,7 +107,7 @@ void __attribute__((optimize("O0"))) defrag()
       for (int k = base_index; k < offset_index; k++)
         new_size += (*(MEM_TABLE_START + k) & 0xFFFE) >> 1;
 
-      // merge
+      // merge:
       *(MEM_TABLE_START + base_index) &= ~(0xFFFF);
       *(MEM_TABLE_START + base_index) |= (new_size << 1);
 
@@ -157,6 +165,9 @@ void init_allocator(unsigned int start_os_section, unsigned int* ram_size)
   }
   mutex = 0;
   mstat_local.ram_size = (unsigned int) ram_size;
+
+  mem_cache.addressOfNextFreeChunk = -1;
+  mem_cache.index = -1;
 }
 
 unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address)
@@ -243,6 +254,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
 {
   ST_DISABLE;
   lock_mutex((void*) &mutex);
+  unsigned int index = 0;
   unsigned int next_useable_chunk = 0;
 
   // 32kbyte is max locateable chunk
@@ -255,6 +267,12 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
     size++;
   }
 
+  if (mem_cache.index > 0)
+  {
+    index = mem_cache.index;
+    next_useable_chunk = mem_cache.addressOfNextFreeChunk;
+  }
+
   /*
    *  CHUNK LIST LAYOUT
    *
@@ -263,7 +281,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
    *
    *
    **/
-  for (unsigned int index = 0; index < NUM_OF_SLOTS; index++)
+  for (; index < NUM_OF_SLOTS; index++)
   {
     // 47 possible allocs @todo WRONG COUNT!!
     // MemoryEntry_t* memory_entry = (MemoryEntry_t*) ((unsigned int*) *(MEM_TABLE_START + index));
@@ -316,8 +334,11 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
       release_mutex((void*) &mutex);
 
       ST_ENABLE;
-      return (unsigned int*) (memory_entry->mementry_fields.base_offset + (unsigned int) USEABLE_MEM_START);
 
+      mem_cache.index = index + 1;
+      mem_cache.addressOfNextFreeChunk = next_useable_chunk + size;
+
+      return (unsigned int*) (memory_entry->mementry_fields.base_offset + (unsigned int) USEABLE_MEM_START);
     }
     next_useable_chunk += memory_entry->mementry_fields.chunk_size;
   }
