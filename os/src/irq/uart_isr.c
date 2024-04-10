@@ -19,67 +19,87 @@ unsigned char uart_rx_buffer[BUFFERSIZE];
 
 void init_transfer_handler(void)
 {
-    num_of_waiting_transfers = 0;
-    
-    for (unsigned int i = 0; i < MAX_WAITING_TRANSFERS; i++)
-    {
-        transfer_list[i].length = 0;
-        transfer_list[i].start_adress = 0;
-    }
+  num_of_waiting_transfers = 0;
+
+  for (unsigned int i = 0; i < MAX_WAITING_TRANSFERS; i++)
+  {
+    transfer_list[i].length = 0;
+    transfer_list[i].start_adress = 0;
+  }
 }
 
 void __attribute__((optimize("O0"))) setup_transfer(char* address, unsigned int length)
 {
-    if (num_of_waiting_transfers == MAX_WAITING_TRANSFERS)
-        return;
+  if (num_of_waiting_transfers == MAX_WAITING_TRANSFERS)
+    return;
 
-    if (num_of_waiting_transfers == 0)
-        wakeup_pid(kernel_pids.transfer_handler);
-    
-    transfer_list[num_of_waiting_transfers].start_adress = address;
-    transfer_list[num_of_waiting_transfers].length = length;
-    num_of_waiting_transfers++;
+  if (num_of_waiting_transfers == 0)
+    wakeup_pid(kernel_pids.transfer_handler);
+
+  transfer_list[num_of_waiting_transfers].start_adress = address;
+  transfer_list[num_of_waiting_transfers].length = length;
+  num_of_waiting_transfers++;
 }
 
 // @todo remove this task
 void __attribute__((optimize("O0"))) transfer_handler(void)
 {
-    init_transfer_handler();
-    
-    while (1)
+  init_transfer_handler();
+
+  while (1)
+  {
+    if (num_of_waiting_transfers)
     {
-        if (num_of_waiting_transfers)
-        {
-            print(transfer_list[num_of_waiting_transfers - 1].start_adress, transfer_list[num_of_waiting_transfers - 1].length);
-            num_of_waiting_transfers--;
-        }
-        block_current_task();
-    }    
+      print(transfer_list[num_of_waiting_transfers - 1].start_adress, transfer_list[num_of_waiting_transfers - 1].length);
+      num_of_waiting_transfers--;
+    }
+    block_current_task();
+  }
 }
 
 void init_isr(void)
 {
-    byte_in_id = 4;
-    *internal_rx_state = RX_READY;
-    in_buffer = 0;
-    bytes_received = 0;
-    for (unsigned int i = 0; i < BUFFERSIZE; i++)
-        uart_rx_buffer[i] = 0;
+  byte_in_id = 4;
+  *internal_rx_state = RX_READY;
+  in_buffer = 0;
+  bytes_received = 0;
+  for (unsigned int i = 0; i < BUFFERSIZE; i++)
+    uart_rx_buffer[i] = 0;
 }
+
+static unsigned int hostIsNotified = 0;
 
 void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
-    if (READ_REGISTER(USART1_sr) & (1 << 3))
+  // Overrun detected, abort whole operation
+  if (READ_REGISTER(USART1_sr) & (1 << ORE))
+  {
+    if (!hostIsNotified)
     {
-        read_data_register();
-        return;
+      int illegal = -1;
+      print((char*) &illegal, 4);
+      hostIsNotified = 1;
     }
 
-    uart_rx_buffer[bytes_received++] = read_data_register();
-    if (bytes_received != BUFFERSIZE)
-        return;
-        
-    *internal_rx_state = *((unsigned int*)uart_rx_buffer) & 0xFF;
-    wakeup_pid(kernel_pids.external_io_runner);
+    if (READ_REGISTER(USART1_sr) & (1 << RXNE))
+    {
+      uart_rx_buffer[bytes_received] = read_data_register();
+    }
+
     bytes_received = 0;
+    return;
+  }
+
+  hostIsNotified = 0;
+  uart_rx_buffer[bytes_received++] = read_data_register();
+
+  if (bytes_received != BUFFERSIZE)
+  {
+    return;
+  }
+
+  *internal_rx_state = *((unsigned int*)uart_rx_buffer) & 0xFF;
+
+  wakeup_pid(kernel_pids.external_io_runner);
+  bytes_received = 0;
 }
