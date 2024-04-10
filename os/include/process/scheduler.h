@@ -75,7 +75,6 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime);
 // workaround
 void force_pid0_into_running(void);
 
-
 static inline __attribute__((always_inline)) void block_current_task(void)
 {
   disable_irq();
@@ -164,5 +163,8 @@ static inline __attribute__((always_inline)) void switch_task(void)
     force_pid0_into_running();
   }
 }
+
+
+char is_task_currently_running(unsigned int pid);
 
 #endif

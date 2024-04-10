@@ -99,7 +99,7 @@ void apply_gpio_pwm_setting(GpioObject_t *gpio)
     into_af(gpio, 1);
 }
 
-void timer_pwm_init(unsigned int tim_nr, unsigned int arr)
+void timer_pwm_init(unsigned int tim_nr)
 {
     // timer_configurations[2].tim_nr = tim_nr;
     // timer_configurations[2].tim_registermap = (timer25RegisterMap_t*) get_timx_base(tim_nr);
@@ -125,7 +125,6 @@ void timer_pwm_init(unsigned int tim_nr, unsigned int arr)
     
     // @todo: rm hardcoded 2
     unsigned int tim_base = get_timx_base(2);
-    timer25RegisterMap_t *tim2 = (timer25RegisterMap_t*) tim_base;
     // @todo: enable channels in tim_ccmr
     // tim_ccmr is activated by default
     WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccmr1, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->ccmr1) | (1 << 3) | (0b110) << 4 | (0b110) << 12);

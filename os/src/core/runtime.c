@@ -49,6 +49,12 @@ void schedule_kernel_subtask(unsigned int task_number)
   {
     subtasks[idx] = subtask;
   }
+
+  if (!is_task_currently_running(kernel_pids.idle_task))
+  {
+    // @todo: set timer or just count down some context switches before wake up
+    wakeup_pid(kernel_pids.idle_task);
+  }
 }
 
 void NO_OPT external_io_runner(void)

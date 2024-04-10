@@ -284,7 +284,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
 
       memory_entry->mementry_fields.chunk_size = 0;
       memory_entry->mementry_fields.is_occupied = 0;
-      unsigned int remaining = old_size - size;
+      // unsigned int remaining = old_size - size;
 
       *(MEM_TABLE_START + index) &= 0xFFFF0000;
       *(MEM_TABLE_START + index) |= (old_size << 1) | 0x1;

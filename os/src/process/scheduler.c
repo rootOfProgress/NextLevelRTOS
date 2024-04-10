@@ -17,7 +17,7 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
   process_lifetime->waiting_tasks = waiting_tasks->size;
 
   char num_of_pending_tasks = 0;
-  Node_t* q = running_tasks->head;
+  // Node_t* q = running_tasks->head;
 
   for (unsigned int j = 0; j < running_tasks->size; j++)
   {
@@ -80,6 +80,22 @@ void reboot(RebootTypes_t reboot_type)
 {
   boot_flags.reboot_type = reboot_type;
   soft_reset();
+}
+
+
+char is_task_currently_running(unsigned int pid)
+{
+  Node_t *q = currently_running;
+  for (unsigned int j = 0; j < running_tasks->size; j++)
+  {
+    Tcb_t* taskInfo = (Tcb_t*) q->data;
+    if (taskInfo->general.task_info.pid == pid)
+    {
+      return 1;
+    }
+    q = q->next;
+  }
+  return 0;
 }
 
 void NO_OPT invalidate_current_task(void)
@@ -239,7 +255,7 @@ void __attribute__ ((hot)) pendsv_isr(void)
   if (DEBUG)
   {
       process_stats.num_of_pendsv++;
-      Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
+      // Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
   }
 
   __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));

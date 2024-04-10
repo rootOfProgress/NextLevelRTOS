@@ -26,8 +26,8 @@ void adc_init(GpioObject_t* gpio_config)
     init_gpio(gpio_config);
     set_moder(gpio_config, ANALOG);
 
-    unsigned int *cr2 = &adc_config.adc_registerset->cr2;
-    unsigned int *cr1 = &adc_config.adc_registerset->cr1;
+    // unsigned int *cr2 = &adc_config.adc_registerset->cr2;
+    // unsigned int *cr1 = &adc_config.adc_registerset->cr1;
     unsigned int *smpr1 = &adc_config.adc_registerset->smpr1;
     unsigned int *smpr2 = &adc_config.adc_registerset->smpr2;
     unsigned int *sqr3 = &adc_config.adc_registerset->sqr3;
@@ -67,7 +67,7 @@ void adc_acknowledge_interrupt(void)
 void adc_start_conv_injected(void)
 {
 
-    unsigned int *sr = &adc_config.adc_registerset->sr;
+    // unsigned int *sr = &adc_config.adc_registerset->sr;
     adc_acknowledge_interrupt();
 
     unsigned int *cr2 = &adc_config.adc_registerset->cr2;
