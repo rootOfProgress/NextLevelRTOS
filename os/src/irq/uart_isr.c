@@ -100,6 +100,16 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
 
   *internal_rx_state = *((unsigned int*)uart_rx_buffer) & 0xFF;
 
-  wakeup_pid(kernel_pids.external_io_runner);
+  // serve urgent actions without response immediately
+  switch (*internal_rx_state)
+  {
+  case REBOOT:
+    reboot(RebootRequestedByOperator);
+    break;
+  default:
+    wakeup_pid(kernel_pids.external_io_runner);
+    break;
+  }
+
   bytes_received = 0;
 }

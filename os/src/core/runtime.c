@@ -86,9 +86,6 @@ void NO_OPT external_io_runner(void)
       case REQUEST_STATISTIC:
         schedule_kernel_subtask(statisticManager);
         break;
-      case REBOOT:
-        reboot(RebootRequestedByOperator);
-        break;
       default:
         rx_state = (unsigned int) RX_READY;
         break;
