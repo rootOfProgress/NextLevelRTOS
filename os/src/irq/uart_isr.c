@@ -72,7 +72,7 @@ static unsigned int hostIsNotified = 0;
 void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handler(void)
 {
   // Overrun detected, abort whole operation
-  if (READ_REGISTER(USART1_sr) & (1 << ORE))
+  if (READ_REGISTER(USART1_sr) & (1 << UART_ORE))
   {
     if (!hostIsNotified)
     {
@@ -81,7 +81,7 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
       hostIsNotified = 1;
     }
 
-    if (READ_REGISTER(USART1_sr) & (1 << RXNE))
+    if (READ_REGISTER(USART1_sr) & (1 << UART_RXNE))
     {
       uart_rx_buffer[bytes_received] = read_data_register();
     }

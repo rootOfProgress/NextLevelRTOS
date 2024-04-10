@@ -13,8 +13,8 @@ enum { Usart1Baseadress = 0x40011000 };
 
 enum UartStatusBits
 {
-  ORE = 3,  //<! Overrun Error
-  RXNE = 5, //<! Receive Register Not Empty
+  UART_ORE = 3,  //<! Overrun Error
+  UART_RXNE = 5, //<! Receive Register Not Empty
 };
 
 typedef struct UartRegisterMap
