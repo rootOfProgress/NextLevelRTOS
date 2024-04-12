@@ -64,6 +64,18 @@ void clear_ir_maxrt_flag(void)
   set_bit_nrf_register(STATUS, 4);
 }
 
+unsigned int enable_crc(void)
+{
+  set_bit_nrf_register(CONFIG, 3);
+  return (get_nrf_register(CONFIG) & (1 << 3)) != 0;
+}
+
+unsigned int disable_crc(void)
+{
+  clear_bit_nrf_register(CONFIG, 3);
+  return (get_nrf_register(CONFIG) & (1 << 3)) == 0;
+}
+
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
   init_spi();
@@ -85,9 +97,11 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
     clear_bit_nrf_register(CONFIG, 0);
   }
 
-  // disable crc
-  clear_bit_nrf_register(CONFIG, 3);
-
+  if (!disable_crc())
+  {
+    return 0;
+  }
+// clear_bit_nrf_register(CONFIG, 3);
   set_nrf_register_long(RX_ADDR_P0, nrf_regs->rx_addr_p0);
   set_nrf_register_long(RX_ADDR_P1, nrf_regs->rx_addr_p1);
   // replace_nrf_register(RX_ADDR_P2, nrf_regs->rx_addr_p2);
@@ -101,8 +115,11 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   replace_nrf_register(RF_CH, nrf_regs->rf_ch);
   replace_nrf_register(RF_SETUP, nrf_regs->rf_setup);
   replace_nrf_register(EN_AA, nrf_regs->en_aa);
+  replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
   replace_nrf_register(SETUP_AW, nrf_regs->setup_aw);
-
+  replace_nrf_register(SETUP_RETR, nrf_regs->setup_retr);
+  // replace_nrf_register(CONFIG, nrf_regs->config);
+  
   nrf_power_on();
 
   {
