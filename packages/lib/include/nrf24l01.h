@@ -6,6 +6,18 @@
 
 void spin(int);
 void power_on();
+
+enum 
+{
+  PRIM_RX = 0,
+  PWR_UP = 1,
+  CRCO = 2,
+  EN_CRC = 3,
+  MASK_MAX_RT = 4,
+  MASK_TX_DS = 5,
+  MASK_RX_DR = 6
+};
+
 typedef struct
 {
   // CONFIG Register
@@ -409,7 +421,8 @@ void nrf_power_off(void);
 void nrf_power_on(void);
 char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
 void get_nrf_config(Nrf24l01Registers_t*);
-void nrf_transmit(char*, unsigned int);
+unsigned int transmit_single_package(void);
+unsigned int transmit_all_packages(void);
 char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
 
 /* --------------------------------------------------- */
@@ -466,5 +479,8 @@ unsigned int enable_crc(void);
  * @return The value of the CRC bit in the CONFIG register after disabling CRC.
  */
 unsigned int disable_crc(void);
+
+unsigned int load_tx_buffer(unsigned int length, char* payload);
+
 
 #endif

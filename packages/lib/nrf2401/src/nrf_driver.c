@@ -87,15 +87,18 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
 
   if (mode == SLAVE)
   {
-    // PRIM_RX
-    set_bit_nrf_register(CONFIG, 0);
-
+    set_bit_nrf_register(CONFIG, PRIM_RX);
     replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
   }
   else
   {
-    clear_bit_nrf_register(CONFIG, 0);
+    clear_bit_nrf_register(CONFIG, PRIM_RX);
   }
+
+  // if (mode == SLAVE || nrf_regs->en_aa)
+  // {
+  //   replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
+  // }
 
   if (!disable_crc())
   {
@@ -164,22 +167,63 @@ void nrf_flush_rx(void)
   transfer_write(-1, 0, FlushRX, (void*) 0);
 }
 
-void nrf_transmit(char* payload, unsigned int payload_length)
+static unsigned int check_tx_availability(void)
 {
-  transfer_write(-1, 0, FlushTX, (void*) 0);
-  clear_ir_maxrt_flag();
+  char fifo_status = get_nrf_register(FIFO_STATUS);
 
-  transfer_write(-1, payload_length, WTxPayload, payload);
+  if (fifo_status & (1 << 4)) // fifo empty
+  {
+    return 0;
+  }
 
+  char nrf_status = get_nrf_register(STATUS);
+  if (nrf_status & (1 << 4)) // max_rt
+  {
+    clear_ir_maxrt_flag();
+  }
+  return 1;
+}
+
+unsigned int load_tx_buffer(unsigned int length, char* payload)
+{
+  char fifo_status = get_nrf_register(FIFO_STATUS);
+  if (fifo_status & (1 << 5)) // fifo full
+  {
+    return 0;
+  }
+  transfer_write(-1, length, WTxPayload, payload);
+  return 1;
+}
+
+unsigned int transmit_single_package(void)
+{
+  if (!check_tx_availability())
+  {
+    return 0;
+  }
   set_ce();
 
-  for (int i = 0; i < 2000; i++)
+  for (int i = 0; i < 10; i++)
   {
     // @todo replace with sleep as soon as fw is updated
   }
 
   unset_ce();
+  return 1;
 }
+
+unsigned int transmit_all_packages(void)
+{
+  if (!check_tx_availability())
+  {
+    return 0;
+  }
+  set_ce();
+  while (!(get_nrf_register(FIFO_STATUS) & (1 << 4))){}
+  unset_ce();
+  return 1;
+}
+
 
 void clear_rx_dr_flag(void)
 {
