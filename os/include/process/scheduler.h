@@ -34,8 +34,8 @@ typedef struct KernelPids
 
 enum { ResolutionForSysLogging = 5 };       // <! Task runtimes are measured in 5 usec ticks
 enum { ResolutionForSleepFunction = 1000 }; // <! Task sleep unit is 1 msec
-enum { TimerForSysLogging = 3 };            // <! Task runtimes are tracked by timer 5
-enum { TimerForTaskSleep = 3 };             // <! Task runtimes are tracked by timer 5
+enum { TimerForGlobalCounting = 2 };        // <! Timer 2
+enum { TimerForTaskSleep = 3 };             // <! Timer 3
 
 typedef struct TaskSleepRequest
 {
@@ -71,6 +71,7 @@ void kill_all_child_tasksR(Tcb_t*);
 void kill_all_child_tasks(void);
 void kill_child_task(unsigned int, Tcb_t*);
 void update_process_statistic(ProcessLifetime_t* process_lifetime);
+unsigned int read_global_timer(void);
 
 // workaround
 void force_pid0_into_running(void);

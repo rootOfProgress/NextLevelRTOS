@@ -1,7 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#define GIT_HASH 0x2ecf0312;
+#define GIT_HASH 0x7b4cfcef;
 #define OS_VERSION 23032024;
 #define GCC_VERSION 1320;
 
