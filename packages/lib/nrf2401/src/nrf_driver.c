@@ -85,6 +85,7 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   unset_ce();
   nrf_power_off();
 
+  replace_nrf_register(CONFIG, nrf_regs->config);
   if (mode == SLAVE)
   {
     set_bit_nrf_register(CONFIG, PRIM_RX);

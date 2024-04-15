@@ -132,7 +132,11 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     memset_byte((void*) &nrf_startup_config, sizeof(Nrf24l01Registers_t), 0x0);
 
     apply_nrf_config(&nrf_startup_config);
-    configure_device(&nrf_startup_config, SLAVE);
+    if (!configure_device(&nrf_startup_config, SLAVE))
+    {
+      // todo: turn on some light
+      asm("bkpt");
+    }
     sleep(10);
 
     nrf_flush_rx();

@@ -354,11 +354,14 @@ typedef struct Nrf24l01Registers
   char rpd;
   char rx_addr_p0[8];
   char rx_addr_p1[8];
+  // unsigned int rx_addr_p0;
+  // unsigned int rx_addr_p1;
   char rx_addr_p2;
   char rx_addr_p3;
   char rx_addr_p4;
   char rx_addr_p5;
   char tx_addr[8];
+  // unsigned int tx_addr;
   char rx_pw_p0;
   char rx_pw_p1;
   char rx_pw_p2;

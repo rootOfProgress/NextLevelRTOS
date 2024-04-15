@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCP := arm-none-eabi-objcopy
-INC = -I../../packages/lib/nrf2401/include -I../../packages/lib/am2302/include -Iinclude -I../../os/arch/$(ARCH)/include/ -I../include
+INC = -I../../packages/lib/include -Iinclude -I../../os/arch/$(ARCH)/include/ -I../include
 OS_BUILD_DIR = ../../os/build
 OUTDIR := ./build
 
