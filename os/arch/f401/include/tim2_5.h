@@ -80,11 +80,10 @@ void timer_stop(unsigned int);
 /*
  *
  * @param tim_nr number of timer 
- * @param arr auto reload value
  * @param cycle_length duration of 1 cnt value, given in microseconds
  * @param ccr* 
  */
-void timer_init(unsigned int tim_nr, unsigned int arr, unsigned int *ccr, unsigned int cycle_length);
+void timer_init(unsigned int tim_nr, unsigned int *ccr, unsigned int cycle_length);
 
 /*
  *

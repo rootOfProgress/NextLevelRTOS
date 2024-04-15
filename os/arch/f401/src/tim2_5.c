@@ -151,37 +151,30 @@ void timer_pwm_init(unsigned int tim_nr)
     timer_set_arr(2, 8000);
 
     set_udis(~2);
-    
 }
 
 
-void timer_init(unsigned int tim_nr, __attribute__((unused)) unsigned int arr, unsigned int *ccr, unsigned int cycle_length)
+void timer_init(unsigned int tim_nr, unsigned int *ccr, unsigned int cycle_length)
 {
     // enable clock
     RccRegisterMap_t* rcc_regs = (RccRegisterMap_t*) RccBaseAdress;
+
+    // For instance, TIM2EN is assigned to Bit 0, indicating Timer number 2 corresponds to Bit 0.
     WRITE_REGISTER(&rcc_regs->apb1enr, READ_REGISTER(&rcc_regs->apb1enr) | 1 << (tim_nr - 2));
-    
     reset_timer(tim_nr);
-
     set_prescaler(tim_nr, timer_get_prescaler(tim_nr, cycle_length));
-    
     generate_ue(tim_nr);
-
-    // timer_set_arr(tim_nr, arr);
-
-
-    
     set_udis(tim_nr);
     
     for (unsigned int i = 1; i <= 4; i++)
     {
         set_ccr(tim_nr, ccr[i], i);
     }
+
     timer_flush_counter(tim_nr);
 
     timer_configurations[tim_nr].tim_nr = tim_nr;
     timer_configurations[tim_nr].tim_registermap = (timer25RegisterMap_t*) get_timx_base(tim_nr);
-
 }
 
 void enable_ccx_ir(unsigned int tim_nr, unsigned int ccr_nr)

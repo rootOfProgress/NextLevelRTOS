@@ -27,6 +27,7 @@ static __attribute__((unused)) void (*link_adc_isr)(void (*isr_callback)()) = (u
 
 static __attribute__((unused)) unsigned int* (*lock_mutex)(void*) = (unsigned int* (*)(void *mutex)) lock_mutex_addr;
 static __attribute__((unused)) unsigned int* (*release_mutex)(void*) = (unsigned int* (*)(void *mutex)) release_mutex_addr;
+static __attribute__((unused)) unsigned int (*read_timer)(void) = (unsigned int (*)(void)) read_global_timer_addr;
 
 
 #endif
