@@ -192,23 +192,25 @@ void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
   return;
 }
 
+unsigned int read_global_timer(void)
+{
+  return timer_read_counter(TimerForGlobalCounting); 
+}
+
 int run_scheduler(void)
 {
-  if (DEBUG == 2)
-  {
-    timer_init(TimerForSysLogging, 0, (unsigned int[4])
-    {
-      0, 0, 0, 0
-    }, ResolutionForSysLogging);
-  }
-
   // set up task planer
-  timer_init(TimerForTaskSleep, 0, (unsigned int[4])
+  timer_init(TimerForTaskSleep, (unsigned int[4])
   {
     0, 0, 0, 0
   }, ResolutionForSleepFunction);
   enable_ccx_ir(TimerForTaskSleep, 1);
 
+  // set up global timer. resolution: 1 usec
+  // 
+  timer_init(TimerForGlobalCounting, (unsigned int[4]) {0,0,0,0}, 1);
+  timer_flush_counter(TimerForGlobalCounting);
+  timer_start(TimerForGlobalCounting);
   if (running_tasks->size == 0)
   {
     if (!(wakeup_pid(kernel_pids.idle_task)))
@@ -260,12 +262,6 @@ void __attribute__ ((hot)) pendsv_isr(void)
 
   __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
   switch_task();
-
-  if (DEBUG == 2)
-  {
-    timer_flush_counter(TimerForSysLogging);
-    timer_start(TimerForSysLogging);
-  }
 
   __asm volatile ("mov r2, %[next_sp]":: [next_sp] "r" (((Tcb_t*) currently_running->data)->sp));
   enable_irq();

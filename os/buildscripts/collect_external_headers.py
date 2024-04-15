@@ -17,7 +17,8 @@ public_functions = [
     'execute_priviledged',
     'link_adc_src',
     'lock_mutex',
-    'release_mutex'
+    'release_mutex',
+    'read_global_timer'
 ]
 
 arch = list(sys.argv)[1]
