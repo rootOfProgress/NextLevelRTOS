@@ -1,6 +1,6 @@
 #ifndef NRF24L01_H
 #define NRF24L01_H
-
+// #include "nrf24l01_privates.h"
 #define W_REGISTER(target_reg) (char) ((char) (1 << 5) | (char) target_reg)
 #define R_REGISTER(target_reg) (char) ((char) (0 << 5) | (char) target_reg)
 
@@ -17,6 +17,21 @@ enum
   MASK_TX_DS = 5,
   MASK_RX_DR = 6
 };
+
+typedef struct TxObserve
+{
+  unsigned int totalLostPackages;
+  unsigned int retransmitCount;
+  unsigned int maxRetransmits;
+  unsigned int timeUntilAckArrived;
+} TxObserve_t;
+
+typedef struct TxConfig
+{
+  unsigned int autoRetransmitDelay;
+  unsigned int retransmitCount;
+} TxConfig_t;
+
 
 typedef struct
 {
@@ -420,6 +435,7 @@ void stop_listening(void);
 void nrf_flush_rx(void);
 void nrf_receive_payload(unsigned int, char*);
 void clear_rx_dr_flag(void);
+void clear_tx_ds_flag(void);
 void nrf_power_off(void);
 void nrf_power_on(void);
 char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
@@ -427,7 +443,12 @@ void get_nrf_config(Nrf24l01Registers_t*);
 unsigned int transmit_single_package(void);
 unsigned int transmit_all_packages(void);
 char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
-
+unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers);
+void transmit_with_autoack(TxObserve_t *tx_observe, 
+                           TxConfig_t *tx_config, 
+                           char *receivedAckPackage,
+                           char *outBuffer,
+                           unsigned int (*read_timer)());
 /* --------------------------------------------------- */
 /* -------------------Custom Extensions--------------- */
 /* --------------------------------------------------- */
@@ -485,5 +506,6 @@ unsigned int disable_crc(void);
 
 unsigned int load_tx_buffer(unsigned int length, char* payload);
 
-
+void enable_rx_and_listen();
+void disable_rx();
 #endif

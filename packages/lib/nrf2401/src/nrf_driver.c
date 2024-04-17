@@ -89,12 +89,12 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   if (mode == SLAVE)
   {
     set_bit_nrf_register(CONFIG, PRIM_RX);
-    replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
   }
   else
   {
     clear_bit_nrf_register(CONFIG, PRIM_RX);
   }
+  replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
 
   // if (mode == SLAVE || nrf_regs->en_aa)
   // {
@@ -225,10 +225,90 @@ unsigned int transmit_all_packages(void)
   return 1;
 }
 
+void transmit_with_autoack(TxObserve_t *tx_observe, 
+                           TxConfig_t *tx_config, 
+                           char *receivedAckPackage,
+                           char *outBuffer,
+                           unsigned int (*read_timer)())
+{
+  while (tx_observe->retransmitCount < tx_config->retransmitCount)
+  {
+    load_tx_buffer(32, outBuffer);
+    transmit_single_package();
+    enable_rx_and_listen();
+    unsigned int tStart = read_timer();
+    unsigned int tEnd = 0;
+    while (((tEnd = read_timer()) - tStart) < tx_config->autoRetransmitDelay 
+            && !(*receivedAckPackage)) {}
+    
+    disable_rx();
+    if (!(*receivedAckPackage))
+    {
+      tx_observe->retransmitCount++;
+    }
+    else
+    {
+      tx_observe->timeUntilAckArrived -= tStart;
+      break;
+    }
+  }
+
+  if (tx_observe->retransmitCount == tx_config->retransmitCount)
+  {
+    tx_observe->totalLostPackages++;
+  }
+  if (tx_observe->retransmitCount > tx_observe->maxRetransmits)
+  {
+    tx_observe->maxRetransmits = tx_observe->retransmitCount;
+  }
+  tx_observe->retransmitCount = 0;
+}
+
+unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers)
+{
+  clear_rx_dr_flag();
+  char status = get_nrf_status();
+  if (status & (1 << 5))
+  {
+    clear_tx_ds_flag();
+    return 0;
+  }
+  unsigned int fifo_status = 0;
+  char rx_answer[32];
+  while (!((fifo_status = get_nrf_fifo()) & 1))
+  {
+    if (check_for_received_data(nrf_registers, rx_answer))
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+void enable_rx_and_listen()
+{
+  nrf_power_off();
+  set_bit_nrf_register(CONFIG, PRIM_RX);
+  nrf_power_on();
+  start_listening();
+}
+
+void disable_rx()
+{
+  nrf_power_off();
+  clear_bit_nrf_register(CONFIG, PRIM_RX);
+  nrf_power_on();
+  stop_listening();
+}
 
 void clear_rx_dr_flag(void)
 {
   set_bit_nrf_register(STATUS, 6);
+}
+
+void clear_tx_ds_flag(void)
+{
+  set_bit_nrf_register(STATUS, 5);
 }
 
 void nrf_receive_payload(unsigned int payload_length, char* buffer)
