@@ -7,7 +7,7 @@
 void spin(int);
 void power_on();
 
-enum 
+enum
 {
   PRIM_RX = 0,
   PWR_UP = 1,
@@ -31,7 +31,6 @@ typedef struct TxConfig
   unsigned int autoRetransmitDelay;
   unsigned int retransmitCount;
 } TxConfig_t;
-
 
 typedef struct
 {
@@ -444,11 +443,12 @@ unsigned int transmit_single_package(void);
 unsigned int transmit_all_packages(void);
 char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
 unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers);
-void transmit_with_autoack(TxObserve_t *tx_observe, 
-                           TxConfig_t *tx_config, 
+void transmit_with_autoack(TxConfig_t *tx_config,
                            char *receivedAckPackage,
-                           char *outBuffer,
-                           unsigned int (*read_timer)());
+                           char *outBuffer);
+TxObserve_t get_current_tx_state(void);
+void append_os_core_function(unsigned int (*function_ptr)());
+
 /* --------------------------------------------------- */
 /* -------------------Custom Extensions--------------- */
 /* --------------------------------------------------- */
@@ -486,20 +486,20 @@ typedef enum ReceiveRequestTypes
 
 /**
  * @brief Enables CRC (Cyclic Redundancy Check).
- * 
+ *
  * This function sets the CRC bit in the CONFIG register to enable CRC functionality.
  * CRC is a method used for error detection in data transmission or storage.
- * 
+ *
  * @return The value of the CRC bit in the CONFIG register after enabling CRC.
  */
 unsigned int enable_crc(void);
 
 /**
  * @brief Disables CRC (Cyclic Redundancy Check).
- * 
+ *
  * This function clears the CRC bit in the CONFIG register to disable CRC functionality.
  * CRC is a method used for error detection in data transmission or storage.
- * 
+ *
  * @return The value of the CRC bit in the CONFIG register after disabling CRC.
  */
 unsigned int disable_crc(void);

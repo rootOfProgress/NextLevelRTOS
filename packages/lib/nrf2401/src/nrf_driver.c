@@ -2,8 +2,11 @@
 #include "nrf24l01_privates.h"
 #include "gpio/gpio.h"
 #include "spi.h"
+#include "crc.h"
 
 GpioObject_t gpio_pa5_ce;
+TxObserve_t tx_observe;
+unsigned int (*osCoreFunctions[4])() = {  };
 
 void nrf_power_off()
 {
@@ -13,6 +16,14 @@ void nrf_power_off()
 void nrf_power_on()
 {
   set_bit_nrf_register(CONFIG, 1);
+}
+
+void append_os_core_function(unsigned int (*function)())
+{
+  static unsigned int current_ptr_index = 0;
+  // asm("bkpt");
+  // @todo
+  osCoreFunctions[current_ptr_index++] = function;
 }
 
 char get_nrf_status(void)
@@ -26,6 +37,11 @@ char get_nrf_fifo(void)
 char get_nrf_rpd(void)
 {
   return get_nrf_register(RPD);
+}
+
+TxObserve_t get_current_tx_state(void)
+{
+  return tx_observe;
 }
 
 void get_nrf_config(Nrf24l01Registers_t* current_nrf_config)
@@ -84,7 +100,6 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   init_gpio(&gpio_pa5_ce);
   unset_ce();
   nrf_power_off();
-
   replace_nrf_register(CONFIG, nrf_regs->config);
   if (mode == SLAVE)
   {
@@ -225,47 +240,59 @@ unsigned int transmit_all_packages(void)
   return 1;
 }
 
-void transmit_with_autoack(TxObserve_t *tx_observe, 
-                           TxConfig_t *tx_config, 
+void transmit_with_autoack(TxConfig_t *tx_config, 
                            char *receivedAckPackage,
-                           char *outBuffer,
-                           unsigned int (*read_timer)())
+                           char *outBuffer)
 {
-  while (tx_observe->retransmitCount < tx_config->retransmitCount)
+  crc_reset();
+  for (unsigned int i = 0; i < 27; i++)
+  {
+    crc_feed((unsigned int)outBuffer[i]);
+  }
+  unsigned int crc = crc_read();
+  char *crc_ptr = (char*) &crc;
+
+  for (unsigned int i = 0; i < sizeof(unsigned int); i++)
+  {
+    outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
+  }
+
+  while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
     load_tx_buffer(32, outBuffer);
     transmit_single_package();
     enable_rx_and_listen();
-    unsigned int tStart = read_timer();
+    unsigned int tStart = osCoreFunctions[readTimerFunctionPtr]();
     unsigned int tEnd = 0;
-    while (((tEnd = read_timer()) - tStart) < tx_config->autoRetransmitDelay 
+    while (((tEnd = osCoreFunctions[readTimerFunctionPtr]()) - tStart) < tx_config->autoRetransmitDelay 
             && !(*receivedAckPackage)) {}
     
     disable_rx();
     if (!(*receivedAckPackage))
     {
-      tx_observe->retransmitCount++;
+      tx_observe.retransmitCount++;
     }
     else
     {
-      tx_observe->timeUntilAckArrived -= tStart;
+      tx_observe.timeUntilAckArrived -= tStart;
       break;
     }
   }
 
-  if (tx_observe->retransmitCount == tx_config->retransmitCount)
+  if (tx_observe.retransmitCount == tx_config->retransmitCount)
   {
-    tx_observe->totalLostPackages++;
+    tx_observe.totalLostPackages++;
   }
-  if (tx_observe->retransmitCount > tx_observe->maxRetransmits)
+  if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
   {
-    tx_observe->maxRetransmits = tx_observe->retransmitCount;
+    tx_observe.maxRetransmits = tx_observe.retransmitCount;
   }
-  tx_observe->retransmitCount = 0;
+  tx_observe.retransmitCount = 0;
 }
 
 unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers)
 {
+  tx_observe.timeUntilAckArrived = osCoreFunctions[readTimerFunctionPtr]();
   clear_rx_dr_flag();
   char status = get_nrf_status();
   if (status & (1 << 5))

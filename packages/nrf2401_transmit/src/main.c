@@ -17,35 +17,14 @@
 Nrf24l01Registers_t nrf_registers;
 
 GpioObject_t pinb;
-TxObserve_t tx_observe;
 TxConfig_t tx_config;
 unsigned int tAckReceived;
 char receivedAckPackage;
 
 void  __attribute__((optimize("O0"))) tx_receive_isr()
 {
-  // asm("bkpt");
   exti_acknowledge_interrupt(&pinb);
-  tx_observe.timeUntilAckArrived = read_timer();
   receivedAckPackage = tx_ack_receive_isr(&nrf_registers);
-  // char status = get_nrf_status();
-  // if (status & (1 << 5))
-  // {
-  //   clear_tx_ds_flag();
-  //   return;
-  // }
-  // unsigned int fifo_status = 0;
-  // char rx_answer[32];
-  // while (!((fifo_status = get_nrf_fifo()) & 1))
-  // {
-  //   if (check_for_received_data(&nrf_registers, rx_answer))
-  //   {
-  //     receivedAckPackage = 1;
-  //   }
-  // }
-  //   // clear_tx_ds_flag();
-
-  // clear_rx_dr_flag();
 }
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
@@ -105,26 +84,24 @@ static void init_irq()
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
-  // now done in driver!
-  // init_spi();
+  append_os_core_function(read_timer);
+
   receivedAckPackage = 0;
-  memset_byte((void*) &tx_observe, sizeof(TxObserve_t), 0);
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
-  tx_config.autoRetransmitDelay = 16000; // 12 ms
+  tx_config.autoRetransmitDelay = 8000;
   tx_config.retransmitCount = 7;
 
   crc_activate();
 
   apply_nrf_config(&nrf_registers);
-  // config.
 
   configure_device(&nrf_registers, MASTER);
   init_irq();
 
   char outBuffer[32];
-  crc_reset();
-  char* p = "WasIstLoGREAT!";
+  char* p = "WasIstLoGREEEjdlkfj!";
+  // char* p = "Holla?!";
   for (unsigned int i = 0; i < 32; i++)
   {
     outBuffer[i] = 0;
@@ -133,73 +110,13 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   for (unsigned int i = 0; i < 14; i++)
   {
     outBuffer[i] = p[i];
-    // crc_feed((unsigned int)p[i]);
   }
 
-  for (unsigned int i = 0; i < 27; i++)
-  {
-    crc_feed((unsigned int)outBuffer[i]);
-  }
-
-  unsigned int crc = crc_read();
-  char *crc_ptr = (char*) &crc;
-
-  for (unsigned int i = 0; i < sizeof(unsigned int); i++)
-  {
-    outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
-    // outBuffer[27 + i] = crc_ptr[i];
-  }
-
-  // char* t = "llkj;vmdd";
-  // char* r = "ipoijvmdd";
-
-  // load_tx_buffer(32, outBuffer);
-
-  // load_tx_buffer(6, t);
-  // load_tx_buffer(6, r);
-  // transmit_single_package();
-  // transmit_all_packages();
-
-  // unsigned int autoRetransmitDelay = 4000;
-  // unsigned int rounds = 0;
-
-  tx_observe.retransmitCount = 0;
   receivedAckPackage = 0;
-  transmit_with_autoack(&tx_observe, &tx_config, &receivedAckPackage, outBuffer, read_timer);
-  // while (tx_observe.retransmitCount < tx_config.retransmitCount)
-  // {
-  //   load_tx_buffer(32, outBuffer);
-  //   transmit_single_package();
-  //   enable_rx_and_listen();
-  //   unsigned int tStart = read_timer();
-  //   unsigned int tEnd = 0;
-  //   while (((tEnd = read_timer()) - tStart) < tx_config.autoRetransmitDelay) {
-
-  //   }
-    
-  //   disable_rx();
-  //   if (!receivedAckPackage)
-  //   {
-  //     tx_observe.retransmitCount++;
-  //   }
-  //   else
-  //   {
-  //     tx_observe.timeUntilAckArrived = tAckReceived - tStart;
-  //     break;
-  //   }
-  // }
-
-  // if (tx_observe.retransmitCount == tx_config.retransmitCount)
-  // {
-  //   tx_observe.totalLostPackages++;
-  // }
-  // if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
-  // {
-  //   tx_observe.maxRetransmits = tx_observe.retransmitCount;
-  // }
-  // tx_observe.retransmitCount = 0;
-  print((char*) &tx_observe, sizeof(TxObserve_t));
-  // asm("bkpt");
+  transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+ 
+  TxObserve_t observe = get_current_tx_state();
+  print((char*) &observe, sizeof(TxObserve_t));
 
   return 0;
 }
