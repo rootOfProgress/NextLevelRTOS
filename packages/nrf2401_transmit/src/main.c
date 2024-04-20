@@ -82,6 +82,12 @@ static void init_irq()
   exti_detect_falling_edge(&pinb);
 }
 
+void send(char *outBuffer)
+{
+  // receivedAckPackage = 0;
+  transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+}
+
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
   append_os_core_function(read_timer);
@@ -93,29 +99,41 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   tx_config.retransmitCount = 7;
 
   crc_activate();
-
   apply_nrf_config(&nrf_registers);
-
   configure_device(&nrf_registers, MASTER);
   init_irq();
 
   char outBuffer[32];
   char* p = "WasIstLoGREEEjdlkfj!";
-  // char* p = "Holla?!";
+  
   for (unsigned int i = 0; i < 32; i++)
   {
     outBuffer[i] = 0;
   }
 
-  for (unsigned int i = 0; i < 14; i++)
+  // for (unsigned int i = 0; i < 15; i++)
+  // {
+  //   outBuffer[i] = p[i];
+  // }
+  unsigned int total = 0;
+  for (int i = 0; i < 2000; i++)
   {
-    outBuffer[i] = p[i];
+    unsigned int payload = read_timer();
+    char *payloadPtr = &payload;
+    for (unsigned int i = 0; i < sizeof(unsigned int); i++)
+    {
+      outBuffer[i] = payloadPtr[i];
+    }
+    unsigned int tStart = read_timer();
+    send(outBuffer);
+    unsigned int tEnd = read_timer();
+    total += tEnd - tStart;
+    
   }
+  
 
-  receivedAckPackage = 0;
-  transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
- 
   TxObserve_t observe = get_current_tx_state();
+  observe.totalElapsed = (total) >> 10;
   print((char*) &observe, sizeof(TxObserve_t));
 
   return 0;

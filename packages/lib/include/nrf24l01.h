@@ -24,6 +24,8 @@ typedef struct TxObserve
   unsigned int retransmitCount;
   unsigned int maxRetransmits;
   unsigned int timeUntilAckArrived;
+  unsigned int totalElapsed;
+  unsigned int bytesSend;
 } TxObserve_t;
 
 typedef struct TxConfig

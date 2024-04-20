@@ -95,6 +95,8 @@ unsigned int disable_crc(void)
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
   init_spi();
+  // @todo
+  tx_observe.bytesSend = 0;
   gpio_pa5_ce.port = 'A';
   gpio_pa5_ce.pin = 5;
   init_gpio(&gpio_pa5_ce);
@@ -275,6 +277,7 @@ void transmit_with_autoack(TxConfig_t *tx_config,
     else
     {
       tx_observe.timeUntilAckArrived -= tStart;
+      // tx_observe.timeUntilAckArrived >>= 10;
       break;
     }
   }
@@ -287,7 +290,9 @@ void transmit_with_autoack(TxConfig_t *tx_config,
   {
     tx_observe.maxRetransmits = tx_observe.retransmitCount;
   }
+  *receivedAckPackage = 0;
   tx_observe.retransmitCount = 0;
+  tx_observe.bytesSend += 28;
 }
 
 unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers)
