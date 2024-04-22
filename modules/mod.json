@@ -28,5 +28,10 @@
         {
             "run" : 0,
             "amount" : 1
+        },
+    "nrf2401_receive":
+        {
+            "run" : 0,
+            "amount" : 1
         }
 }

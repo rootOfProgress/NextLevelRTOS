@@ -1,11 +1,42 @@
 #ifndef NRF24L01_H
 #define NRF24L01_H
-
+// #include "nrf24l01_privates.h"
 #define W_REGISTER(target_reg) (char) ((char) (1 << 5) | (char) target_reg)
 #define R_REGISTER(target_reg) (char) ((char) (0 << 5) | (char) target_reg)
 
 void spin(int);
 void power_on();
+
+enum
+{
+  PRIM_RX = 0,
+  PWR_UP = 1,
+  CRCO = 2,
+  EN_CRC = 3,
+  MASK_MAX_RT = 4,
+  MASK_TX_DS = 5,
+  MASK_RX_DR = 6
+};
+
+typedef struct TxObserve
+{
+  unsigned int totalLostPackages;
+  unsigned int retransmitCount;
+  unsigned int maxRetransmits;
+  unsigned int timeUntilAckArrived;
+  unsigned int totalElapsed;
+  unsigned int bytesSend;
+  unsigned int totalRetransmits;
+  unsigned int signalStrength;
+  unsigned int totalPackages;
+} TxObserve_t;
+
+typedef struct TxConfig
+{
+  unsigned int autoRetransmitDelay;
+  unsigned int retransmitCount;
+} TxConfig_t;
+
 typedef struct
 {
   // CONFIG Register
@@ -342,11 +373,14 @@ typedef struct Nrf24l01Registers
   char rpd;
   char rx_addr_p0[8];
   char rx_addr_p1[8];
+  // unsigned int rx_addr_p0;
+  // unsigned int rx_addr_p1;
   char rx_addr_p2;
   char rx_addr_p3;
   char rx_addr_p4;
   char rx_addr_p5;
   char tx_addr[8];
+  // unsigned int tx_addr;
   char rx_pw_p0;
   char rx_pw_p1;
   char rx_pw_p2;
@@ -405,12 +439,20 @@ void stop_listening(void);
 void nrf_flush_rx(void);
 void nrf_receive_payload(unsigned int, char*);
 void clear_rx_dr_flag(void);
+void clear_tx_ds_flag(void);
 void nrf_power_off(void);
 void nrf_power_on(void);
 char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
 void get_nrf_config(Nrf24l01Registers_t*);
-void nrf_transmit(char*, unsigned int);
+unsigned int transmit_single_package(void);
+unsigned int transmit_all_packages(void);
 char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
+unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers);
+void transmit_with_autoack(TxConfig_t *tx_config,
+                           char *receivedAckPackage,
+                           char *outBuffer);
+TxObserve_t get_current_tx_state(void);
+void append_os_core_function(unsigned int (*function_ptr)());
 
 /* --------------------------------------------------- */
 /* -------------------Custom Extensions--------------- */
@@ -449,22 +491,26 @@ typedef enum ReceiveRequestTypes
 
 /**
  * @brief Enables CRC (Cyclic Redundancy Check).
- * 
+ *
  * This function sets the CRC bit in the CONFIG register to enable CRC functionality.
  * CRC is a method used for error detection in data transmission or storage.
- * 
+ *
  * @return The value of the CRC bit in the CONFIG register after enabling CRC.
  */
 unsigned int enable_crc(void);
 
 /**
  * @brief Disables CRC (Cyclic Redundancy Check).
- * 
+ *
  * This function clears the CRC bit in the CONFIG register to disable CRC functionality.
  * CRC is a method used for error detection in data transmission or storage.
- * 
+ *
  * @return The value of the CRC bit in the CONFIG register after disabling CRC.
  */
 unsigned int disable_crc(void);
 
+unsigned int load_tx_buffer(unsigned int length, char* payload);
+
+void enable_rx_and_listen();
+void disable_rx();
 #endif

@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCP := arm-none-eabi-objcopy
-INC = -I../../packages/lib/include -Iinclude -I../../os/arch/$(ARCH)/include/ -I../include
+INC = -I../../packages/lib/include -Iinclude -I../../os/arch/$(ARCH)/include/ -I../include -I../../os/include/irq
 OS_BUILD_DIR = ../../os/build
 OUTDIR := ./build
 
@@ -12,7 +12,7 @@ CFLAGS = -O0  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-TARGET := weathernode
+TARGET := template2
 
 all: $(TARGET)
 
@@ -26,4 +26,4 @@ link_objects:
 	make -C ./buildscripts
 
 clean:
-	rm -f $(OUTDIR)/*.o $(OUTDIR)/$(TARGET)
+	rm -f $(OUTDIR)/*.o ./build/$(TARGET)*
