@@ -1,4 +1,3 @@
-#include "gpio.h"
 #include "test.h"
 #include "spi.h"
 #include "nrf24l01.h"

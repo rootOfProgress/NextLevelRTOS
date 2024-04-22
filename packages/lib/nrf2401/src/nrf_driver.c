@@ -97,6 +97,10 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   init_spi();
   // @todo
   tx_observe.bytesSend = 0;
+  tx_observe.totalRetransmits = 0;
+  tx_observe.signalStrength = 0;
+  tx_observe.totalPackages = 0;
+
   gpio_pa5_ce.port = 'A';
   gpio_pa5_ce.pin = 5;
   init_gpio(&gpio_pa5_ce);
@@ -278,6 +282,8 @@ void transmit_with_autoack(TxConfig_t *tx_config,
     {
       tx_observe.timeUntilAckArrived -= tStart;
       // tx_observe.timeUntilAckArrived >>= 10;
+      tx_observe.totalPackages++;
+      tx_observe.bytesSend += 28;
       break;
     }
   }
@@ -291,8 +297,15 @@ void transmit_with_autoack(TxConfig_t *tx_config,
     tx_observe.maxRetransmits = tx_observe.retransmitCount;
   }
   *receivedAckPackage = 0;
+
+  
+  // tx_observe.signalStrength = ((tx_observe.sumOfSuccesfullTransmitted - (tx_observe.totalLostPackages * tx_config->retransmitCount))/tx_observe.sumOfSuccesfullTransmitted) * 100;
+  tx_observe.totalRetransmits += tx_observe.retransmitCount;
+
+  tx_observe.signalStrength = (unsigned int)( (float) ( ((float)  tx_observe.totalPackages / ((float)  tx_observe.totalPackages + (float)  tx_observe.totalRetransmits) )) * 100);
+
+
   tx_observe.retransmitCount = 0;
-  tx_observe.bytesSend += 28;
 }
 
 unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers)

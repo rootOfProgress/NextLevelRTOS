@@ -96,7 +96,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
   tx_config.autoRetransmitDelay = 8000;
-  tx_config.retransmitCount = 7;
+  tx_config.retransmitCount = 3;
 
   crc_activate();
   apply_nrf_config(&nrf_registers);
@@ -116,10 +116,10 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   //   outBuffer[i] = p[i];
   // }
   unsigned int total = 0;
-  for (int i = 0; i < 2000; i++)
+  for (int i = 0; i < 1000; i++)
   {
     unsigned int payload = read_timer();
-    char *payloadPtr = &payload;
+    char *payloadPtr = (char*) &payload;
     for (unsigned int i = 0; i < sizeof(unsigned int); i++)
     {
       outBuffer[i] = payloadPtr[i];
@@ -128,13 +128,18 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     send(outBuffer);
     unsigned int tEnd = read_timer();
     total += tEnd - tStart;
-    
-  }
-  
 
+    if (i % 100 == 0)
+    {
+      TxObserve_t observe = get_current_tx_state();
+      observe.totalElapsed = (total) >> 10;
+      print((char*) &observe, sizeof(TxObserve_t));
+    }
+  }
   TxObserve_t observe = get_current_tx_state();
   observe.totalElapsed = (total) >> 10;
-  print((char*) &observe, sizeof(TxObserve_t));
+  print((char*) &observe, sizeof(TxObserve_t)); 
+
 
   return 0;
 }

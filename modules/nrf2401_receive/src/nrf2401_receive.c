@@ -12,14 +12,12 @@
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
-
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
-
-
 Nrf24l01Registers_t nrf24l01_regs;
 Nrf24l01Registers_t nrf_startup_config;
+static unsigned int lastReceivedCRC;
 GpioObject_t pinb;
 char ack = 'a';
 // char rx_answer[16];
@@ -27,246 +25,202 @@ char ack = 'a';
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 {
 
-    /************ Disable AA ***************/
-    nrf_registers->en_aa = 0;
+  /************ Disable AA ***************/
+  nrf_registers->en_aa = 0;
 
-    /************ 1Mbps data rate, 0dBm ***************/
-    nrf_registers->rf_setup = 6;
+  /************ 1Mbps data rate, 0dBm ***************/
+  nrf_registers->rf_setup = 6;
 
-    /************ 5 byte address width ***************/
-    nrf_registers->setup_aw = 3;
-    
-    /************ Channel 2 ***************/
-    nrf_registers->rf_ch = 3;
+  /************ 5 byte address width ***************/
+  nrf_registers->setup_aw = 3;
 
-    nrf_registers->en_rxaddr = 3;
-    nrf_registers->rx_pw_p0 = 32;
-    nrf_registers->rx_pw_p1 = 6;
-    nrf_registers->config = 0; 
+  /************ Channel 2 ***************/
+  nrf_registers->rf_ch = 3;
 
-    // LSB is written first, will result in bfcecccecc
-    // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
-    // char tx[5] = {0xa1, 0xa1, 0xa1, 0xa1, 0xa1};
-    // nrf_registers->rx_addr_p0 = 0xC5C5C5C5;
-    char tx[5] = {0xc8, 0xc8, 0xc8, 0xc8, 0xc8};
-    for (unsigned int i = 0; i < sizeof(tx)/sizeof(char); i++)
-        nrf_registers->tx_addr[i] = tx[i];
-    // for (int i = sizeof(tx)/sizeof(char) - 1; i >= 0 ; i--)
+  nrf_registers->en_rxaddr = 3;
+  nrf_registers->rx_pw_p0 = 32;
+  nrf_registers->rx_pw_p1 = 6;
+  nrf_registers->config = 0;
 
-    char rx_p0[5] = {0xc5, 0xc5, 0xc5, 0xc5, 0xc5};
-    for (unsigned int i = 0; i < 5 /* sizeof(rx_p1)/sizeof(char) */; i++)
-        nrf_registers->rx_addr_p0[i] = rx_p0[i];
+  // LSB is written first, will result in bfcecccecc
+  // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
+  // char tx[5] = {0xa1, 0xa1, 0xa1, 0xa1, 0xa1};
+  // nrf_registers->rx_addr_p0 = 0xC5C5C5C5;
+  char tx[5] = {0xc8, 0xc8, 0xc8, 0xc8, 0xc8};
+  for (unsigned int i = 0; i < sizeof(tx) / sizeof(char); i++)
+    nrf_registers->tx_addr[i] = tx[i];
+  // for (int i = sizeof(tx)/sizeof(char) - 1; i >= 0 ; i--)
 
-    char rx_p1[5] = {0xc6, 0xc6, 0xc6, 0xc6, 0xc6};
-    for (unsigned int i = 0; i < 5 /* sizeof(rx_p1)/sizeof(char) */; i++)
-        nrf_registers->rx_addr_p1[i] = rx_p1[i];
-    // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
+  char rx_p0[5] = {0xc5, 0xc5, 0xc5, 0xc5, 0xc5};
+  for (unsigned int i = 0; i < 5 /* sizeof(rx_p1)/sizeof(char) */; i++)
+    nrf_registers->rx_addr_p0[i] = rx_p0[i];
+
+  char rx_p1[5] = {0xc6, 0xc6, 0xc6, 0xc6, 0xc6};
+  for (unsigned int i = 0; i < 5 /* sizeof(rx_p1)/sizeof(char) */; i++)
+    nrf_registers->rx_addr_p1[i] = rx_p1[i];
+  // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
 }
 
-typedef struct rxinfo {
-    unsigned int pipe;
-    char content[32];
+typedef struct rxinfo
+{
+  unsigned int pipe;
+  char content[32];
 
 } rxinfo_t;
 
 rxinfo_t rx_data[32];
 static unsigned int index = 0;
 
-void memcpy_custom(void *dest, const void *src, unsigned int n) {
-    char *cdest = (char *)dest;
-    const char *csrc = (const char *)src;
+void memcpy_custom(void *dest, const void *src, unsigned int n)
+{
+  char *cdest = (char *)dest;
+  const char *csrc = (const char *)src;
 
-    // Copy each byte from source to destination
-    for (unsigned int i = 0; i < n; ++i) {
-        cdest[i] = csrc[i];
-    }
+  // Copy each byte from source to destination
+  for (unsigned int i = 0; i < n; ++i)
+  {
+    cdest[i] = csrc[i];
+  }
 }
 
 // Function to reverse the byte order of a 32-bit unsigned integer
-unsigned int reverse_byte_order(unsigned int num) {
-    return ((num >> 24) & 0x000000FF) |
-           ((num >> 8) & 0x0000FF00) |
-           ((num << 8) & 0x00FF0000) |
-           ((num << 24) & 0xFF000000);
+unsigned int reverse_byte_order(unsigned int num)
+{
+  return ((num >> 24) & 0x000000FF) |
+         ((num >> 8) & 0x0000FF00) |
+         ((num << 8) & 0x00FF0000) |
+         ((num << 24) & 0xFF000000);
 }
-
 
 void  __attribute__((optimize("O0"))) rx_receive_isr()
 {
-    exti_acknowledge_interrupt(&pinb);
-    // char status = get_nrf_status();
-    unsigned int fifo_status = 0;
-    // switch (status)
-    // {
-    // case (1 << 4): // MAX_RT
-    //     /* code */
-    //     break;
-    // case (1 << 5): // TX_DS
-    //     /* code */
-    //     break;
-    // case (1 << 6): // RX_DR
-    //     char rx_answer[16];
-    //     for (unsigned int i = 0; i < 16; i++)
-    //     {
-    //         rx_answer[i] = 0;
-    //     }      
-    //     while (!((fifo_status = get_nrf_fifo()) & 1))
-    //     {
-    //         if (check_for_received_data(&nrf_startup_config, rx_answer))
-    //         {
-    //             // ReceiveHeader_t *header = (ReceiveHeader_t*) rx_answer+1;
-    //             // switch (header->package_type)
-    //             // {
-    //             // case OsRequest:
-    //             //     // copy request into uart_rx_buffer (@todo: Make that more general)
-    //             //     break;
-    //             // case GeneralRequest:
-    //             // default:
-    //             //     break;
-    //             // }
-
-    //             asm("bkpt");
-    //         }
-    //         else 
-    //         {
-    //             asm("bkpt");
-    //             break;
-    //         }
-    //     }
-    //     clear_rx_dr_flag();  
-    //     break;
-    // default:
-    //     break;
-    // }
-    char rx_answer[33];
-    for (unsigned int i = 0; i < 33; i++)
+  exti_acknowledge_interrupt(&pinb);
+  char rx_answer[33];
+  for (unsigned int i = 0; i < 33; i++)
+  {
+    rx_answer[i] = 0;
+  }
+  while (!(get_nrf_fifo() & 1))
+  {
+    if (check_for_received_data(&nrf_startup_config, rx_answer))
     {
-        rx_answer[i] = 0;
-    }      
-    while (!((fifo_status = get_nrf_fifo()) & 1))
-    {
-        if (check_for_received_data(&nrf_startup_config, rx_answer))
-        {
-            // ReceiveHeader_t *header = (ReceiveHeader_t*) rx_answer+1;
-            // switch (header->package_type)
-            // {
-            // case OsRequest:
-            //     // copy request into uart_rx_buffer (@todo: Make that more general)
-            //     break;
-            // case GeneralRequest:
-            // default:
-            //     break;
-            // }
-            crc_reset();
-            for (unsigned int i = 0; i < 33; i++)
-            {
-                rx_answer[i] = rx_answer[i+1];
-            }     
-            for (unsigned int i = 0; i < 27; i++)
-            {
-                crc_feed((unsigned int)rx_answer[i]);
-            } 
+      crc_reset();
 
-            unsigned int crc_expected = crc_read();
-            unsigned int crc;
-            memcpy_custom(&crc, &rx_answer[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
-            crc = reverse_byte_order(crc);
+      // @todo: way to inefficient
+      for (unsigned int i = 0; i < 33; i++)
+      {
+        rx_answer[i] = rx_answer[i + 1];
+      }
 
-            if (crc == crc_expected)
-            {
-                disable_rx();
-                load_tx_buffer(1, &ack);
-                transmit_single_package();
-                enable_rx_and_listen();
-            }
-        }
-        else 
-        {
-            break;
-        }
+      // @todo: better feed 4byte wise
+      for (unsigned int i = 0; i < 27; i++)
+      {
+        crc_feed((unsigned int)rx_answer[i]);
+      }
+
+      unsigned int crc_expected = crc_read();
+      unsigned int crc = 0;
+      memcpy_custom(&crc, &rx_answer[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
+      crc = reverse_byte_order(crc);
+
+      // @todo: discard package if ack gots lost
+      // @todo: if crc==0, then no ack is required
+      // if (crc && crc == crc_expected && crc != lastReceivedCRC)
+      if (crc == crc_expected)
+      {
+        disable_rx();
+        // @todo: load ack package while idle
+        load_tx_buffer(1, &ack);
+        transmit_single_package();
+        lastReceivedCRC = crc;
+        enable_rx_and_listen();
+      }
     }
-    clear_rx_dr_flag();  
+    else
+    {
+      break;
+    }
+  }
+  clear_rx_dr_flag();
 }
 
-
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) nrf2401_receive(void)
-{   
-    // driver handels that
-    // init_spi();
-    index = 0;
-    
-    // Nrf24l01Registers_t nrf_startup_config;
-    // Nrf24l01Registers_t nrf_current_config;
+{
+  // driver handels that
+  // init_spi();
+  index = 0;
+  lastReceivedCRC = 0;
 
-    // memset_byte((void*) &nrf_current_config, sizeof(Nrf24l01Registers_t), 0x0);
-    // memset_byte((void*) &nrf_startup_config, sizeof(Nrf24l01Registers_t), 0x0);
-    Nrf24l01Registers_t current_nrf_config;
-    char* ptr = (char*) &nrf_startup_config;
-    char* ptr1 = (char*) &current_nrf_config;
-    for (unsigned int i = 0; i < sizeof(Nrf24l01Registers_t); i++)
+  // Nrf24l01Registers_t nrf_startup_config;
+  // Nrf24l01Registers_t nrf_current_config;
+
+  // memset_byte((void*) &nrf_current_config, sizeof(Nrf24l01Registers_t), 0x0);
+  // memset_byte((void*) &nrf_startup_config, sizeof(Nrf24l01Registers_t), 0x0);
+  Nrf24l01Registers_t current_nrf_config;
+  char* ptr = (char*) &nrf_startup_config;
+  char* ptr1 = (char*) &current_nrf_config;
+  for (unsigned int i = 0; i < sizeof(Nrf24l01Registers_t); i++)
+  {
+    ptr[i] = 0;
+    ptr1[i] = 0;
+    /* code */
+  }
+  apply_nrf_config(&nrf_startup_config);
+
+  if (!configure_device(&nrf_startup_config, SLAVE))
+  {
+    // todo: turn on some light
+    asm("bkpt");
+  }
+
+  for (int i = 0; i < 1000; i++)
+  {
+    /* code */
+  }
+
+  // task_sleep(10);
+  crc_activate();
+
+  nrf_flush_rx();
+  clear_rx_dr_flag();
+
+  start_listening();
+
+#define IRQ
+#ifdef IRQ
+  pinb.pin = 0;
+  pinb.port = 'B';
+
+  link_exti_src(rx_receive_isr, &pinb);
+  syscfg_enable_clock();
+  syscfg_exti_config_0_3(&pinb);
+  exti_activate_ir_line(&pinb);
+  exti_detect_falling_edge(&pinb);
+  while (1)
+  {
+    // get_nrf_config(&current_nrf_config);
+    SV_YIELD_TASK;
+  }
+
+#else
+  sleep(10);
+  while (1)
+  {
+    sleep(1);
+
+    while (!(get_nrf_fifo() & 1))
     {
-        ptr[i] = 0;
-        ptr1[i] = 0;
-        /* code */
+      if (check_for_received_data(&nrf_startup_config, rx_answer))
+      {
+        asm("bkpt");
+        clear_rx_dr_flag();
+      }
     }
-    apply_nrf_config(&nrf_startup_config);
+    sleep(1);
 
-    if (!configure_device(&nrf_startup_config, SLAVE))
-    {
-      // todo: turn on some light
-      asm("bkpt");
-    }
-    
-    for (int i = 0; i < 1000; i++)
-    {
-        /* code */
-    }
-    
-    // task_sleep(10);
-    crc_activate();
+    SV_YIELD_TASK;
+  }
+#endif
 
-    nrf_flush_rx();
-    clear_rx_dr_flag();
-
-    start_listening();
-
-    #define IRQ
-    #ifdef IRQ
-    pinb.pin = 0;
-    pinb.port = 'B';
-
-    link_exti_src(rx_receive_isr, &pinb);
-    syscfg_enable_clock();
-    syscfg_exti_config_0_3(&pinb);
-    exti_activate_ir_line(&pinb);
-    exti_detect_falling_edge(&pinb);
-    while (1)
-    {
-        // get_nrf_config(&current_nrf_config);
-        SV_YIELD_TASK;
-    }
-    
-    #else
-    sleep(10);
-    while (1)
-    {
-        sleep(1);
-
-        while (!(get_nrf_fifo() & 1))
-        {
-            if (check_for_received_data(&nrf_startup_config, rx_answer))
-            {
-                asm("bkpt");
-                clear_rx_dr_flag();
-            }
-        }
-        sleep(1);
-
-
-        SV_YIELD_TASK;
-    }
-    #endif
-    
-    
-    return 0;
+  return 0;
 }
