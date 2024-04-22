@@ -26,14 +26,14 @@ void append_os_core_function(unsigned int (*function)())
   osCoreFunctions[current_ptr_index++] = function;
 }
 
-char get_nrf_status(void)
-{
-  return get_nrf_register(STATUS);
-}
-char get_nrf_fifo(void)
-{
-  return get_nrf_register(FIFO_STATUS);
-}
+// char get_nrf_status(void)
+// {
+//   return get_nrf_register(STATUS);
+// }
+// char get_nrf_fifo(void)
+// {
+//   return get_nrf_register(FIFO_STATUS);
+// }
 char get_nrf_rpd(void)
 {
   return get_nrf_register(RPD);
@@ -189,6 +189,11 @@ void nrf_flush_rx(void)
   transfer_write(-1, 0, FlushRX, (void*) 0);
 }
 
+void nrf_flush_tx(void)
+{
+  transfer_write(-1, 0, FlushTX, (void*) 0);
+}
+
 static unsigned int check_tx_availability(void)
 {
   char fifo_status = get_nrf_register(FIFO_STATUS);
@@ -265,6 +270,7 @@ void transmit_with_autoack(TxConfig_t *tx_config,
 
   while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
+
     load_tx_buffer(32, outBuffer);
     transmit_single_package();
     enable_rx_and_listen();
@@ -361,43 +367,43 @@ void nrf_receive_payload(unsigned int payload_length, char* buffer)
   transfer_read_wbuffer(-1, payload_length, RRxPayload, buffer);
 }
 
-char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer)
-{
-  char ret = 1;
-  int pipe = 7;
-  pipe = (get_nrf_status() >> 1) & 0x7;
-  if (pipe >= 0 && pipe <= 5)
-  {
-    stop_listening();
+// char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer)
+// {
+//   char ret = 1;
+//   int pipe = 7;
+//   pipe = (get_nrf_status() >> 1) & 0x7;
+//   if (pipe >= 0 && pipe <= 5)
+//   {
+//     stop_listening();
 
-    switch (pipe)
-    {
-    case 0:
-      nrf_receive_payload(config->rx_pw_p0, response_buffer);
-      break;
-    case 1:
-      nrf_receive_payload(config->rx_pw_p1, response_buffer);
-      break;
-    case 2:
-      nrf_receive_payload(config->rx_pw_p2, response_buffer);
-      break;
-    case 3:
-      nrf_receive_payload(config->rx_pw_p3, response_buffer);
-      break;
-    case 4:
-      nrf_receive_payload(config->rx_pw_p4, response_buffer);
-      break;
-    case 5:
-      nrf_receive_payload(config->rx_pw_p5, response_buffer);
-      break;
-    default:
-      break;
-    }
-    start_listening();
-  }
-  else
-  {
-    ret = 0;
-  }
-  return ret;
-}
+//     switch (pipe)
+//     {
+//     case 0:
+//       nrf_receive_payload(config->rx_pw_p0, response_buffer);
+//       break;
+//     case 1:
+//       nrf_receive_payload(config->rx_pw_p1, response_buffer);
+//       break;
+//     case 2:
+//       nrf_receive_payload(config->rx_pw_p2, response_buffer);
+//       break;
+//     case 3:
+//       nrf_receive_payload(config->rx_pw_p3, response_buffer);
+//       break;
+//     case 4:
+//       nrf_receive_payload(config->rx_pw_p4, response_buffer);
+//       break;
+//     case 5:
+//       nrf_receive_payload(config->rx_pw_p5, response_buffer);
+//       break;
+//     default:
+//       break;
+//     }
+//     start_listening();
+//   }
+//   else
+//   {
+//     ret = 0;
+//   }
+//   return ret;
+// }

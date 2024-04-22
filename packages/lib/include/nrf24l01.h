@@ -430,8 +430,7 @@ typedef enum Nrf24l01RegisterNames
   FEATURE = 0x1D
 } Nrf24l01RegisterNames_t;
 
-char get_nrf_status(void);
-char get_nrf_fifo(void);
+// char get_nrf_status(void);
 char get_nrf_rpd(void);
 void clear_ir_maxrt_flag(void);
 void start_listening(void);
@@ -446,7 +445,7 @@ char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
 void get_nrf_config(Nrf24l01Registers_t*);
 unsigned int transmit_single_package(void);
 unsigned int transmit_all_packages(void);
-char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
+// char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
 unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers);
 void transmit_with_autoack(TxConfig_t *tx_config,
                            char *receivedAckPackage,
@@ -511,6 +510,63 @@ unsigned int disable_crc(void);
 
 unsigned int load_tx_buffer(unsigned int length, char* payload);
 
-void enable_rx_and_listen();
-void disable_rx();
+void enable_rx_and_listen(void);
+void disable_rx(void);
+void nrf_flush_tx(void);
+
+char get_nrf_register(Nrf24l01RegisterNames_t);
+
+static inline __attribute__((always_inline)) char get_nrf_fifo(void);
+static inline __attribute__((always_inline)) char get_nrf_status(void);
+static inline __attribute__((always_inline)) char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
+static inline __attribute__((always_inline)) char get_nrf_fifo(void)
+{
+  return get_nrf_register(FIFO_STATUS);
+}
+
+static inline __attribute__((always_inline)) char get_nrf_status(void)
+{
+  return get_nrf_register(STATUS);
+}
+
+static inline __attribute__((always_inline)) char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer)
+{
+  char ret = 1;
+  int pipe = 7;
+  pipe = (get_nrf_status() >> 1) & 0x7;
+  if (pipe >= 0 && pipe <= 5)
+  {
+    stop_listening();
+
+    switch (pipe)
+    {
+    case 0:
+      nrf_receive_payload(config->rx_pw_p0, response_buffer);
+      break;
+    case 1:
+      nrf_receive_payload(config->rx_pw_p1, response_buffer);
+      break;
+    case 2:
+      nrf_receive_payload(config->rx_pw_p2, response_buffer);
+      break;
+    case 3:
+      nrf_receive_payload(config->rx_pw_p3, response_buffer);
+      break;
+    case 4:
+      nrf_receive_payload(config->rx_pw_p4, response_buffer);
+      break;
+    case 5:
+      nrf_receive_payload(config->rx_pw_p5, response_buffer);
+      break;
+    default:
+      break;
+    }
+    start_listening();
+  }
+  else
+  {
+    ret = 0;
+  }
+  return ret;
+}
 #endif

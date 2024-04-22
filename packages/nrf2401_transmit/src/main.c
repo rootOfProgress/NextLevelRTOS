@@ -96,7 +96,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
   tx_config.autoRetransmitDelay = 8000;
-  tx_config.retransmitCount = 3;
+  tx_config.retransmitCount = 7;
 
   crc_activate();
   apply_nrf_config(&nrf_registers);
@@ -104,7 +104,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   init_irq();
 
   char outBuffer[32];
-  char* p = "WasIstLoGREEEjdlkfj!";
+  // char* p = "WasIstLoGREEEjdlkfj!";
   
   for (unsigned int i = 0; i < 32; i++)
   {
@@ -118,12 +118,18 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   unsigned int total = 0;
   for (int i = 0; i < 1000; i++)
   {
-    unsigned int payload = read_timer();
+    // unsigned int payload = read_timer();
+    unsigned int payload = 0x12345678;
     char *payloadPtr = (char*) &payload;
+    // asm("bkpt");
     for (unsigned int i = 0; i < sizeof(unsigned int); i++)
     {
       outBuffer[i] = payloadPtr[i];
     }
+    // for (int i = 0; i < sizeof(unsigned int); i++) 
+    // {
+    //     outBuffer[i] = payloadPtr[sizeof(unsigned int) - 1 - i]; // Copy bytes in reverse order
+    // }
     unsigned int tStart = read_timer();
     send(outBuffer);
     unsigned int tEnd = read_timer();

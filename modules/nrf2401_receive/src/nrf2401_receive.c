@@ -18,8 +18,12 @@
 Nrf24l01Registers_t nrf24l01_regs;
 Nrf24l01Registers_t nrf_startup_config;
 static unsigned int lastReceivedCRC;
+static unsigned int ackPackagePreloaded;
 GpioObject_t pinb;
 char ack = 'a';
+char rx_answer[33];
+
+char *receiveBuffer;
 // char rx_answer[16];
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
@@ -65,7 +69,6 @@ typedef struct rxinfo
 {
   unsigned int pipe;
   char content[32];
-
 } rxinfo_t;
 
 rxinfo_t rx_data[32];
@@ -92,46 +95,62 @@ unsigned int reverse_byte_order(unsigned int num)
          ((num << 24) & 0xFF000000);
 }
 
-void  __attribute__((optimize("O0"))) rx_receive_isr()
+// void  __attribute__((optimize("O0"))) rx_receive_isr()
+void rx_receive_isr()
 {
   exti_acknowledge_interrupt(&pinb);
-  char rx_answer[33];
-  for (unsigned int i = 0; i < 33; i++)
-  {
-    rx_answer[i] = 0;
-  }
+  char *rx_answer_ptr = &rx_answer[1];
+  // for (unsigned int i = 0; i < 33; i++)
+  // {
+  //   rx_answer[i] = 0;
+  // }
   while (!(get_nrf_fifo() & 1))
   {
     if (check_for_received_data(&nrf_startup_config, rx_answer))
     {
-      crc_reset();
+      // crc_reset();
 
       // @todo: way to inefficient
-      for (unsigned int i = 0; i < 33; i++)
-      {
-        rx_answer[i] = rx_answer[i + 1];
-      }
+      // for (unsigned int i = 0; i < 33; i++)
+      // {
+      //   rx_answer[i] = rx_answer[i + 1];
+      // }
+
+      // rx_answer = rx_answer_ptr;
 
       // @todo: better feed 4byte wise
       for (unsigned int i = 0; i < 27; i++)
       {
-        crc_feed((unsigned int)rx_answer[i]);
+        crc_feed((unsigned int)rx_answer_ptr[i]);
       }
 
       unsigned int crc_expected = crc_read();
       unsigned int crc = 0;
-      memcpy_custom(&crc, &rx_answer[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
+      memcpy_custom(&crc, &rx_answer_ptr[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
       crc = reverse_byte_order(crc);
 
       // @todo: discard package if ack gots lost
       // @todo: if crc==0, then no ack is required
-      // if (crc && crc == crc_expected && crc != lastReceivedCRC)
+      // if (crc == crc_expected)
       if (crc == crc_expected)
       {
         disable_rx();
-        // @todo: load ack package while idle
-        load_tx_buffer(1, &ack);
+        // load_tx_buffer(1, &ack);
+
+        if (!ackPackagePreloaded)
+        {
+          load_tx_buffer(1, &ack);
+          ackPackagePreloaded = 1;
+        }
         transmit_single_package();
+        // crc_reset();
+        ackPackagePreloaded = 0;
+        // if (crc != lastReceivedCRC)
+        // {
+          // print((char*) rx_answer, 27);
+        // }
+        // print((char*) rx_answer, 27);
+
         lastReceivedCRC = crc;
         enable_rx_and_listen();
       }
@@ -150,6 +169,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   // init_spi();
   index = 0;
   lastReceivedCRC = 0;
+  ackPackagePreloaded = 0;
 
   // Nrf24l01Registers_t nrf_startup_config;
   // Nrf24l01Registers_t nrf_current_config;
@@ -180,6 +200,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 
   // task_sleep(10);
   crc_activate();
+  // receiveBuffer = (char*) allocate(32768);
 
   nrf_flush_rx();
   clear_rx_dr_flag();
@@ -198,6 +219,12 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   exti_detect_falling_edge(&pinb);
   while (1)
   {
+    if (!ackPackagePreloaded)
+    {
+      load_tx_buffer(1, &ack);
+      ackPackagePreloaded = 1;
+    }
+    crc_reset();
     // get_nrf_config(&current_nrf_config);
     SV_YIELD_TASK;
   }
