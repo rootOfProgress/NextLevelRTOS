@@ -117,11 +117,6 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   }
   replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
 
-  // if (mode == SLAVE || nrf_regs->en_aa)
-  // {
-  //   replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
-  // }
-
   if (!disable_crc())
   {
     return 0;
@@ -186,12 +181,12 @@ void stop_listening()
 
 void nrf_flush_rx(void)
 {
-  transfer_write(-1, 0, FlushRX, (void*) 0);
+  transfer(-1, 0, FlushRX, (void*) 0);
 }
 
 void nrf_flush_tx(void)
 {
-  transfer_write(-1, 0, FlushTX, (void*) 0);
+  transfer(-1, 0, FlushTX, (void*) 0);
 }
 
 static unsigned int check_tx_availability(void)
@@ -218,7 +213,8 @@ unsigned int load_tx_buffer(unsigned int length, char* payload)
   {
     return 0;
   }
-  transfer_write(-1, length, WTxPayload, payload);
+  // don't know why +1, otherwise last byte is duplicated?? 29/04/24
+  transfer(-1, length, WTxPayload, payload);
   return 1;
 }
 
@@ -228,11 +224,12 @@ unsigned int transmit_single_package(void)
   {
     return 0;
   }
-  set_ce();
 
-  for (int i = 0; i < 10; i++)
+  unsigned int tStart = osCoreFunctions[readTimerFunctionPtr]();
+  set_ce();
+  while (osCoreFunctions[readTimerFunctionPtr]() - tStart < 10)
   {
-    // @todo replace with sleep as soon as fw is updated
+    /* code */
   }
 
   unset_ce();
@@ -251,7 +248,7 @@ unsigned int transmit_all_packages(void)
   return 1;
 }
 
-void transmit_with_autoack(TxConfig_t *tx_config, 
+void __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config, 
                            char *receivedAckPackage,
                            char *outBuffer)
 {
@@ -260,6 +257,7 @@ void transmit_with_autoack(TxConfig_t *tx_config,
   {
     crc_feed((unsigned int)outBuffer[i]);
   }
+
   unsigned int crc = crc_read();
   char *crc_ptr = (char*) &crc;
 
@@ -270,9 +268,14 @@ void transmit_with_autoack(TxConfig_t *tx_config,
 
   while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
+    if (get_nrf_register(FIFO_STATUS) & (1 << 4))
+    {
+    asm("bkpt");
 
+    }
     load_tx_buffer(32, outBuffer);
     transmit_single_package();
+    // transmit_all_packages();
     enable_rx_and_listen();
     unsigned int tStart = osCoreFunctions[readTimerFunctionPtr]();
     unsigned int tEnd = 0;
@@ -289,7 +292,7 @@ void transmit_with_autoack(TxConfig_t *tx_config,
       tx_observe.timeUntilAckArrived -= tStart;
       // tx_observe.timeUntilAckArrived >>= 10;
       tx_observe.totalPackages++;
-      tx_observe.bytesSend += 28;
+      tx_observe.bytesSend += 32;
       break;
     }
   }
@@ -364,7 +367,7 @@ void clear_tx_ds_flag(void)
 
 void nrf_receive_payload(unsigned int payload_length, char* buffer)
 {
-  transfer_read_wbuffer(-1, payload_length, RRxPayload, buffer);
+  transfer(-1, payload_length, RRxPayload, buffer);
 }
 
 // char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer)

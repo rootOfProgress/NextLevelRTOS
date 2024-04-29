@@ -42,7 +42,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
   nrf_registers->rf_ch = 3;
 
   nrf_registers->en_rxaddr = 3;
-  nrf_registers->rx_pw_p0 = 32;
+  nrf_registers->rx_pw_p0 = 16;
   nrf_registers->rx_pw_p1 = 6;
   nrf_registers->config = 0;
 
@@ -100,23 +100,15 @@ void rx_receive_isr()
 {
   exti_acknowledge_interrupt(&pinb);
   char *rx_answer_ptr = &rx_answer[1];
-  // for (unsigned int i = 0; i < 33; i++)
-  // {
-  //   rx_answer[i] = 0;
-  // }
+  for (int i = 0; i < 33; i++)
+  {
+    rx_answer[i] = 0;
+  }
+  
   while (!(get_nrf_fifo() & 1))
   {
     if (check_for_received_data(&nrf_startup_config, rx_answer))
     {
-      // crc_reset();
-
-      // @todo: way to inefficient
-      // for (unsigned int i = 0; i < 33; i++)
-      // {
-      //   rx_answer[i] = rx_answer[i + 1];
-      // }
-
-      // rx_answer = rx_answer_ptr;
 
       // @todo: better feed 4byte wise
       for (unsigned int i = 0; i < 27; i++)
@@ -127,8 +119,8 @@ void rx_receive_isr()
       unsigned int crc_expected = crc_read();
       unsigned int crc = 0;
       memcpy_custom(&crc, &rx_answer_ptr[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
+      
       crc = reverse_byte_order(crc);
-
       // @todo: discard package if ack gots lost
       // @todo: if crc==0, then no ack is required
       // if (crc == crc_expected)
@@ -147,9 +139,9 @@ void rx_receive_isr()
         ackPackagePreloaded = 0;
         // if (crc != lastReceivedCRC)
         // {
-          // print((char*) rx_answer, 27);
+        //   print((char*) rx_answer, 27);
         // }
-        // print((char*) rx_answer, 27);
+        print(rx_answer_ptr, 27);
 
         lastReceivedCRC = crc;
         enable_rx_and_listen();
