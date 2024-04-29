@@ -8,6 +8,7 @@
 #include "crc.h"
 #include "exti.h"
 #include "syscfg.h"
+#include "am2302.h"
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
@@ -20,6 +21,30 @@ GpioObject_t pinb;
 TxConfig_t tx_config;
 unsigned int tAckReceived;
 char receivedAckPackage;
+
+typedef struct 
+{
+  char payloadId;
+  char packageNumber; //@not yet used
+  char totalPackages; //@not yet used
+  char reserved;
+} PayloadMetaData_t;
+
+typedef struct 
+{
+  char totalLostPackages;
+  char maxRetransmits;
+  char signalStrength;
+  char batteryHealth;
+} DeviceEnvironmentData_t;
+
+typedef struct NodeFrame 
+{
+  PayloadMetaData_t metadata;
+  DeviceEnvironmentData_t environmentdata;
+  Am2302Measurements_t readings;
+} NodeFrame_t;
+
 
 void  __attribute__((optimize("O0"))) tx_receive_isr()
 {
@@ -85,6 +110,7 @@ static void init_irq()
 void send(char *outBuffer)
 {
   // receivedAckPackage = 0;
+  nrf_flush_tx();
   transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
 }
 
@@ -95,7 +121,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   receivedAckPackage = 0;
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
-  tx_config.autoRetransmitDelay = 8000;
+  tx_config.autoRetransmitDelay = 16000;
   tx_config.retransmitCount = 7;
 
   crc_activate();
@@ -104,39 +130,67 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   init_irq();
 
   char outBuffer[32];
-  // char* p = "WasIstLoGREEEjdlkfj!";
   
-  for (unsigned int i = 0; i < 32; i++)
-  {
-    outBuffer[i] = 0;
-  }
-
-  // for (unsigned int i = 0; i < 15; i++)
+  // for (unsigned int i = 0; i < 32; i++)
   // {
-  //   outBuffer[i] = p[i];
+  //   outBuffer[i] = 0;
   // }
-  unsigned int total = 0;
-  for (int i = 0; i < 1000; i++)
-  {
-    unsigned int payload = read_timer();
-    // unsigned int payload = 0x12345678;
-    char *payloadPtr = (char*) &payload;
-    for (unsigned int i = 0; i < sizeof(unsigned int); i++)
-    {
-      outBuffer[i] = payloadPtr[i];
-    }
-    unsigned int tStart = read_timer();
-    send(outBuffer);
-    unsigned int tEnd = read_timer();
-    total += tEnd - tStart;
 
-    if (i % 100 == 0)
-    {
-      TxObserve_t observe = get_current_tx_state();
-      observe.totalElapsed = (total) >> 10;
-      print((char*) &observe, sizeof(TxObserve_t));
-    }
-  }
+  unsigned int total = 0;
+  
+  struct pay 
+  {
+    unsigned int fuckit[8];
+  };
+
+  struct pay well;
+  well.fuckit[0] = 0xEE22EE22;
+  well.fuckit[1] = 0xFF11FF11;
+  well.fuckit[2] = 0x22334455;
+  well.fuckit[3] = 0x33445566;
+  well.fuckit[4] = 0x44556677;
+  well.fuckit[5] = 0x55667788;
+  well.fuckit[6] = 0x66778899;
+  well.fuckit[7] = 0x778899AA;
+
+char array[40];
+for (int i = 0; i < 32; i++) {
+    array[i] = (i % 32) + 1;
+}
+
+
+
+  // unsigned int payload = 0x99887744;
+  // asm("bkpt");
+  load_tx_buffer(17, array);
+  transmit_single_package();
+  NodeFrame_t myNodeFrame;
+  memset_byte((void*) &myNodeFrame, sizeof(NodeFrame_t), 89);
+  // Initializing and assigning increasing numbers
+  // myNodeFrame.metadata.payloadId = 1;
+  // myNodeFrame.metadata.packageNumber = 43;
+  // myNodeFrame.metadata.totalPackages = 3;
+  // myNodeFrame.metadata.reserved = 0;
+  
+
+  // myNodeFrame.environmentdata.totalLostPackages = 4;
+  // myNodeFrame.environmentdata.maxRetransmits = 5;
+  // myNodeFrame.environmentdata.signalStrength = 6;
+  // myNodeFrame.environmentdata.batteryHealth = 7;
+
+  // myNodeFrame.readings.humidity = 8;
+  // myNodeFrame.readings.temperature = 9;
+
+  // char *payloadPtr = (char*) &myNodeFrame;
+  // for (unsigned int i = 0; i < sizeof(NodeFrame_t); i++)
+  // {
+  //   outBuffer[i] = payloadPtr[i];
+  // }
+  // unsigned int tStart = read_timer();
+  // send(outBuffer);
+  // unsigned int tEnd = read_timer();
+  // total += tEnd - tStart;
+
   TxObserve_t observe = get_current_tx_state();
   observe.totalElapsed = (total) >> 10;
   print((char*) &observe, sizeof(TxObserve_t)); 
