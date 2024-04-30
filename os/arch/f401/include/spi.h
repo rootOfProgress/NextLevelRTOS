@@ -33,7 +33,7 @@ typedef struct
 void init_spi(void);
 void spi_write_single(char);
 void spi_read(char *data, unsigned int length, char *receive_buffer);
-void spi_write_discard_rx(char *data, unsigned int length);
+void spi_write(char *data, unsigned int length);
 
 extern SpiRegisterMap_t* spi_regs;
 #endif

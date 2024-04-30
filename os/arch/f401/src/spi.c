@@ -97,7 +97,7 @@ void NO_OPT spi_read(char *data, unsigned int length, char *receive_buffer)
     WRITE_REGISTER(&spi_regs->cr1, READ_REGISTER(&spi_regs->cr1) & ~(1 << SPE));
 }
 
-void NO_OPT spi_write_discard_rx(char *data, unsigned int length)
+void NO_OPT spi_write(char *data, unsigned int length)
 {
     SpiRegisterMap_t* spi_regs = (SpiRegisterMap_t*) Spi1BaseAdress;
 
