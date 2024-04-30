@@ -537,7 +537,6 @@ static inline __attribute__((always_inline)) char check_for_received_data(Nrf24l
   if (pipe >= 0 && pipe <= 5)
   {
     stop_listening();
-
     switch (pipe)
     {
     case 0:
@@ -559,6 +558,7 @@ static inline __attribute__((always_inline)) char check_for_received_data(Nrf24l
       nrf_receive_payload(config->rx_pw_p5, response_buffer);
       break;
     default:
+      ret = 0;
       break;
     }
     start_listening();

@@ -42,7 +42,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
   nrf_registers->rf_ch = 3;
 
   nrf_registers->en_rxaddr = 3;
-  nrf_registers->rx_pw_p0 = 16;
+  nrf_registers->rx_pw_p0 = 31;
   nrf_registers->rx_pw_p1 = 6;
   nrf_registers->config = 0;
 

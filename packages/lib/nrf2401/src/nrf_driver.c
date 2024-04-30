@@ -214,7 +214,7 @@ unsigned int load_tx_buffer(unsigned int length, char* payload)
     return 0;
   }
   // don't know why +1, otherwise last byte is duplicated?? 29/04/24
-  transfer(-1, length, WTxPayload, payload);
+  transfer(-1, length + 1, WTxPayload, payload);
   return 1;
 }
 

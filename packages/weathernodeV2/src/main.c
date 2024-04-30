@@ -162,7 +162,7 @@ for (int i = 0; i < 32; i++) {
 
   // unsigned int payload = 0x99887744;
   // asm("bkpt");
-  load_tx_buffer(17, array);
+  load_tx_buffer(31, array);
   transmit_single_package();
   NodeFrame_t myNodeFrame;
   memset_byte((void*) &myNodeFrame, sizeof(NodeFrame_t), 89);
