@@ -2,6 +2,7 @@ build
 virt/
 packages/legacy_drivers/prepare
 tmp
+debug
 .vscode/launch.json
 rtoshealth
 rtosHealthStandalone/
