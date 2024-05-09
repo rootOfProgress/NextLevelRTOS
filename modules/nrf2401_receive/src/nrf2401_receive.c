@@ -8,6 +8,7 @@
 #include "syscfg.h"
 #include "gpio_isr.h"
 #include "crc.h"
+#include "scheduler_public.h"
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
@@ -22,7 +23,7 @@ static unsigned int ackPackagePreloaded;
 GpioObject_t pinb;
 char ack = 'a';
 char rx_answer[33];
-
+GpioObject_t gpio_b8;
 char *receiveBuffer;
 // char rx_answer[16];
 
@@ -73,6 +74,7 @@ typedef struct rxinfo
 
 rxinfo_t rx_data[32];
 static unsigned int index = 0;
+static unsigned int uartOutputIsEnabled = 0;
 
 void memcpy_custom(void *dest, const void *src, unsigned int n)
 {
@@ -95,31 +97,32 @@ unsigned int reverse_byte_order(unsigned int num)
          ((num << 24) & 0xFF000000);
 }
 
-// void  __attribute__((optimize("O0"))) rx_receive_isr()
+unsigned int timeToSendAck;
+
 void rx_receive_isr()
 {
   exti_acknowledge_interrupt(&pinb);
-  char *rx_answer_ptr = &rx_answer[1];
   for (int i = 0; i < 33; i++)
   {
     rx_answer[i] = 0;
   }
-  
+
   while (!(get_nrf_fifo() & 1))
   {
     if (check_for_received_data(&nrf_startup_config, rx_answer))
     {
 
       // @todo: better feed 4byte wise
+      crc_reset();
       for (unsigned int i = 0; i < 27; i++)
       {
-        crc_feed((unsigned int)rx_answer_ptr[i]);
+        crc_feed((unsigned int)rx_answer[i]);
       }
 
       unsigned int crc_expected = crc_read();
       unsigned int crc = 0;
-      memcpy_custom(&crc, &rx_answer_ptr[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
-      
+      memcpy_custom(&crc, &rx_answer[27], sizeof(unsigned int)); // Ensure proper endianness and alignment
+
       crc = reverse_byte_order(crc);
       // @todo: discard package if ack gots lost
       // @todo: if crc==0, then no ack is required
@@ -127,25 +130,34 @@ void rx_receive_isr()
       if (crc == crc_expected)
       {
         disable_rx();
-        // load_tx_buffer(1, &ack);
 
         if (!ackPackagePreloaded)
         {
           load_tx_buffer(1, &ack);
           ackPackagePreloaded = 1;
         }
-        transmit_single_package();
-        // crc_reset();
+        set_pin_on(&gpio_b8);
+        transmit_all_packages();
+        set_pin_off(&gpio_b8);
+        crc_reset();
         ackPackagePreloaded = 0;
-        // if (crc != lastReceivedCRC)
-        // {
-        //   print((char*) rx_answer, 27);
-        // }
-        print(rx_answer_ptr, 27);
+
+        RxConfig_t *rxConfig = (RxConfig_t*) rx_answer;
+        if (rxConfig->identifier == 0x12345678)
+        {
+          uartOutputIsEnabled  = rxConfig->printUart;
+          timeToSettle = rxConfig->timeToSettle;
+          timeToSendAck = rxConfig->timeToSendAck;
+        }
+        if (uartOutputIsEnabled)
+        {
+          print(rx_answer, 27);
+        }
 
         lastReceivedCRC = crc;
         enable_rx_and_listen();
       }
+
     }
     else
     {
@@ -162,7 +174,9 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   index = 0;
   lastReceivedCRC = 0;
   ackPackagePreloaded = 0;
-
+  uartOutputIsEnabled = 0;
+  timeToSendAck = 0;
+  append_os_core_function(read_global_timer);
   // Nrf24l01Registers_t nrf_startup_config;
   // Nrf24l01Registers_t nrf_current_config;
 
@@ -198,7 +212,13 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   clear_rx_dr_flag();
 
   start_listening();
-
+  gpio_b8.pin = 8;
+  gpio_b8.port = 'B';
+  init_gpio(&gpio_b8);
+  set_moder(&gpio_b8, GeneralPurposeOutputMode);
+  set_otyper(&gpio_b8, PushPull);
+  set_pupdr(&gpio_b8, Nothing);
+  set_speed(&gpio_b8, High);
 #define IRQ
 #ifdef IRQ
   pinb.pin = 0;
