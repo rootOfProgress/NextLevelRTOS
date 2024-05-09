@@ -90,6 +90,12 @@ void bootstrap(void)
   //     break;
   //   }
   // }
+
+  // @todo
+  for (unsigned int i = 0x20000000; i < 0x20007000; i += 4)
+  {
+    WRITE_REGISTER(i, 0);
+  }
   init_allocator( max, (unsigned int*) &ram_size );
 
   boot_flags.isColdStart = 1;
