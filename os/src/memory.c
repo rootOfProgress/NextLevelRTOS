@@ -9,7 +9,7 @@
 
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
-const unsigned int NUM_OF_SLOTS = 60;
+const unsigned int NUM_OF_SLOTS = 64;
 unsigned int mutex;
 char is_first_round = 1;
 
@@ -144,10 +144,11 @@ int size_comparator(int a, int b)
 
 void init_allocator(unsigned int start_os_section, unsigned int* ram_size)
 {
-  while ((start_os_section & 0x3) != 0)
+  while ((start_os_section % 8) != 0)
   {
     start_os_section += 1;
   }
+
   MEM_TABLE_START = (unsigned int*) start_os_section;
   USEABLE_MEM_START = MEM_TABLE_START + NUM_OF_SLOTS;
 
@@ -302,6 +303,12 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
       // update offsetadress, size, mark as occupied
       memory_entry->mementry_fields.base_offset = next_useable_chunk;
       memory_entry->mementry_fields.chunk_size = size;
+
+      while (memory_entry->mementry_fields.chunk_size % 8 != 0)
+      {
+        memory_entry->mementry_fields.chunk_size++;
+      }
+
       memory_entry->mementry_fields.is_occupied = 1;
       // memory_entry->mementry_fields.is_dirty = 1;
 
