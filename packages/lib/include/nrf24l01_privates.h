@@ -11,7 +11,7 @@ extern char rx_buffer[RX_BUFFER_SIZE];
 
 enum
 {
-  PackageBufferSize = 32
+  PackageBufferSize = 33
 };
 
 enum
@@ -72,12 +72,8 @@ void set_bit_nrf_register(Nrf24l01RegisterNames_t, char);
 void clear_bit_nrf_register(Nrf24l01RegisterNames_t, char);
 void replace_nrf_register(Nrf24l01RegisterNames_t, char);
 void set_nrf_register_long(Nrf24l01RegisterNames_t, char*);
-void transfer_read(char target_register, unsigned int length, TransferType_t t);
-void transfer_read_wbuffer(char target_register, unsigned int length, TransferType_t t, char *custom_buffer);
-void transfer_write(char target_register, unsigned int length, TransferType_t t, char* payload);
+char* transfer(char target_register, unsigned int length, TransferType_t transferType, char* payload);
 void unset_ce(void);
 void set_ce(void);
 void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
-char get_nrf_register(Nrf24l01RegisterNames_t);
-
 #endif

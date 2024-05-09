@@ -71,7 +71,6 @@ void kill_all_child_tasksR(Tcb_t*);
 void kill_all_child_tasks(void);
 void kill_child_task(unsigned int, Tcb_t*);
 void update_process_statistic(ProcessLifetime_t* process_lifetime);
-unsigned int read_global_timer(void);
 
 // workaround
 void force_pid0_into_running(void);

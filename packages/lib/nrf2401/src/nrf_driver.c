@@ -6,7 +6,12 @@
 
 GpioObject_t gpio_pa5_ce;
 TxObserve_t tx_observe;
-unsigned int (*osCoreFunctions[4])() = {  };
+unsigned int (*osCoreFunctions[6])() = {  };
+static unsigned int current_ptr_index = 0;
+unsigned int timeToSettle;
+unsigned int tStart;
+GpioObject_t gpio_b7;
+
 
 void nrf_power_off()
 {
@@ -20,20 +25,20 @@ void nrf_power_on()
 
 void append_os_core_function(unsigned int (*function)())
 {
-  static unsigned int current_ptr_index = 0;
+
   // asm("bkpt");
   // @todo
   osCoreFunctions[current_ptr_index++] = function;
 }
 
-char get_nrf_status(void)
-{
-  return get_nrf_register(STATUS);
-}
-char get_nrf_fifo(void)
-{
-  return get_nrf_register(FIFO_STATUS);
-}
+// char get_nrf_status(void)
+// {
+//   return get_nrf_register(STATUS);
+// }
+// char get_nrf_fifo(void)
+// {
+//   return get_nrf_register(FIFO_STATUS);
+// }
 char get_nrf_rpd(void)
 {
   return get_nrf_register(RPD);
@@ -42,6 +47,19 @@ char get_nrf_rpd(void)
 TxObserve_t get_current_tx_state(void)
 {
   return tx_observe;
+}
+
+void flush_current_tx_state(void)
+{
+  tx_observe.totalLostPackages = 0;
+  tx_observe.retransmitCount = 0;
+  tx_observe.maxRetransmits = 0;
+  tx_observe.timeUntilAckArrived = 0;
+  tx_observe.totalElapsed = 0;
+  tx_observe.bytesSend = 0;
+  tx_observe.totalRetransmits = 0;
+  tx_observe.signalStrength = 0;
+  tx_observe.totalPackages = 0;
 }
 
 void get_nrf_config(Nrf24l01Registers_t* current_nrf_config)
@@ -100,7 +118,8 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   tx_observe.totalRetransmits = 0;
   tx_observe.signalStrength = 0;
   tx_observe.totalPackages = 0;
-
+    gpio_b7.pin = 7;
+    gpio_b7.port = 'B';
   gpio_pa5_ce.port = 'A';
   gpio_pa5_ce.pin = 5;
   init_gpio(&gpio_pa5_ce);
@@ -116,11 +135,6 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
     clear_bit_nrf_register(CONFIG, PRIM_RX);
   }
   replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
-
-  // if (mode == SLAVE || nrf_regs->en_aa)
-  // {
-  //   replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
-  // }
 
   if (!disable_crc())
   {
@@ -186,7 +200,12 @@ void stop_listening()
 
 void nrf_flush_rx(void)
 {
-  transfer_write(-1, 0, FlushRX, (void*) 0);
+  transfer(-1, 0, FlushRX, (void*) 0);
+}
+
+void nrf_flush_tx(void)
+{
+  transfer(-1, 0, FlushTX, (void*) 0);
 }
 
 static unsigned int check_tx_availability(void)
@@ -213,23 +232,30 @@ unsigned int load_tx_buffer(unsigned int length, char* payload)
   {
     return 0;
   }
-  transfer_write(-1, length, WTxPayload, payload);
+  transfer(-1, length + 1, WTxPayload, payload);
   return 1;
 }
 
-unsigned int transmit_single_package(void)
+unsigned int transmit_single_package(char settle)
 {
   if (!check_tx_availability())
   {
     return 0;
   }
+
+  unsigned int tStart = osCoreFunctions[readTimerFunctionPtr]();
+  unsigned int tEnd;
+
   set_ce();
 
-  for (int i = 0; i < 10; i++)
+  if (settle)
   {
-    // @todo replace with sleep as soon as fw is updated
-  }
 
+    while (((tEnd = osCoreFunctions[readTimerFunctionPtr]()) - tStart) < timeToSettle)
+    {
+      /* code */
+    }
+  }
   unset_ce();
   return 1;
 }
@@ -246,66 +272,70 @@ unsigned int transmit_all_packages(void)
   return 1;
 }
 
-void transmit_with_autoack(TxConfig_t *tx_config, 
+char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config, 
                            char *receivedAckPackage,
                            char *outBuffer)
 {
+  GpioObject_t gpio_b7;
+  gpio_b7.pin = 7;
+  gpio_b7.port = 'B';
+  init_gpio(&gpio_b7);
+
   crc_reset();
   for (unsigned int i = 0; i < 27; i++)
   {
     crc_feed((unsigned int)outBuffer[i]);
   }
+
+  char transmitSucceded = 0;
   unsigned int crc = crc_read();
   char *crc_ptr = (char*) &crc;
-
   for (unsigned int i = 0; i < sizeof(unsigned int); i++)
   {
     outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
   }
-
+  Nrf24l01Registers_t cfg;
   while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
-    load_tx_buffer(32, outBuffer);
-    transmit_single_package();
+    load_tx_buffer(31, outBuffer);
+    transmit_single_package(1);
+
     enable_rx_and_listen();
-    unsigned int tStart = osCoreFunctions[readTimerFunctionPtr]();
-    unsigned int tEnd = 0;
-    while (((tEnd = osCoreFunctions[readTimerFunctionPtr]()) - tStart) < tx_config->autoRetransmitDelay 
-            && !(*receivedAckPackage)) {}
-    
+    set_pin_on(&gpio_b7);
+    tStart = osCoreFunctions[readTimerFunctionPtr]();
+    while ((osCoreFunctions[readTimerFunctionPtr]() - tStart) < tx_config->autoRetransmitDelay) {}
+    set_pin_off(&gpio_b7);
     disable_rx();
+
     if (!(*receivedAckPackage))
     {
       tx_observe.retransmitCount++;
     }
     else
     {
-      tx_observe.timeUntilAckArrived -= tStart;
-      // tx_observe.timeUntilAckArrived >>= 10;
+      tx_observe.timeUntilAckArrived = (tx_observe.timeUntilAckArrived - tStart);
       tx_observe.totalPackages++;
-      tx_observe.bytesSend += 28;
+      tx_observe.bytesSend += 32;
+      transmitSucceded = 1;
       break;
     }
   }
-
   if (tx_observe.retransmitCount == tx_config->retransmitCount)
   {
     tx_observe.totalLostPackages++;
   }
+
   if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
   {
     tx_observe.maxRetransmits = tx_observe.retransmitCount;
+    
   }
   *receivedAckPackage = 0;
-
-  
-  // tx_observe.signalStrength = ((tx_observe.sumOfSuccesfullTransmitted - (tx_observe.totalLostPackages * tx_config->retransmitCount))/tx_observe.sumOfSuccesfullTransmitted) * 100;
+ 
   tx_observe.totalRetransmits += tx_observe.retransmitCount;
-
   tx_observe.signalStrength = (unsigned int)( (float) ( ((float)  tx_observe.totalPackages / ((float)  tx_observe.totalPackages + (float)  tx_observe.totalRetransmits) )) * 100);
-
-
   tx_observe.retransmitCount = 0;
+  return transmitSucceded;
 }
 
 unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers)
@@ -358,46 +388,5 @@ void clear_tx_ds_flag(void)
 
 void nrf_receive_payload(unsigned int payload_length, char* buffer)
 {
-  transfer_read_wbuffer(-1, payload_length, RRxPayload, buffer);
-}
-
-char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer)
-{
-  char ret = 1;
-  int pipe = 7;
-  pipe = (get_nrf_status() >> 1) & 0x7;
-  if (pipe >= 0 && pipe <= 5)
-  {
-    stop_listening();
-
-    switch (pipe)
-    {
-    case 0:
-      nrf_receive_payload(config->rx_pw_p0, response_buffer);
-      break;
-    case 1:
-      nrf_receive_payload(config->rx_pw_p1, response_buffer);
-      break;
-    case 2:
-      nrf_receive_payload(config->rx_pw_p2, response_buffer);
-      break;
-    case 3:
-      nrf_receive_payload(config->rx_pw_p3, response_buffer);
-      break;
-    case 4:
-      nrf_receive_payload(config->rx_pw_p4, response_buffer);
-      break;
-    case 5:
-      nrf_receive_payload(config->rx_pw_p5, response_buffer);
-      break;
-    default:
-      break;
-    }
-    start_listening();
-  }
-  else
-  {
-    ret = 0;
-  }
-  return ret;
+  transfer(-1, payload_length, RRxPayload, buffer);
 }

@@ -35,9 +35,14 @@ def generate_os_version():
 
     # collect gcc version
     raw_output = subprocess.check_output(['arm-none-eabi-gcc', '--version'])
+    version_position = 3
     raw_output_split_by_line = raw_output.decode('utf-8').split('\n')
+
+    if "STM32" in raw_output_split_by_line[0]:
+        version_position = 6
+
     raw_output_split_by_whitespace = raw_output_split_by_line[0].split(' ')
-    gcc_version = raw_output_split_by_whitespace[3].replace('.','')
+    gcc_version = raw_output_split_by_whitespace[version_position].replace('.','')
 
     # write into os header
     path = os.getcwd() + "/../include/runtime.h"
