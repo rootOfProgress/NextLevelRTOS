@@ -1,6 +1,5 @@
 #ifndef NRF24L01_H
 #define NRF24L01_H
-// #include "nrf24l01_privates.h"
 #define W_REGISTER(target_reg) (char) ((char) (1 << 5) | (char) target_reg)
 #define R_REGISTER(target_reg) (char) ((char) (0 << 5) | (char) target_reg)
 
@@ -30,6 +29,16 @@ typedef struct TxObserve
   unsigned int signalStrength;
   unsigned int totalPackages;
 } TxObserve_t;
+
+typedef struct TxObserveBenchmark
+{
+  unsigned int signalStrength;
+  unsigned int timeToSettleTx;
+  unsigned int timeToSettleRx;
+  unsigned int timeToSendAck;
+  unsigned short roundsDone;
+  unsigned short roundsToBeDone;
+} TxObserveBenchmark_t;
 
 typedef struct TxConfig
 {
@@ -443,14 +452,15 @@ void nrf_power_off(void);
 void nrf_power_on(void);
 char configure_device(Nrf24l01Registers_t*, OperatingMode_t);
 void get_nrf_config(Nrf24l01Registers_t*);
-unsigned int transmit_single_package(void);
+unsigned int transmit_single_package(char settle);
 unsigned int transmit_all_packages(void);
 // char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
 unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers);
-void transmit_with_autoack(TxConfig_t *tx_config,
+char transmit_with_autoack(TxConfig_t *tx_config,
                            char *receivedAckPackage,
                            char *outBuffer);
 TxObserve_t get_current_tx_state(void);
+void flush_current_tx_state(void);
 void append_os_core_function(unsigned int (*function_ptr)());
 
 /* --------------------------------------------------- */
@@ -524,6 +534,17 @@ static inline __attribute__((always_inline)) char get_nrf_fifo(void)
   return get_nrf_register(FIFO_STATUS);
 }
 
+
+typedef struct 
+{
+  unsigned int identifier;
+  char printUart;
+  char reserved[3];
+  unsigned int timeToSettle;
+  unsigned int timeToSendAck;
+} RxConfig_t;
+
+
 static inline __attribute__((always_inline)) char get_nrf_status(void)
 {
   return get_nrf_register(STATUS);
@@ -569,4 +590,6 @@ static inline __attribute__((always_inline)) char check_for_received_data(Nrf24l
   }
   return ret;
 }
+
+extern unsigned int timeToSettle;
 #endif
