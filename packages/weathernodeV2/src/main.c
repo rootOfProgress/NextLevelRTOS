@@ -122,7 +122,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
   tx_config.autoRetransmitDelay = 16000;
-  tx_config.retransmitCount = 7;
+  tx_config.retransmitCount = 2;
 
   crc_activate();
   apply_nrf_config(&nrf_registers);
@@ -154,16 +154,24 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   well.fuckit[7] = 0x778899AA;
 
 char array[40];
-for (int i = 0; i < 32; i++) {
-    array[i] = (i % 32) + 1;
-}
+
 
 
 
   // unsigned int payload = 0x99887744;
   // asm("bkpt");
-  load_tx_buffer(31, array);
-  transmit_single_package();
+  // load_tx_buffer(31, array);
+  // transmit_single_package();
+  // for (int j = 0; j < 3; j++)
+  // {
+    for (int i = 0; i < 32; i++) {
+        array[i] = (i % 32) + 1;
+    }
+    transmit_with_autoack(&tx_config, &receivedAckPackage, array);
+  // }
+
+  // transmit_with_autoack(&tx_config, &receivedAckPackage, array);
+  
   NodeFrame_t myNodeFrame;
   memset_byte((void*) &myNodeFrame, sizeof(NodeFrame_t), 89);
   // Initializing and assigning increasing numbers
