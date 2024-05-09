@@ -4,12 +4,19 @@
 #include "tim2_5.h"
 #include "gpio/gpio.h"
 
+// @deprecated
 typedef struct am2302_readings {
     unsigned short rh;
     unsigned short temp;
     char crc;
     char is_valid;
 } Am2302Readings_t;
+
+typedef struct 
+{
+    unsigned short humidity;
+    unsigned short temperature;
+} Am2302Measurements_t;
 
 // all usec
 typedef enum hostTimings {
