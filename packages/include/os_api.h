@@ -21,9 +21,9 @@ static __attribute__((unused)) unsigned int (*sleep)(unsigned int) = (unsigned i
 static __attribute__((unused)) unsigned int (*create_task)(void (*task_addr)(), unsigned int) = (unsigned int (*)(void (*task_addr)() , unsigned int external)) create_task_addr;
 static __attribute__((unused)) unsigned int (*join_task)(unsigned int) = (unsigned int (*)(unsigned int pid_to_wait_for)) join_task_addr;
 static __attribute__((unused)) unsigned int (*memset_byte)(void*, unsigned int, char) = (unsigned int (*)(void* dest, unsigned int number_of_bytes, char pattern)) memset_byte_addr;
-static __attribute__((unused)) void (*link_exti_src)(void (*isr_callback)(), GpioObject_t *gpio_obj) = (unsigned int (*)(void (*isr_callback)(), GpioObject_t *gpio_obj)) link_exti_src_addr;
-static __attribute__((unused)) void (*execute_priviledged)(void (*target_fn)()) = (unsigned int (*)(void (*task_addr)() )) execute_priviledged_addr;
-static __attribute__((unused)) void (*link_adc_isr)(void (*isr_callback)()) = (unsigned int (*)(void (*isr_callback)())) link_adc_src_addr;
+static __attribute__((unused)) void (*link_exti_src)(void (*isr_callback)(), GpioObject_t *gpio_obj) = (void (*)(void (*isr_callback)(), GpioObject_t *gpio_obj)) link_exti_src_addr;
+static __attribute__((unused)) void (*execute_priviledged)(void (*target_fn)()) = (void (*)(void (*task_addr)() )) execute_priviledged_addr;
+static __attribute__((unused)) void (*link_adc_isr)(void (*isr_callback)()) = (void (*)(void (*isr_callback)())) link_adc_src_addr;
 
 static __attribute__((unused)) unsigned int* (*lock_mutex)(void*) = (unsigned int* (*)(void *mutex)) lock_mutex_addr;
 static __attribute__((unused)) unsigned int* (*release_mutex)(void*) = (unsigned int* (*)(void *mutex)) release_mutex_addr;
