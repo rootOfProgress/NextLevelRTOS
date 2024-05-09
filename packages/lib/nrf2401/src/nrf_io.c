@@ -25,7 +25,7 @@ char* transfer(char target_register,
     case WriteRegister:
     case FlushTX:
     case FlushRX:
-        spi_write_discard_rx(tx_buffer, length);
+        spi_write(tx_buffer, length);
         break;
     case ReadRegister:
     case RRxPayload:
