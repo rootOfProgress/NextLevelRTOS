@@ -8,7 +8,10 @@ CFLAGS = -O0  \
 	 -g -mcpu=cortex-m4 -mthumb \
 	 -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 
-SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
+SRC:=$(wildcard ./src/**/*.c) 
+SRC+=$(wildcard ./src/*.c)
+SRC+=../common/globals.c
+
 OBJ:=$(wildcard ./build/*.o)
 
 TARGET = nrf2401

@@ -523,7 +523,7 @@ unsigned int load_tx_buffer(unsigned int length, char* payload);
 void enable_rx_and_listen(void);
 void disable_rx(void);
 void nrf_flush_tx(void);
-
+unsigned int change_channel(char newChannel);
 char get_nrf_register(Nrf24l01RegisterNames_t);
 
 static inline __attribute__((always_inline)) char get_nrf_fifo(void);
@@ -534,14 +534,22 @@ static inline __attribute__((always_inline)) char get_nrf_fifo(void)
   return get_nrf_register(FIFO_STATUS);
 }
 
+typedef enum 
+{
+  OutputToUart = 1 << 0,
+  ChangeChannel = 1 << 1,
+  AdjustTimings = 1 << 2
+} RxConfigFlags_t;
+
 
 typedef struct 
 {
   unsigned int identifier;
-  char printUart;
-  char reserved[3];
-  unsigned int timeToSettle;
-  unsigned int timeToSendAck;
+  char configMask;
+  char channel;
+  char reserved[2];
+  unsigned short timeToSettle;
+  unsigned short timeToSendAck;
 } RxConfig_t;
 
 

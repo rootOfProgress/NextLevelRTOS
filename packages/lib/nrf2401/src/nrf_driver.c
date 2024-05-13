@@ -3,11 +3,10 @@
 #include "gpio/gpio.h"
 #include "spi.h"
 #include "crc.h"
+#include "globals.h"
 
 GpioObject_t gpio_pa5_ce;
 TxObserve_t tx_observe;
-unsigned int (*osCoreFunctions[6])() = {  };
-static unsigned int current_ptr_index = 0;
 unsigned int timeToSettle;
 unsigned int tStart;
 GpioObject_t gpio_b7;
@@ -23,22 +22,6 @@ void nrf_power_on()
   set_bit_nrf_register(CONFIG, 1);
 }
 
-void append_os_core_function(unsigned int (*function)())
-{
-
-  // asm("bkpt");
-  // @todo
-  osCoreFunctions[current_ptr_index++] = function;
-}
-
-// char get_nrf_status(void)
-// {
-//   return get_nrf_register(STATUS);
-// }
-// char get_nrf_fifo(void)
-// {
-//   return get_nrf_register(FIFO_STATUS);
-// }
 char get_nrf_rpd(void)
 {
   return get_nrf_register(RPD);
@@ -108,6 +91,12 @@ unsigned int disable_crc(void)
 {
   clear_bit_nrf_register(CONFIG, 3);
   return (get_nrf_register(CONFIG) & (1 << 3)) == 0;
+}
+
+unsigned int change_channel(char newChannel)
+{
+  replace_nrf_register(RF_CH, newChannel);
+  return get_nrf_register(RF_CH) == newChannel;
 }
 
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)

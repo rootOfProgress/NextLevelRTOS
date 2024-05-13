@@ -9,6 +9,8 @@
 #include "exti.h"
 #include "syscfg.h"
 #include "am2302.h"
+// #include "memory/memory_globals.h"
+
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
@@ -16,11 +18,14 @@
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
 Nrf24l01Registers_t nrf_registers;
-
+Am2302Readings_t readings;
 GpioObject_t pinb;
 TxConfig_t tx_config;
+TxObserve_t observe;
+
 unsigned int tAckReceived;
 char receivedAckPackage;
+char outBuffer[32];
 
 typedef struct 
 {
@@ -107,11 +112,25 @@ static void init_irq()
   exti_detect_falling_edge(&pinb);
 }
 
-void send(char *outBuffer)
+char sendConfig()
 {
-  // receivedAckPackage = 0;
-  nrf_flush_tx();
-  transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+  char outBuffer[32];
+  for (unsigned int i = 0; i < 32; i++)
+  {
+    outBuffer[i] = 0;
+  }
+  RxConfig_t rxConfig;
+  rxConfig.identifier = 0x12345678;
+  rxConfig.configMask = OutputToUart;
+  rxConfig.channel = 3;
+  rxConfig.timeToSendAck = 0;
+  rxConfig.timeToSettle = 0;
+  char *payloadPtr = (char*) &rxConfig;
+  for (unsigned int i = 0; i < sizeof(RxConfig_t); i++)
+  {
+    outBuffer[i] = payloadPtr[i];
+  }
+  return transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
 }
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
@@ -121,86 +140,105 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   receivedAckPackage = 0;
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
-  tx_config.autoRetransmitDelay = 16000;
-  tx_config.retransmitCount = 2;
+  tx_config.autoRetransmitDelay = 9000;
+  tx_config.retransmitCount = 7;
+  timeToSettle = 150;
 
   crc_activate();
   apply_nrf_config(&nrf_registers);
   configure_device(&nrf_registers, MASTER);
   init_irq();
 
-  char outBuffer[32];
   
-  // for (unsigned int i = 0; i < 32; i++)
-  // {
-  //   outBuffer[i] = 0;
-  // }
+  append_os_core_function(read_timer);
+  am2302_init_peripherials(0, 'A');
 
-  unsigned int total = 0;
-  
-  struct pay 
+  unsigned int i, j, am2302Retries;
+  char *transmitterState;
+
+  if (!sendConfig())
   {
-    unsigned int fuckit[8];
+    observe.signalStrength = 9999;
+    print((char*) &observe, sizeof(TxObserve_t)); 
+    return 0;
   };
 
-  struct pay well;
-  well.fuckit[0] = 0xEE22EE22;
-  well.fuckit[1] = 0xFF11FF11;
-  well.fuckit[2] = 0x22334455;
-  well.fuckit[3] = 0x33445566;
-  well.fuckit[4] = 0x44556677;
-  well.fuckit[5] = 0x55667788;
-  well.fuckit[6] = 0x66778899;
-  well.fuckit[7] = 0x778899AA;
-
-char array[40];
-
-
-
-
-  // unsigned int payload = 0x99887744;
-  // asm("bkpt");
-  // load_tx_buffer(31, array);
-  // transmit_single_package();
-  // for (int j = 0; j < 3; j++)
-  // {
-    for (int i = 0; i < 32; i++) {
-        array[i] = (i % 32) + 1;
+  while (1)
+  {
+    am2302Retries = 0;
+    while (am2302Retries++ < 100)
+    {
+      if (am2302_do_measurement(&readings))
+      {
+        break;
+      }
     }
-    transmit_with_autoack(&tx_config, &receivedAckPackage, array);
-  // }
+    char *temperatureSensorData = (char*) &readings;
+    
+    j = 0;
+    i = 0;
 
-  // transmit_with_autoack(&tx_config, &receivedAckPackage, array);
+    char *payloadPtr = outBuffer;
+    
+    // for (i = 0; i < sizeof(Am2302Readings_t); i++) // 6byte
+    // {
+    //   outBuffer[j++] = temperatureSensorData[i];
+    // }
+
+    memcpy_byte((void*) payloadPtr, (void*) temperatureSensorData, sizeof(Am2302Readings_t));
+    payloadPtr += sizeof(Am2302Readings_t);
+
+    memcpy_byte((void*) payloadPtr, (void*) &observe.totalLostPackages, sizeof(unsigned int));
+    payloadPtr += sizeof(unsigned int);
+
+    // transmitterState = (char*) &observe.totalLostPackages;
+
+    // for (i = 0; i < sizeof(unsigned int); i++) // 4byte
+    // {
+    //   outBuffer[j++] = transmitterState[i];
+    // }
+
+    memcpy_byte((void*) payloadPtr, (void*) &observe.totalRetransmits, sizeof(unsigned int));
+    payloadPtr += sizeof(unsigned int);
+
+    // transmitterState = (char*) &observe.totalRetransmits;
+
+    // for (i = 0; i < sizeof(unsigned int); i++) // 4byte
+    // {
+    //   outBuffer[j++] = transmitterState[i];
+    // }
+
+    memcpy_byte((void*) payloadPtr, (void*) &observe.signalStrength, sizeof(unsigned int));
+    payloadPtr += sizeof(unsigned int);
+    // transmitterState = (char*) &observe.signalStrength;
+
+    // for (i = 0; i < sizeof(unsigned int); i++) // 4byte
+    // {
+    //   outBuffer[j++] = transmitterState[i];
+    // }
+
+
+    char nodeInfo = 0xAB;
+    memcpy_byte((void*) payloadPtr, (void*) &nodeInfo, sizeof(char));
+    payloadPtr += sizeof(char);
+    
+    // transmitterState = (char*) &nodeInfo;
+    // for (i = 0; i < sizeof(char); i++) // 1byte
+    // {
+    //   outBuffer[j++] = *transmitterState;
+    // }
+
+    transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+    observe = get_current_tx_state();
+    // print((char*) &observe, sizeof(TxObserve_t));
+    print((char*) &outBuffer, 19);
+    sleep(1000);
+  }
   
   NodeFrame_t myNodeFrame;
   memset_byte((void*) &myNodeFrame, sizeof(NodeFrame_t), 89);
-  // Initializing and assigning increasing numbers
-  // myNodeFrame.metadata.payloadId = 1;
-  // myNodeFrame.metadata.packageNumber = 43;
-  // myNodeFrame.metadata.totalPackages = 3;
-  // myNodeFrame.metadata.reserved = 0;
-  
-
-  // myNodeFrame.environmentdata.totalLostPackages = 4;
-  // myNodeFrame.environmentdata.maxRetransmits = 5;
-  // myNodeFrame.environmentdata.signalStrength = 6;
-  // myNodeFrame.environmentdata.batteryHealth = 7;
-
-  // myNodeFrame.readings.humidity = 8;
-  // myNodeFrame.readings.temperature = 9;
-
-  // char *payloadPtr = (char*) &myNodeFrame;
-  // for (unsigned int i = 0; i < sizeof(NodeFrame_t); i++)
-  // {
-  //   outBuffer[i] = payloadPtr[i];
-  // }
-  // unsigned int tStart = read_timer();
-  // send(outBuffer);
-  // unsigned int tEnd = read_timer();
-  // total += tEnd - tStart;
 
   TxObserve_t observe = get_current_tx_state();
-  observe.totalElapsed = (total) >> 10;
   print((char*) &observe, sizeof(TxObserve_t)); 
 
 
