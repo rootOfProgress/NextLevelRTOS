@@ -63,11 +63,15 @@ int insert_scheduled_task(Tcb_t* tcb)
   {
   case READY:
     if (enqueue_element(running_tasks, (Tcb_t*) tcb) < 0)
+    {
       return -1;
+    }
     break;
   case WAITING:
     if (enqueue_element(waiting_tasks, (Tcb_t*) tcb) < 0)
+    {
       return -1;
+    }
     break;
   default:
     return -1;
