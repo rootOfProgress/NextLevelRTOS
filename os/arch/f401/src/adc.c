@@ -25,6 +25,7 @@ void adc_init(GpioObject_t* gpio_config)
 
     init_gpio(gpio_config);
     set_moder(gpio_config, ANALOG);
+    set_pupdr(gpio_config, Nothing);
 
     // unsigned int *cr2 = &adc_config.adc_registerset->cr2;
     // unsigned int *cr1 = &adc_config.adc_registerset->cr1;
@@ -60,7 +61,7 @@ void adc_setbit_cr2_generic(unsigned int bit_position)
 void adc_acknowledge_interrupt(void)
 {
     unsigned int *sr = &adc_config.adc_registerset->sr;
-    WRITE_REGISTER(sr, READ_REGISTER(sr) & ~(1 << JEOC | 1 << JSTRT));
+    WRITE_REGISTER(sr, READ_REGISTER(sr) & ~(1 << JEOC | 1 << JSTRT | 1 << 4 | 1 << 1));
 
 }
 
