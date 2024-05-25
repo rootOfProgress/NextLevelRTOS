@@ -15,7 +15,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 {   
     rounds = 0;
     GpioObject_t gpio;
-    gpio.pin = 1;
+    gpio.pin = 2;
     gpio.port = 'A';
     adc_init(&gpio);
     adc_enable_interrupts();
