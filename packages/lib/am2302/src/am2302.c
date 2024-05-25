@@ -23,15 +23,14 @@ void am2302_init_peripherials(unsigned int gpio_pin, char gpio_port)
 
 unsigned int __attribute__((optimize("O0"))) am2302_do_measurement(Am2302Readings_t* measurement_results)
 {
-  timer_flush_counter(timerNumber);
+  __asm ("CPSID I");
+  // timer_flush_counter(timerNumber);
 
   // am2302_record
   unsigned int prev_state = 0;
-  unsigned int elapsed;
   unsigned long long result = 0ULL;
   // rh : 39 - 24 | temp: 23 - 8 | crc : 7 - 0
   unsigned long long iteration = 39;
-  unsigned int total = 0;
 
 #ifdef DEBUG
   const int BUFFERS = 64;
@@ -162,5 +161,7 @@ unsigned int __attribute__((optimize("O0"))) am2302_do_measurement(Am2302Reading
   }
 
   set_pin_on(&gpio);
+    __asm ("CPSIE I");
+
   return measurement_results->is_valid;
 }
