@@ -107,7 +107,7 @@ void set_otyper(GpioObject_t* t, OutputTypes_t otype)
     WRITE_REGISTER(&t->gpio_regs->otyper, READ_REGISTER(&t->gpio_regs->otyper) | (otype << (t->pin)));
 }
 
-void toggle_output_pin(GpioObject_t* t)
+void __attribute__((optimize("O0"))) toggle_output_pin(GpioObject_t* t)
 {
-    WRITE_REGISTER(&t->gpio_regs->odr, READ_REGISTER(&t->gpio_regs->odr) & ~(1 << t->port));
+    WRITE_REGISTER(&t->gpio_regs->odr, READ_REGISTER(&t->gpio_regs->odr) ^ (1 << t->pin));
 }
