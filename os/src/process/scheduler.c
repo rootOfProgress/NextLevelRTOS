@@ -209,12 +209,20 @@ int run_scheduler(void)
     0, 0, 0, 0
   }, ResolutionForSleepFunction);
   enable_ccx_ir(TimerForTaskSleep, 1);
+  enable_ccx_ir(TimerForTaskSleep, 2);
+  enable_ccx_ir(TimerForTaskSleep, 3);
+  enable_ccx_ir(TimerForTaskSleep, 4);
 
   // set up global timer. resolution: 1 usec
   // 
   timer_init(TimerForGlobalCounting, (unsigned int[4]) {0,0,0,0}, 1);
+
   timer_flush_counter(TimerForGlobalCounting);
+  timer_flush_counter(TimerForTaskSleep);
+
   timer_start(TimerForGlobalCounting);
+  timer_start(TimerForTaskSleep);
+
   if (running_tasks->size == 0)
   {
     if (!(wakeup_pid(kernel_pids.idle_task)))
@@ -394,9 +402,8 @@ void finish_task(void)
 
 void task_sleep(unsigned int requested_time_to_sleep)
 {
+  // @todo handle timer overflow
   task_sleep_request.pid_of_sleeping_task = ((Tcb_t*) currently_running->data)->general.task_info.pid;
-  set_ccr(TimerForTaskSleep, requested_time_to_sleep, 1);
-  timer_flush_counter(TimerForTaskSleep);
-  timer_start(TimerForTaskSleep);
+  set_ccr(TimerForTaskSleep, timer_read_counter(TimerForTaskSleep) + requested_time_to_sleep, 2);
   block_current_task();
 }
