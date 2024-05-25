@@ -179,7 +179,10 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
     // now, os enters sleep only if the idle runner is the only one in line.
     if (running_tasks->size == 1)
     {
-      sleep();
+      if (!DEBUG)
+      {
+        sleep();
+      }
     }
 
     block_current_task();
