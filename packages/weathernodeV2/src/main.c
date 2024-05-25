@@ -1,3 +1,4 @@
+#include "adc.h"
 #include "gpio/gpio.h"
 #include "test.h"
 #include "spi.h"
@@ -17,39 +18,50 @@
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
-Nrf24l01Registers_t nrf_registers;
-Am2302Readings_t readings;
-GpioObject_t pinb;
-TxConfig_t tx_config;
-TxObserve_t observe;
-
-unsigned int tAckReceived;
-char receivedAckPackage;
-char outBuffer[32];
+typedef struct
+{
+  unsigned short version;
+  unsigned short size;
+} StructHeader_t;
 
 typedef struct 
 {
-  char payloadId;
-  char packageNumber; //@not yet used
-  char totalPackages; //@not yet used
-  char reserved;
+  char nodeNumber;
+  char reserved[3];
 } PayloadMetaData_t;
 
 typedef struct 
 {
   char totalLostPackages;
-  char maxRetransmits;
+  char retransmitsForThisPackage;
   char signalStrength;
-  char batteryHealth;
+  char reserved;
+  unsigned short batteryHealth;
+  char currentChannel;
+  char reserved1[3];
 } DeviceEnvironmentData_t;
 
 typedef struct NodeFrame 
 {
-  PayloadMetaData_t metadata;
-  DeviceEnvironmentData_t environmentdata;
-  Am2302Measurements_t readings;
-} NodeFrame_t;
+  StructHeader_t header;
+  PayloadMetaData_t meta;
+  DeviceEnvironmentData_t environment;
+  Am2302Readings_t readings;
+} NodePackage_t;
 
+Nrf24l01Registers_t nrf_registers;
+Am2302Readings_t readings;
+// NodePackage_t package;
+GpioObject_t pinb;
+GpioObject_t gpio_adc_a1;
+GpioObject_t gpio_a3_notify;
+TxConfig_t tx_config;
+TxObserve_t observe;
+unsigned short battery;
+
+unsigned int tAckReceived;
+char receivedAckPackage;
+char outBuffer[32];
 
 void  __attribute__((optimize("O0"))) tx_receive_isr()
 {
@@ -133,8 +145,30 @@ char sendConfig()
   return transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
 }
 
-int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+void adc_isr()
 {
+    adc_acknowledge_interrupt();
+    exti_acknowledge_interrupt(&gpio_adc_a1);
+    battery = adc_read_regular_channel();
+}
+
+void led()
+{
+  while (1)
+  {
+    toggle_output_pin(&gpio_a3_notify);
+    sleep(1000);
+  }
+}
+
+int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((optimize("O0"))) main(void)
+{
+  memset_byte((void*) outBuffer, 32, 0);
+  NodePackage_t *package = (NodePackage_t*) outBuffer;
+
+  package->header.size = sizeof(NodePackage_t) - sizeof(StructHeader_t);
+  package->meta.nodeNumber = 0;
+
   append_os_core_function(read_timer);
 
   receivedAckPackage = 0;
@@ -153,94 +187,84 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   append_os_core_function(read_timer);
   am2302_init_peripherials(0, 'A');
 
-  unsigned int i, j, am2302Retries;
+  gpio_adc_a1.pin = 1;
+  gpio_adc_a1.port = 'A';
+  adc_init(&gpio_adc_a1);
+  adc_enable_interrupts();
+  adc_turn_on();
+  link_adc_isr(adc_isr);
+
+  gpio_a3_notify.pin = 3;
+  gpio_a3_notify.port = 'A';
+  init_gpio(&gpio_a3_notify);
+  set_moder(&gpio_a3_notify, GeneralPurposeOutputMode);
+  set_pin_on(&gpio_a3_notify);
+
+  unsigned int am2302Retries;
   char *transmitterState;
+
+  // @multiple pid sleep must be implemented/fixed (RTOS_MultipleSleep)
+  // unsigned int pid = create_task(&led, 0);
+  // join_task(pid);
 
   if (!sendConfig())
   {
-    observe.signalStrength = 9999;
-    print((char*) &observe, sizeof(TxObserve_t)); 
+    NodePackage_t *package = (NodePackage_t*) outBuffer;
+    package->header.version = 99;
+    print((char*) &outBuffer, sizeof(NodePackage_t));
     return 0;
   };
 
   while (1)
   {
+    char *payloadPtr = outBuffer;
     am2302Retries = 0;
+
+    // __asm ("CPSID I");
     while (am2302Retries++ < 100)
     {
-      if (am2302_do_measurement(&readings))
+      if (am2302_do_measurement(&package->readings))
       {
         break;
       }
     }
-    char *temperatureSensorData = (char*) &readings;
-    
-    j = 0;
-    i = 0;
 
-    char *payloadPtr = outBuffer;
-    
-    // for (i = 0; i < sizeof(Am2302Readings_t); i++) // 6byte
-    // {
-    //   outBuffer[j++] = temperatureSensorData[i];
-    // }
+    observe = get_current_tx_state();
 
-    memcpy_byte((void*) payloadPtr, (void*) temperatureSensorData, sizeof(Am2302Readings_t));
-    payloadPtr += sizeof(Am2302Readings_t);
+    package->environment.retransmitsForThisPackage = observe.retransmitCount;
+    // @todo : don't cast datatypes
+    package->environment.signalStrength = (char) observe.signalStrength;
+    // @todo : don't cast datatypes
+    package->environment.totalLostPackages = (char) observe.totalLostPackages;
+    package->environment.batteryHealth = battery;
+    package->environment.currentChannel = observe.currentChannel;
 
-    memcpy_byte((void*) payloadPtr, (void*) &observe.totalLostPackages, sizeof(unsigned int));
-    payloadPtr += sizeof(unsigned int);
+    // memcpy_byte((void*) payloadPtr, (void*) &package, sizeof(NodePackage_t));
+    // payloadPtr += sizeof(NodePackage_t);
 
-    // transmitterState = (char*) &observe.totalLostPackages;
+    // memcpy_byte((void*) payloadPtr, (void*) &readings, sizeof(Am2302Readings_t));
+    // payloadPtr += sizeof(Am2302Readings_t);
 
-    // for (i = 0; i < sizeof(unsigned int); i++) // 4byte
-    // {
-    //   outBuffer[j++] = transmitterState[i];
-    // }
+    // memcpy_byte((void*) payloadPtr, (void*) &observe.totalLostPackages, sizeof(unsigned int));
+    // payloadPtr += sizeof(unsigned int);
 
-    memcpy_byte((void*) payloadPtr, (void*) &observe.totalRetransmits, sizeof(unsigned int));
-    payloadPtr += sizeof(unsigned int);
+    // memcpy_byte((void*) payloadPtr, (void*) &observe.totalRetransmits, sizeof(unsigned int));
+    // payloadPtr += sizeof(unsigned int);
 
-    // transmitterState = (char*) &observe.totalRetransmits;
+    // memcpy_byte((void*) payloadPtr, (void*) &observe.signalStrength, sizeof(unsigned int));
+    // payloadPtr += sizeof(unsigned int);
 
-    // for (i = 0; i < sizeof(unsigned int); i++) // 4byte
-    // {
-    //   outBuffer[j++] = transmitterState[i];
-    // }
-
-    memcpy_byte((void*) payloadPtr, (void*) &observe.signalStrength, sizeof(unsigned int));
-    payloadPtr += sizeof(unsigned int);
-    // transmitterState = (char*) &observe.signalStrength;
-
-    // for (i = 0; i < sizeof(unsigned int); i++) // 4byte
-    // {
-    //   outBuffer[j++] = transmitterState[i];
-    // }
-
-
-    char nodeInfo = 0xAB;
-    memcpy_byte((void*) payloadPtr, (void*) &nodeInfo, sizeof(char));
-    payloadPtr += sizeof(char);
-    
-    // transmitterState = (char*) &nodeInfo;
-    // for (i = 0; i < sizeof(char); i++) // 1byte
-    // {
-    //   outBuffer[j++] = *transmitterState;
-    // }
+    // char nodeInfo = 0xAB;
+    // memcpy_byte((void*) payloadPtr, (void*) &nodeInfo, sizeof(char));
+    // payloadPtr += sizeof(char);
 
     transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
-    observe = get_current_tx_state();
-    // print((char*) &observe, sizeof(TxObserve_t));
-    print((char*) &outBuffer, 19);
+    print((char*) &outBuffer, sizeof(NodePackage_t));
+    // request_channel_change(&tx_config, &receivedAckPackage);
+    // __asm ("CPSIE I");
+    adc_start_conv_regular();
+
     sleep(1000);
   }
-  
-  NodeFrame_t myNodeFrame;
-  memset_byte((void*) &myNodeFrame, sizeof(NodeFrame_t), 89);
-
-  TxObserve_t observe = get_current_tx_state();
-  print((char*) &observe, sizeof(TxObserve_t)); 
-
-
   return 0;
 }
