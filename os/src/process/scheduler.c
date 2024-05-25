@@ -104,8 +104,6 @@ char is_task_currently_running(unsigned int pid)
 
 void NO_OPT invalidate_current_task(void)
 {
-  // @todo: move task
-  asm("bkpt");
   ((Tcb_t*) (currently_running->data))->general.task_info.state = INVALID;
   if (DEBUG)
   {
@@ -116,25 +114,48 @@ void NO_OPT invalidate_current_task(void)
 
 char check_tasks_availability(unsigned int pid)
 {
+  char taskExists = 0;
   Node_t *q = get_head_element(waiting_tasks);
 
   if (!q)
+  {
     return 0;
+  }
 
   for (unsigned int i = 0; i < waiting_tasks->size; i++)
   {
     if (q->data->general.task_info.pid == pid && q->data->general.task_info.state == READY)
     {
-      return 1;
+      taskExists = 1;
+      return taskExists;
     }
     q = q->next;
   }
 
-  return 0;
+  q = get_head_element(running_tasks);
+
+  if (!q)
+  {
+    return 0;
+  }
+
+  for (unsigned int i = 0; i < running_tasks->size; i++)
+  {
+    if (q->data->general.task_info.pid == pid && q->data->general.task_info.state == READY)
+    {
+      taskExists = 1;
+      return taskExists;
+    }
+    q = q->next;
+  }
+
+  return taskExists;
 }
 
 void join_task(unsigned int pid_to_wait_for)
 {
+  // @todo this cannot work as it looks in waiting queue while
+  // new tasks are stored in running queue except pid0??
   if (!check_tasks_availability(pid_to_wait_for))
   {
     return;

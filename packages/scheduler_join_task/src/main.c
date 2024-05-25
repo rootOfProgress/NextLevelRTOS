@@ -32,9 +32,9 @@ void __attribute__((__noipa__))  __attribute__((optimize("O0"))) task2_nested(vo
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) task1_nested(void)
 {
-  t1 = read_timer();
   int pid_of_t2_nested = create_task(&task2_nested, 0);
   join_task(pid_of_t2_nested);
+  t1 = read_timer();
 }
 
 void __attribute__((__noipa__))  __attribute__((optimize("O0"))) task3(void)
@@ -56,11 +56,12 @@ char Subtest005_003_join_nested_tasks(void)
 {
   int pid_of_t1_nested = create_task(&task1_nested, 0);
 
-  t0 = read_timer();
   join_task(pid_of_t1_nested);
+  t0 = read_timer();
 
   if (t2 > t1 || t1 > t0 || t2 > t0)
   {
+    asm("bkpt");
     return 0;
   }
 
@@ -88,6 +89,7 @@ char Subtest005_001_join_multiple_tasks(void)
   char result = 1;
 
   join_task(pid_t1);
+
   unsigned int join_t1 = read_timer();
   if (join_t1 < t0)
   {
@@ -102,6 +104,7 @@ char Subtest005_001_join_multiple_tasks(void)
   }
 
   join_task(pid_t3);
+
   unsigned int join_t3 = read_timer();
   if (join_t3 < t3)
   {
