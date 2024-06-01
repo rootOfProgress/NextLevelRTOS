@@ -4,16 +4,18 @@
 
 typedef struct Node Node_t;
 
-typedef struct Node {
-    Node_t* next;
-    Node_t* prev;
-    Tcb_t* data;
+typedef struct Node
+{
+  Node_t* next;
+  Node_t* prev;
+  Tcb_t* data;
 } Node_t;
 
-typedef struct Queue {
-    unsigned int size;
-    Node_t* head;
-    Node_t* tail;
+typedef struct Queue
+{
+  unsigned int size;
+  Node_t* head;
+  Node_t* tail;
 } Queue_t;
 
 void queue_selfcheck(void);

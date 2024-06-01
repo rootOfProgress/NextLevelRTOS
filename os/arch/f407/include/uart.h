@@ -14,19 +14,19 @@ extern unsigned int RE;
 extern unsigned int TE;
 extern unsigned int RXNEIE;
 
-typedef struct UartRegisterMap {
-    unsigned int* sr;
-    unsigned int* dr;
-    unsigned int* brr;
-    unsigned int* cr1;
-    unsigned int* cr2;
-    unsigned int* cr3;
-    unsigned int* gtpr;
+typedef struct UartRegisterMap
+{
+  unsigned int* sr;
+  unsigned int* dr;
+  unsigned int* brr;
+  unsigned int* cr1;
+  unsigned int* cr2;
+  unsigned int* cr3;
+  unsigned int* gtpr;
 } UartRegisterMap_t;
 
 void init_uart(void);
 void print(char *);
 unsigned int __attribute__ ((always_inline)) read_data_register(void);
-
 
 #endif

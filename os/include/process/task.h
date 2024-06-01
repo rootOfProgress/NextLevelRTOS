@@ -4,9 +4,10 @@
 
 #define THUMB_STATE 1 << 24
 
-typedef struct {
-    unsigned int task_size;
-    unsigned int* start_adress;
+typedef struct
+{
+  unsigned int task_size;
+  unsigned int* start_adress;
 } TaskInformation_t;
 
 extern TaskInformation_t tInfo;

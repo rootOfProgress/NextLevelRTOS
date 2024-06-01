@@ -34,7 +34,7 @@ void schedule_kernel_subtask(unsigned int task_number)
   unsigned int idx = 0;
   void (*subtask)() = NULL;
 
-  while(idx++ < maxNumOfWaitingKernelSubtasks && subtasks[idx]){}
+  while (idx++ < maxNumOfWaitingKernelSubtasks && subtasks[idx]) {}
 
   switch (task_number)
   {
@@ -144,7 +144,7 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
 
   {
     unsigned int idx = 0;
-    while(idx++ < maxNumOfWaitingKernelSubtasks)
+    while (idx++ < maxNumOfWaitingKernelSubtasks)
     {
       subtasks[idx] = NULL;
     }
@@ -165,7 +165,7 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
 
     {
       unsigned int idx = 0;
-      while(idx++ < maxNumOfWaitingKernelSubtasks && subtasks[idx])
+      while (idx++ < maxNumOfWaitingKernelSubtasks && subtasks[idx])
       {
         subtasks[idx]();
         subtasks[idx] = NULL;

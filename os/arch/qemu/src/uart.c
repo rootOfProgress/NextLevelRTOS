@@ -16,15 +16,15 @@ USED void get_State(UNUSED unsigned int** internal_rx_state )
 
 void NO_OPT init_uart(__attribute__((unused)) GpioObject_t* o)
 {
-    get_State(&internal_rx_state);
-    *((unsigned int*) USART1_CR) = *((unsigned int*) USART1_CR) | 0x1 << UE | 0x1 << RXNEIE | 0x1 << RE | 0x1 << TE;
-    *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 0x1 << 5;
+  get_State(&internal_rx_state);
+  *((unsigned int*) USART1_CR) = *((unsigned int*) USART1_CR) | 0x1 << UE | 0x1 << RXNEIE | 0x1 << RE | 0x1 << TE;
+  *((unsigned int*) 0xE000E104) = *((unsigned int*) 0xE000E104) | 0x1 << 5;
 }
 
 void print_char(char c)
 {
-    WRITE_REGISTER(USART1_DR,(c));
-    while (!((READ_REGISTER(USART1_SR) & 0x80) != 0));
+  WRITE_REGISTER(USART1_DR, (c));
+  while (!((READ_REGISTER(USART1_SR) & 0x80) != 0));
 }
 
 // unsigned int read_data_register(void)

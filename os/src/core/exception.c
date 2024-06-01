@@ -37,7 +37,7 @@ void NO_OPT kprint(void)
 }
 
 void svcall_isr()
-{  
+{
   __asm volatile (
     "TST lr, #4\n"
     "ITTT NE\n"
@@ -45,13 +45,13 @@ void svcall_isr()
     "STMDBNE r2!, {r4-r11}\n"
     "MSRNE PSP, r2\n"
   );
-  
+
   __asm__("mov %0, r6" : "=r"(svc_number));
 
   switch (svc_number)
   {
   case execPspTask:
-    if (SYSTICK) 
+    if (SYSTICK)
     {
       init_systick(200);
     }
@@ -71,7 +71,7 @@ void svcall_isr()
     if (DEBUG && currently_running)
     {
       Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
-      tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;      
+      tcb_of_current_task->lifetime_info[0].lifetime.voluntary_interrupts++;
     }
     set_pendsv();
     break;
@@ -97,7 +97,7 @@ void svcall_isr()
     restore_psp();
     return;
   case setExtIoCallback:
-    // @todo: really needed? 
+    // @todo: really needed?
     // type_of_io_handler = ModExternalIo;
     unsigned int io_callback_adress;
     __asm__("mov %0, r9" : "=r"(io_callback_adress));
@@ -113,13 +113,13 @@ void svcall_isr()
   case getIoBuffer:
     unsigned int** addr;
     __asm__("mov %0, r9" : "=r"(addr));
-    *addr = (unsigned int*) &rx_state;   
+    *addr = (unsigned int*) &rx_state;
     return;
   case wakeupIoHandler:
     wakeup_pid(kernel_pids.external_io_runner);
-    // this sv call can be possibly invoked during an interrupt (e.g. 
+    // this sv call can be possibly invoked during an interrupt (e.g.
     // nrf2401 exti isr), so it needs to checked if there are psp registered
-    // to restored or not 
+    // to restored or not
     restore_psp_if_threadmode();
     return;
   case disableIrReception:

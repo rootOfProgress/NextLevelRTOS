@@ -74,7 +74,6 @@ enum
   CPU_SCB_SHCSR = 0xE000ED24,
 };
 
-
 enum { STK = 0xE000E010 };
 
 #define AIRCR 0xE000ED0C

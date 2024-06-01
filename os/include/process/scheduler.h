@@ -111,7 +111,7 @@ static inline __attribute__((always_inline)) Node_t* wakeup_pid(unsigned int pid
 
   for (unsigned int i = 0; i < waiting_tasks->size; i++)
   {
-    if (((Tcb_t*)q->data)->general.task_info.pid == pid)
+    if (((Tcb_t * )q->data)->general.task_info.pid == pid)
     {
       isolate_node(waiting_tasks, q);
       move_node(running_tasks, q);
@@ -163,7 +163,6 @@ static inline __attribute__((always_inline)) void switch_task(void)
     force_pid0_into_running();
   }
 }
-
 
 char is_task_currently_running(unsigned int pid);
 

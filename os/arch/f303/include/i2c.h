@@ -1,4 +1,4 @@
-#ifndef I2C_H 
+#ifndef I2C_H
 #define I2C_H
 
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
@@ -25,18 +25,19 @@
 #define TXIS 1
 #define TC 6
 
-typedef struct I2C {
-    unsigned int CR1;
-    unsigned int CR2;
-    unsigned int OAR1;
-    unsigned int OAR2;
-    unsigned int TIMINGR;
-    unsigned int TIMEOUTR;
-    unsigned int ISR;
-    unsigned int ICR;
-    unsigned int PECR;
-    unsigned int RXDR;
-    unsigned int TXDR;
+typedef struct I2C
+{
+  unsigned int CR1;
+  unsigned int CR2;
+  unsigned int OAR1;
+  unsigned int OAR2;
+  unsigned int TIMINGR;
+  unsigned int TIMEOUTR;
+  unsigned int ISR;
+  unsigned int ICR;
+  unsigned int PECR;
+  unsigned int RXDR;
+  unsigned int TXDR;
 } I2C_Regs_t;
 
 void set_write_direction(void);
@@ -46,7 +47,5 @@ void i2c_stop(void);
 void init_i2c(void);
 void write(unsigned int, char *, unsigned int);
 unsigned int read(unsigned int, unsigned int, unsigned int);
-
-
 
 #endif

@@ -72,7 +72,6 @@ void isolate_node(Queue_t* source_queue, Node_t* node)
   }
 }
 
-
 void move_node(Queue_t* target_queue, Node_t* node)
 {
   if (target_queue->size == 0)
