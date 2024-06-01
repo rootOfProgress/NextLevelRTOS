@@ -200,6 +200,12 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   set_moder(&gpio_a3_notify, GeneralPurposeOutputMode);
   set_pin_on(&gpio_a3_notify);
 
+  GpioObject_t sensor_in;
+  sensor_in.pin = 2;
+  sensor_in.port = 'A';
+  init_gpio(&sensor_in);
+  set_moder(&gpio_a3_notify, InputMode);
+
   unsigned int am2302Retries;
   char *transmitterState;
 
@@ -207,13 +213,25 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   // unsigned int pid = create_task(&led, 0);
   // join_task(pid);
 
-  if (!sendConfig())
-  {
-    NodePackage_t *package = (NodePackage_t*) outBuffer;
-    package->header.version = 99;
-    print((char*) &outBuffer, sizeof(NodePackage_t));
-    return 0;
-  };
+  char failureOccured = 0;
+
+  // if (!get_nrf_status())
+  // {
+  //   package->header.version = 98;
+  //   failureOccured = 1;
+  // }
+
+  // if (!sendConfig())
+  // {
+  //   package->header.version = 99;
+  //   failureOccured = 1;
+  // };
+
+  // if (failureOccured)
+  // {
+  //   print((char*) &outBuffer, sizeof(NodePackage_t));
+  //   return 0;
+  // }
 
   while (1)
   {
@@ -229,6 +247,8 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
       }
     }
 
+    package->environment.reserved = am2302Retries;
+
     observe = get_current_tx_state();
 
     package->environment.retransmitsForThisPackage = observe.retransmitCount;
@@ -238,7 +258,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
     package->environment.totalLostPackages = (char) observe.totalLostPackages;
     package->environment.batteryHealth = battery;
     package->environment.currentChannel = observe.currentChannel;
-
+    
     // memcpy_byte((void*) payloadPtr, (void*) &package, sizeof(NodePackage_t));
     // payloadPtr += sizeof(NodePackage_t);
 
