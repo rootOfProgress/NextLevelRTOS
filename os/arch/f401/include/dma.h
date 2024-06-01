@@ -2,6 +2,7 @@
 #define DMA_H
 
 #include "lang.h"
+#include "dma_types.h"
 
 // ISR dma2 stream 5 specifics
 enum {
@@ -70,7 +71,6 @@ typedef struct DmaTransferSpecifics {
     DmaJobType_t dma_job_type;
 } DmaTransferSpecifics_t;
 
-
 extern DmaTransferSpecifics_t dt;
 extern DmaJobType_t dma_interrupt_action;
 
@@ -80,48 +80,6 @@ static inline __attribute__((always_inline)) unsigned int get_stream_offset(unsi
 }
 
 void dma_init(void);
-
-static inline __attribute__((always_inline)) void dma_transfer(
-    DmaTransferSpecifics_t *dma_transfer_config,
-    DmaModes_t dma_mode)
-{
-    DmaStreamRegisterMap_t *dma_streamX_register = (DmaStreamRegisterMap_t*) (Dma2BaseAdress + get_stream_offset(dma_transfer_config->stream_number));
-    // disable device
-    unsigned int crx_result;
-    if ((crx_result = READ_REGISTER(&dma_streamX_register->dma_sXcr)) & 1)
-        WRITE_REGISTER(&dma_streamX_register->dma_sXcr, crx_result & ~1);    
-
-    switch (dma_mode)
-    {
-    case PeripherialToMemory:
-        WRITE_REGISTER(&dma_streamX_register->dma_sXpar, dma_transfer_config->source_address);
-        WRITE_REGISTER(&dma_streamX_register->dma_sXm0ar, dma_transfer_config->destination_address);
-        
-        // only if uart transfer!!
-        // DMAR
-        WRITE_REGISTER(USART1_cr3, READ_REGISTER(USART1_cr3) | 1 << 6);
-        // ir disable
-        WRITE_REGISTER(USART1_cr1, READ_REGISTER(USART1_cr1) & ~(1 << 5));
-        break;
-    case MemoryToPeripherial:
-        WRITE_REGISTER(&dma_streamX_register->dma_sXpar, dma_transfer_config->source_address);
-        WRITE_REGISTER(&dma_streamX_register->dma_sXm0ar, dma_transfer_config->destination_address);
-        break;
-    default:
-        return;
-        break;
-    }
-    WRITE_REGISTER(&dma_streamX_register->dma_sXndtr, dma_transfer_config->ndtr);
-
-    WRITE_REGISTER(&dma_streamX_register->dma_sXcr, 
-        dma_mode << dmaCrDir | 
-        (dma_transfer_config->chsel << dmaCrChsel) | 
-        (dma_transfer_config->minc << dmaCrMinc) |
-        (dma_transfer_config->tcie << dmaCrTcie)
-    );
-    unsigned int dma_sXcr = READ_REGISTER(&dma_streamX_register->dma_sXcr);
-    WRITE_REGISTER(&dma_streamX_register->dma_sXcr, dma_sXcr | 1);
-}
-
+void dma_transfer(DmaTransferSpecifics_t *dma_transfer_config, DmaModes_t dma_mode, SourcePeripherial_t source);
 
 #endif

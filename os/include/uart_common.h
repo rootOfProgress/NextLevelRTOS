@@ -4,7 +4,7 @@
 #include "lang.h"
 #include "memory.h"
 #include "process/task.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 #define MAGIC 0x123456
 #define BUFFERSIZE 4
@@ -29,9 +29,12 @@ typedef enum {
     // UNKNOWN = 0x3,
 } UartStates_t;
 
+extern UartStates_t state;
+extern unsigned char uart_rx_buffer[BUFFERSIZE];
+
 void init_isr(void);
 void setup_transfer(char*, unsigned int);
 void init_transfer_handler(void);
 void transfer_handler(void);
-
+void external_io_runner(void);
 #endif

@@ -6,7 +6,6 @@
 
 #include "os_api.h"
 #include "rcc.h"
-#include "gpio.h"
 #include "uart.h"
 #include "tim2_5.h"
 
@@ -25,15 +24,13 @@ typedef struct MeasurementResults {
 void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
-    timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
-
+    unsigned int tStart, tEnd; 
     for (int j = 0; j < 32; j++)
     {
-        timer_flush_counter(2);
-        timer_start(2);
+        tStart = read_timer();
         SV_YIELD_TASK;
-        timer_stop(2);
-        measurements.results[j] = timer_read_counter(2);  
+        tEnd = read_timer();
+        measurements.results[j] = tEnd - tStart;
     }
         
     print(&measurements.results, 32 * sizeof(int));

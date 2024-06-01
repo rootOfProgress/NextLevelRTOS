@@ -44,6 +44,9 @@
     "scheduler.h": "c",
     "cpu.h": "c",
     "parameters.h": "c",
-    "*.old": "c"
+    "*.old": "c",
+    "cmath": "cpp",
+    "addresses.h": "c"
+    "uart_common.h": "c"
   }
 }

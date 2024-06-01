@@ -6,41 +6,31 @@
 
 #include "os_api.h"
 #include "rcc.h"
-#include "gpio.h"
 #include "uart.h"
 #include "tim2_5.h"
 #include "parameters.h"
 
-static unsigned int start_measurement = 0b010;
-static unsigned int stop_measurement = 0b111;
-
-void spin()
-{
-
-        
-}
 typedef struct MeasurementResults {
     unsigned int results[32]; 
 } MeasurementResults_t;
 
 void  __attribute__((__noipa__))  __attribute__((optimize("O0"))) benchmark(unsigned int alloc_size, MeasurementResults_t *measurements, unsigned int round)
 {
-    timer_flush_counter(2);
-    timer_start(2);
+    unsigned int tStart, tEnd; 
+    tStart = read_timer();
     unsigned int *t = allocate(alloc_size);
-    timer_stop(2);
+    tEnd = read_timer();
     deallocate(t);
-    measurements->results[round] = timer_read_counter(2);  
+    measurements->results[round] = tEnd - tStart;
 }
 
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
-    timer_init(2, 1, (char[4]) {0,0,0,0}, 1);
-
     for (int j = 0; j < 32; j++)
     {
         benchmark(alloc_chunks[j], &measurements, j);
     }
-    print(&measurements.results, 32 * sizeof(int));
+    print((char*) &measurements.results, 32 * sizeof(int));
+    return 0;
 }

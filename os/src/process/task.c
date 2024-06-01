@@ -6,6 +6,7 @@
 #include "panic.h"
 #include "data/list.h"
 
+// @todo
 #define STACK_SIZE 1536
 
 unsigned int pid_of_transferhandler;

@@ -1,7 +1,7 @@
 /*
  * OS Core specific includes
  */
-#include "exception.h"
+#include "core/exception.h"
 #include "process/scheduler.h"
 #include "process/task.h"
 #include "uart_common.h"
@@ -11,7 +11,7 @@
 /*
  * Device specific includes
  */
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "i2c.h"
 #include "tim2_5.h"
 #include "uart.h"
@@ -22,10 +22,11 @@
 
 unsigned int __errno = 0;
 
+// @todo: call gpio / uart driver directly
 void setup_devices(void)
 {
   GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
-  init_isr();
   init_uart(t);
+  init_isr();
 }
 

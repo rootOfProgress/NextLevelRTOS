@@ -3,10 +3,19 @@
 
 #define RAM_START 0x20000000
 
+#include "runtime_types.h"
+#include "health.h"
+
 typedef struct MemoryResult {
     unsigned int* start_address;
     unsigned int* end_address;
 } MemoryResult_t;
+
+typedef struct MemoryStatisticLocal {
+    unsigned int num_of_allocs;
+    unsigned int num_of_deallocs;
+    unsigned int ram_size;
+} MemoryStatisticLocal_t;
 
 typedef union MemoryEntry
 {
@@ -20,27 +29,12 @@ typedef union MemoryEntry
     unsigned int raw;
 } MemoryEntry_t;
 
-// 40 byte
-typedef struct MemoryStatistic {
-    unsigned int num_of_allocs;
-    unsigned int num_of_deallocs;
-    unsigned int ram_size;
-    unsigned int total_byte_alloced;
-    unsigned int total_byte_used;
-    unsigned int git_hash;
-    unsigned int magic;
-    short debug_mode;
-    short systick_enabled;
-    unsigned int failed_tasks : 8, finished_tasks : 8, waiting_tasks : 8, running_tasks : 8;
-    unsigned int os_version;
-} MemoryStatistic_t;
-
 
 unsigned int* allocate(unsigned int);
 unsigned int* allocateR(unsigned int,unsigned int,unsigned int);
 unsigned int deallocate(unsigned int*);
 
-void update_memory_statistic(void);
+void update_memory_statistic(MemoryLifetime_t *lifetime_info);
 void init_allocator(unsigned int,unsigned int*);
 void init_process_allocator(unsigned int*);
 void swap(char*);
@@ -50,7 +44,6 @@ void defrag(void);
 int size_comparator(int, int);
 int offset_comparator(int, int);
 
-extern MemoryStatistic_t volatile mstat;
 extern void lock_mutex(void * mutex);
 extern void release_mutex(void * mutex);
 

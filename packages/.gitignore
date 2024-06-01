@@ -1,1 +1,6 @@
-prepare
+output_*
+**/*.ld
+!linkscripts/*
+**/*.orig
+**/prepare
+**/*.a

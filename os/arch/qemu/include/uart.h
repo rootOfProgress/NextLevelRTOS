@@ -1,6 +1,6 @@
 #ifndef UART_H
 #define UART_H
-#include "gpio.h"
+#include "gpio/gpio.h"
 #include "lang.h"
 
 enum { Usart1Baseadress = 0x40011000 };
@@ -28,7 +28,7 @@ typedef struct UartRegisterMap {
 
 void init_uart(GpioObject_t*);
 void print_char(char c);
-// unsigned int read_data_register(void);
+extern unsigned int* internal_rx_state;
 
 static inline __attribute__((always_inline)) char read_data_register(void)
 {

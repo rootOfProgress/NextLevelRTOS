@@ -1,14 +1,11 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#define GIT_HASH 0x674092ce;
-#define OS_VERSION 12062023;
+#define GIT_HASH 0x7a5b6acb;
+#define OS_VERSION 23032024;
+#define GCC_VERSION 1320;
 
-typedef enum KernelErrorCodes {
-    SCHEDULER_INIT_FAILED,
-    TASK_CREATION_FAILED,
-    KERNEL_INIT_SUCCEDED
-} KernelErrorCodes_t;
+#include "runtime_types.h"
 
 /**
  * 
@@ -27,5 +24,31 @@ typedef enum KernelErrorCodes {
  * 
  */
 void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void);
+
+/**
+ * @brief Schedule a kernel subtask.
+ * 
+ * This function schedules a kernel subtask identified by its task number.
+ * 
+ * @param task_number The task number of the kernel subtask to be scheduled.
+ */
+void schedule_kernel_subtask(unsigned int task_number);
+
+typedef enum IoChannel {
+    OsInternalIo,
+    ModExternalIo
+} IoChannel_t;
+
+enum KernelTasks
+{
+    statisticManager = 0,
+    transferManager = 1,
+};
+
+enum { maxNumOfWaitingKernelSubtasks = 3 };
+
+extern void (*io_handler) (unsigned int uart_rx_buffer);
+extern IoChannel_t type_of_io_handler; 
+extern unsigned int rx_state;
 
 #endif

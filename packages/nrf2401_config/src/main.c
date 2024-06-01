@@ -1,4 +1,3 @@
-#include "gpio.h"
 #include "test.h"
 #include "spi.h"
 #include "nrf24l01.h"
@@ -20,6 +19,7 @@ Nrf24l01Registers_t nrf24l01_regs;
 
 int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {   
+    // driver handels that
     // init_spi();
 
     Nrf24l01Registers_t current_nrf_config;
