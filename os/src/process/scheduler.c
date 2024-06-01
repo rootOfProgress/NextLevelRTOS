@@ -62,11 +62,11 @@ int insert_scheduled_task(Tcb_t* tcb)
   switch (tcb->general.task_info.state)
   {
   case READY:
-    if (enqueue_element(running_tasks, (Tcb_t*) tcb) < 0)
+    if (enqueue_element(running_tasks, (Tcb_t * ) tcb) < 0)
       return -1;
     break;
   case WAITING:
-    if (enqueue_element(waiting_tasks, (Tcb_t*) tcb) < 0)
+    if (enqueue_element(waiting_tasks, (Tcb_t * ) tcb) < 0)
       return -1;
     break;
   default:
@@ -81,7 +81,6 @@ void reboot(RebootTypes_t reboot_type)
   boot_flags.reboot_type = reboot_type;
   soft_reset();
 }
-
 
 char is_task_currently_running(unsigned int pid)
 {
@@ -156,7 +155,6 @@ void kill_all_child_tasksR(Tcb_t* parent)
   }
 }
 
-
 void kill_all_child_tasks(void)
 {
   List_t* child_tasks;
@@ -165,7 +163,6 @@ void kill_all_child_tasks(void)
   SingleLinkedNode_t* q = child_tasks->head;
   kill_all_child_tasksR((Tcb_t*) q->data);
 }
-
 
 void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
 {
@@ -182,7 +179,7 @@ void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
   // @todo Warning, unbounded while loop!
   while (q)
   {
-    if (((Tcb_t*)q->data)->general.task_info.pid == pid_of_child)
+    if (((Tcb_t * )q->data)->general.task_info.pid == pid_of_child)
     {
       ((Tcb_t*)q->data)->general.task_info.state = INVALID;
       return;
@@ -194,7 +191,7 @@ void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
 
 unsigned int read_global_timer(void)
 {
-  return timer_read_counter(TimerForGlobalCounting); 
+  return timer_read_counter(TimerForGlobalCounting);
 }
 
 int run_scheduler(void)
@@ -207,8 +204,11 @@ int run_scheduler(void)
   enable_ccx_ir(TimerForTaskSleep, 1);
 
   // set up global timer. resolution: 1 usec
-  // 
-  timer_init(TimerForGlobalCounting, (unsigned int[4]) {0,0,0,0}, 1);
+  //
+  timer_init(TimerForGlobalCounting, (unsigned int[4])
+  {
+    0, 0, 0, 0
+  }, 1);
   timer_flush_counter(TimerForGlobalCounting);
   timer_start(TimerForGlobalCounting);
   if (running_tasks->size == 0)
@@ -240,7 +240,7 @@ void force_pid0_into_running(void)
 
   for (unsigned int i = 0; i < running_tasks->size; i++)
   {
-    if (((Tcb_t*)q->data)->general.task_info.pid == 0)
+    if (((Tcb_t * )q->data)->general.task_info.pid == 0)
     {
       ((Tcb_t*)q->data)->general.task_info.state = READY;
       currently_running = q;
@@ -256,8 +256,8 @@ void __attribute__ ((hot)) pendsv_isr(void)
   disable_irq();
   if (DEBUG)
   {
-      process_stats.num_of_pendsv++;
-      // Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
+    process_stats.num_of_pendsv++;
+    // Tcb_t* tcb_of_current_task = ((Tcb_t*)currently_running->data);
   }
 
   __asm volatile ("mrs %0, psp" : "=r"(((Tcb_t*) task_to_preserve->data)->sp));
@@ -331,28 +331,27 @@ void collect_os_statistics(char* statistic)
   }
 }
 
-
 void clean_up_task(Tcb_t* t, Node_t* obsolete_node)
 {
   if (t->general.task_info.is_external)
   {
-    if (!deallocate((unsigned int*) t->code_section))
+    if (!deallocate((unsigned int * ) t->code_section))
       invoke_panic(MEMORY_DEALLOC_FAILED);
   }
 
-  if (!deallocate((unsigned int*) t->stacksection_lower_bound))
+  if (!deallocate((unsigned int * ) t->stacksection_lower_bound))
   {
     invoke_panic(MEMORY_DEALLOC_FAILED);
   }
 
-  if (!deallocate((unsigned int*) t))
+  if (!deallocate((unsigned int * ) t))
   {
     invoke_panic(MEMORY_DEALLOC_FAILED);
   }
 
   Node_t* old_element = dequeue_element(running_tasks, obsolete_node);
 
-  if (!deallocate((unsigned int*) old_element))
+  if (!deallocate((unsigned int * ) old_element))
     invoke_panic(MEMORY_DEALLOC_FAILED);
 }
 

@@ -21,18 +21,17 @@ static inline __attribute__((always_inline)) void restore_psp()
   );
 }
 
-
 /**
- * 
+ *
  * @param: None
  * @return: None
- * 
+ *
  * This function restores the not-automatically saved registers (i.e. r4 - r11) from the stack,
  * which adress is provided in register r2. First, the link register is checked if bit 2 LSB is set, that means:
  * // @todo : makes no sense right now
- * * ThreadMode and MSP: 0xFFFFFFF9 & 0x4 -> 0   
- * * ThreadMode and PSP: 0xFFFFFFFD & 0x4 -> 
- * 
+ * * ThreadMode and MSP: 0xFFFFFFF9 & 0x4 -> 0
+ * * ThreadMode and PSP: 0xFFFFFFFD & 0x4 ->
+ *
  */
 static inline __attribute__((always_inline)) void restore_psp_if_threadmode()
 {

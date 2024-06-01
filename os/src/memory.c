@@ -6,7 +6,6 @@
 #include "uart_common.h"
 #include "data/quicksort.h"
 
-
 static unsigned int* MEM_TABLE_START = 0;
 static unsigned int* USEABLE_MEM_START = 0;
 const unsigned int NUM_OF_SLOTS = 64;
@@ -30,7 +29,6 @@ void swap(char* buffer)
   *(buffer + 1) = *(buffer + 2);
   *(buffer + 2) = tmp;
 }
-
 
 void swap_endianess(char* buffer)
 {
@@ -140,7 +138,6 @@ int size_comparator(int a, int b)
   }
   return 0;
 }
-
 
 void init_allocator(unsigned int start_os_section, unsigned int* ram_size)
 {

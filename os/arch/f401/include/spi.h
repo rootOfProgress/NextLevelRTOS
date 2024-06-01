@@ -19,15 +19,15 @@ enum { Spi1BaseAdress = 0x40013000 };
 
 typedef struct
 {
-    unsigned int cr1;
-    unsigned int cr2;
-    unsigned int sr;
-    unsigned int dr;
-    unsigned int crcpr;
-    unsigned int rxcrcr;
-    unsigned int txcrcr;
-    unsigned int i2scfgr;
-    unsigned int i2spr;
+  unsigned int cr1;
+  unsigned int cr2;
+  unsigned int sr;
+  unsigned int dr;
+  unsigned int crcpr;
+  unsigned int rxcrcr;
+  unsigned int txcrcr;
+  unsigned int i2scfgr;
+  unsigned int i2spr;
 } SpiRegisterMap_t;
 
 void init_spi(void);

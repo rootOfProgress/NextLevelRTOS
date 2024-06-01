@@ -8,7 +8,7 @@ void dma_init(void)
 {
 }
 
-// dummy 
+// dummy
 void dma2_stream5_ir_handler(void)
 {
 }

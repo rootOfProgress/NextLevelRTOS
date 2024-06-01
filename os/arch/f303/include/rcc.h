@@ -15,20 +15,21 @@
 #define TIM15EN 16
 #define I2C1EN 21
 
-typedef struct Rcc {
-    unsigned int* cr;
-    unsigned int* cfgr;
-    unsigned int* cir;
-    unsigned int* apb2rstr;
-    unsigned int* apb1rstr;
-    unsigned int* ahbenr;
-    unsigned int* apb2enr;
-    unsigned int* apb1enr;
-    unsigned int* bdcr;
-    unsigned int* csr;
-    unsigned int* ahbrstr;
-    unsigned int* cfgr2;
-    unsigned int* cfgr3;
+typedef struct Rcc
+{
+  unsigned int* cr;
+  unsigned int* cfgr;
+  unsigned int* cir;
+  unsigned int* apb2rstr;
+  unsigned int* apb1rstr;
+  unsigned int* ahbenr;
+  unsigned int* apb2enr;
+  unsigned int* apb1enr;
+  unsigned int* bdcr;
+  unsigned int* csr;
+  unsigned int* ahbrstr;
+  unsigned int* cfgr2;
+  unsigned int* cfgr3;
 } RccRegisterMap_t;
 
 #endif

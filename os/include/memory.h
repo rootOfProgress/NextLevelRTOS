@@ -6,36 +6,37 @@
 #include "runtime_types.h"
 #include "health.h"
 
-typedef struct MemoryResult {
-    unsigned int* start_address;
-    unsigned int* end_address;
+typedef struct MemoryResult
+{
+  unsigned int* start_address;
+  unsigned int* end_address;
 } MemoryResult_t;
 
-typedef struct MemoryStatisticLocal {
-    unsigned int num_of_allocs;
-    unsigned int num_of_deallocs;
-    unsigned int ram_size;
+typedef struct MemoryStatisticLocal
+{
+  unsigned int num_of_allocs;
+  unsigned int num_of_deallocs;
+  unsigned int ram_size;
 } MemoryStatisticLocal_t;
 
 typedef union MemoryEntry
 {
-    struct
-    {
-        // unsigned int is_occupied : 1, is_dirty : 1, chunk_size : 15, base_offset : 16;
-        unsigned int is_occupied : 1, chunk_size : 15, base_offset : 16;
-        // short base_offset;
-    } mementry_fields;
+  struct
+  {
+    // unsigned int is_occupied : 1, is_dirty : 1, chunk_size : 15, base_offset : 16;
+    unsigned int is_occupied : 1, chunk_size : 15, base_offset : 16;
+    // short base_offset;
+  } mementry_fields;
 
-    unsigned int raw;
+  unsigned int raw;
 } MemoryEntry_t;
 
-
 unsigned int* allocate(unsigned int);
-unsigned int* allocateR(unsigned int,unsigned int,unsigned int);
+unsigned int* allocateR(unsigned int, unsigned int, unsigned int);
 unsigned int deallocate(unsigned int*);
 
 void update_memory_statistic(MemoryLifetime_t *lifetime_info);
-void init_allocator(unsigned int,unsigned int*);
+void init_allocator(unsigned int, unsigned int*);
 void init_process_allocator(unsigned int*);
 void swap(char*);
 void memset_byte(void*, unsigned int, char);
@@ -49,7 +50,7 @@ extern void release_mutex(void * mutex);
 
 static inline void os_memcpy(char* dst, char data)
 {
-    *dst = data;
+  *dst = data;
 }
 
 #endif
