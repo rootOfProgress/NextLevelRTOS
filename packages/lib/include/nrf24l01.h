@@ -8,6 +8,11 @@ void power_on();
 
 enum
 {
+  endpointIsRaspberryPi = 1
+};
+
+enum
+{
   PRIM_RX = 0,
   PWR_UP = 1,
   CRCO = 2,
@@ -43,7 +48,7 @@ typedef struct TxObserveBenchmark
 
 typedef struct TxConfig
 {
-  unsigned int autoRetransmitDelay;
+  unsigned int autoRetransmitDelay; // usec
   unsigned int retransmitCount;
 } TxConfig_t;
 

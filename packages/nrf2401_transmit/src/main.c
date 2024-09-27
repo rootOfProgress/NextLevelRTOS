@@ -46,7 +46,8 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
 
 #endif
   /************ 1Mbps data rate, 0dBm ***************/
-  nrf_registers->rf_setup = 6;
+  // nrf_registers->rf_setup = 6;
+  nrf_registers->rf_setup = 7;
 
   /************ 5 byte address width ***************/
   nrf_registers->setup_aw = 3;
@@ -138,7 +139,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
   memset_byte((void*) &observe, sizeof(TxObserve_t), 0);
 
-  tx_config.autoRetransmitDelay = 9000;
+  tx_config.autoRetransmitDelay = 130000;
   tx_config.retransmitCount = 7;
   timeToSettle = 150;
 
@@ -146,24 +147,25 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   apply_nrf_config(&nrf_registers);
   configure_device(&nrf_registers, MASTER);
   init_irq();
-  GpioObject_t gpio_b1;
-  GpioObject_t gpio_b7;
+  GpioObject_t gpio_b1_button;
+  GpioObject_t gpio_b7_debug_timetracking;
 
-  gpio_b1.pin = 2;
-  gpio_b1.port = 'B';
-  init_gpio(&gpio_b1);
-  set_moder(&gpio_b1, InputMode);
-  set_otyper(&gpio_b1, PushPull);
-  set_pupdr(&gpio_b1, Nothing);
-  set_speed(&gpio_b1, High);
+  gpio_b1_button.pin = 2;
+  gpio_b1_button.port = 'B';
+  init_gpio(&gpio_b1_button);
+  set_moder(&gpio_b1_button, InputMode);
+  set_otyper(&gpio_b1_button, PushPull);
+  set_pupdr(&gpio_b1_button, Nothing);
+  set_speed(&gpio_b1_button, High);
 
-  gpio_b7.pin = 7;
-  gpio_b7.port = 'B';
-  init_gpio(&gpio_b7);
-  set_moder(&gpio_b7, GeneralPurposeOutputMode);
-  set_otyper(&gpio_b7, PushPull);
-  set_pupdr(&gpio_b7, Nothing);
-  set_speed(&gpio_b7, High);
+  // Button to fire transmit event
+  gpio_b7_debug_timetracking.pin = 7;
+  gpio_b7_debug_timetracking.port = 'B';
+  init_gpio(&gpio_b7_debug_timetracking);
+  set_moder(&gpio_b7_debug_timetracking, GeneralPurposeOutputMode);
+  set_otyper(&gpio_b7_debug_timetracking, PushPull);
+  set_pupdr(&gpio_b7_debug_timetracking, Nothing);
+  set_speed(&gpio_b7_debug_timetracking, High);
 
   char outBuffer[32];
   for (unsigned int i = 0; i < 32; i++)
@@ -173,7 +175,6 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
 
   unsigned int btnPressed = 0;
   unsigned int lastPressed = 0;
-
   // if (sendConfig())
   // {
   //   if (!change_channel(4))
@@ -185,13 +186,19 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
   // }
   while (1)
   {
+#ifdef SEND_BY_PRESS_BUTTON
     if (!read_pin(&gpio_b1))
     {
-      normal(outBuffer, &gpio_b7);
+      normal(outBuffer, &gpio_b7_debug_timetracking);
       sleep(20);
       btnPressed = 0;
     }
+#endif
+    normal(outBuffer, &gpio_b7_debug_timetracking);
+    sleep(500);
+#ifdef SEND_BY_PRESS_BUTTON
     SV_YIELD_TASK;
+#endif
   }
   return 0;
 }
