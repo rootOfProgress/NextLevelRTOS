@@ -4,7 +4,7 @@
 enum { Spi1BaseAdress = 0x40013000 };
 
 #define CPHA 0
-#define CPOL 1
+#define CPOL_NONHAL 1
 #define SPE 6
 #define MSTR 2
 #define SSI 8

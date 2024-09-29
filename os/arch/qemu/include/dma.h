@@ -95,4 +95,7 @@ static inline __attribute__((always_inline)) void dma_transfer(
 {
 }
 
+void DMA_setInitialConfig(DmaTransferSpecifics_t* config);
+
+
 #endif

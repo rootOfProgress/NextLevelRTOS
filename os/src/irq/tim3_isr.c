@@ -3,13 +3,24 @@
 
 void __attribute__((optimize("O0"))) tim3_isr_handler(void)
 {
-  unsigned tim_sr = timer_get_sr(3);
-  if (tim_sr & (1 << 1))
+  unsigned tim_sr = timer_get_sr(TimerForTaskSleep);
+  
+  if (tim_sr & (1 << CC1IF))
   {
-    timer_stop(3);
-
-    // acknowledge ir reception
-    timer_set_sr(3, tim_sr & ~(1 << 1));
-    wakeup_pid(task_sleep_request.pid_of_sleeping_task);
+    timer_set_sr(TimerForTaskSleep, tim_sr & ~(1 << CC1IF));
   }
+  else if (tim_sr & (1 << CC2IF))
+  {
+    timer_set_sr(TimerForTaskSleep, tim_sr & ~(1 << CC2IF));
+  }
+  else if (tim_sr & (1 << CC3IF))
+  {
+    timer_set_sr(TimerForTaskSleep, tim_sr & ~(1 << CC3IF));
+  }
+  else if (tim_sr & (1 << CC4IF))
+  {
+    timer_set_sr(TimerForTaskSleep, tim_sr & ~(1 << CC4IF));
+  }
+
+  wakeup_pid(task_sleep_request.pid_of_sleeping_task);
 }

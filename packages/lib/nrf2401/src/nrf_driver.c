@@ -3,15 +3,14 @@
 #include "gpio/gpio.h"
 #include "spi.h"
 #include "crc.h"
+#include "globals.h"
+#include "soft_crc.h"
 
 GpioObject_t gpio_pa5_ce;
 TxObserve_t tx_observe;
-unsigned int (*osCoreFunctions[6])() = {  };
-static unsigned int current_ptr_index = 0;
 unsigned int timeToSettle;
 unsigned int tStart;
 GpioObject_t gpio_b7;
-
 
 void nrf_power_off()
 {
@@ -23,22 +22,6 @@ void nrf_power_on()
   set_bit_nrf_register(CONFIG, 1);
 }
 
-void append_os_core_function(unsigned int (*function)())
-{
-
-  // asm("bkpt");
-  // @todo
-  osCoreFunctions[current_ptr_index++] = function;
-}
-
-// char get_nrf_status(void)
-// {
-//   return get_nrf_register(STATUS);
-// }
-// char get_nrf_fifo(void)
-// {
-//   return get_nrf_register(FIFO_STATUS);
-// }
 char get_nrf_rpd(void)
 {
   return get_nrf_register(RPD);
@@ -110,6 +93,36 @@ unsigned int disable_crc(void)
   return (get_nrf_register(CONFIG) & (1 << 3)) == 0;
 }
 
+unsigned int change_channel(unsigned char newChannel)
+{
+  if (newChannel > 126)
+  {
+    return 0;
+  }
+  replace_nrf_register(RF_CH, newChannel);
+  return get_nrf_register(RF_CH) == newChannel;
+}
+
+void request_channel_change(TxConfig_t *tx_config, char *receivedAckPackage)
+{
+  char outBuffer[32];
+  for (unsigned int i = 0; i < 32; i++)
+  {
+    outBuffer[i] = 0;
+  }
+  RxConfig_t *rxConfig = (RxConfig_t*) outBuffer;
+  rxConfig->identifier = 0x12345678;
+  rxConfig->configMask = ChangeChannel;
+
+  rxConfig->channel = ((get_nrf_register(RF_CH) + 1) % 126);
+
+  if (transmit_with_autoack(tx_config, receivedAckPackage, outBuffer))
+  {
+    change_channel(rxConfig->channel);
+    tx_observe.currentChannel = rxConfig->channel;
+  }
+}
+
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
 {
   init_spi();
@@ -118,8 +131,8 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   tx_observe.totalRetransmits = 0;
   tx_observe.signalStrength = 0;
   tx_observe.totalPackages = 0;
-    gpio_b7.pin = 7;
-    gpio_b7.port = 'B';
+  // gpio_b7.pin = 7;
+  // gpio_b7.port = 'B';
   gpio_pa5_ce.port = 'A';
   gpio_pa5_ce.pin = 5;
   init_gpio(&gpio_pa5_ce);
@@ -152,13 +165,14 @@ char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) Ope
   set_nrf_register_long(TX_ADDR, nrf_regs->tx_addr);
 
   replace_nrf_register(RF_CH, nrf_regs->rf_ch);
+  tx_observe.currentChannel = nrf_regs->rf_ch;
   replace_nrf_register(RF_SETUP, nrf_regs->rf_setup);
   replace_nrf_register(EN_AA, nrf_regs->en_aa);
   replace_nrf_register(EN_RXADDR, nrf_regs->en_rxaddr);
   replace_nrf_register(SETUP_AW, nrf_regs->setup_aw);
   replace_nrf_register(SETUP_RETR, nrf_regs->setup_retr);
   // replace_nrf_register(CONFIG, nrf_regs->config);
-  
+
   nrf_power_on();
 
   {
@@ -267,33 +281,47 @@ unsigned int transmit_all_packages(void)
     return 0;
   }
   set_ce();
-  while (!(get_nrf_register(FIFO_STATUS) & (1 << 4))){}
+  while (!(get_nrf_register(FIFO_STATUS) & (1 << 4))) {}
   unset_ce();
   return 1;
 }
 
-char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config, 
-                           char *receivedAckPackage,
-                           char *outBuffer)
+char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config,
+    char *receivedAckPackage,
+    char *outBuffer)
 {
-  GpioObject_t gpio_b7;
-  gpio_b7.pin = 7;
-  gpio_b7.port = 'B';
-  init_gpio(&gpio_b7);
+  // GpioObject_t gpio_b7_timetracking;
+  // gpio_b7_timetracking.pin = 7;
+  // gpio_b7_timetracking.port = 'B';
+  // init_gpio(&gpio_b7_timetracking);
 
   crc_reset();
+  unsigned int crc = 0xFFFFFFFF;
   for (unsigned int i = 0; i < 27; i++)
   {
-    crc_feed((unsigned int)outBuffer[i]);
+    if (endpointIsRaspberryPi)
+    {
+      crc = soft_crc32(crc, outBuffer[i]);
+    }
+    else
+    {
+      crc_feed((unsigned int)outBuffer[i]);
+    }
   }
 
   char transmitSucceded = 0;
-  unsigned int crc = crc_read();
+
+  if (!endpointIsRaspberryPi)
+  {
+    crc = crc_read();
+  }
+
   char *crc_ptr = (char*) &crc;
   for (unsigned int i = 0; i < sizeof(unsigned int); i++)
   {
     outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
   }
+
   Nrf24l01Registers_t cfg;
   while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
@@ -301,10 +329,10 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
     transmit_single_package(1);
 
     enable_rx_and_listen();
-    set_pin_on(&gpio_b7);
+    // set_pin_on(&gpio_b7_timetracking);
     tStart = osCoreFunctions[readTimerFunctionPtr]();
     while ((osCoreFunctions[readTimerFunctionPtr]() - tStart) < tx_config->autoRetransmitDelay) {}
-    set_pin_off(&gpio_b7);
+    // set_pin_off(&gpio_b7_timetracking);
     disable_rx();
 
     if (!(*receivedAckPackage))
@@ -328,10 +356,10 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
   if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
   {
     tx_observe.maxRetransmits = tx_observe.retransmitCount;
-    
+
   }
   *receivedAckPackage = 0;
- 
+
   tx_observe.totalRetransmits += tx_observe.retransmitCount;
   tx_observe.signalStrength = (unsigned int)( (float) ( ((float)  tx_observe.totalPackages / ((float)  tx_observe.totalPackages + (float)  tx_observe.totalRetransmits) )) * 100);
   tx_observe.retransmitCount = 0;

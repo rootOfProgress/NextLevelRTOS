@@ -64,7 +64,9 @@ void init_isr(void)
   in_buffer = 0;
   bytes_received = 0;
   for (unsigned int i = 0; i < BUFFERSIZE; i++)
+  {
     uart_rx_buffer[i] = 0;
+  }
 }
 
 static unsigned int hostIsNotified = 0;

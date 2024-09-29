@@ -17,18 +17,20 @@ typedef struct transfer
   unsigned int length;
 } TransferInfo_t;
 
-typedef enum
-{
-  RX_READY = 0x0,
-  PREPARE_TASK_TRANSFER = 0x1,
-  TRANSFER_TASK_BYTES = 0x2,
-  REQUEST_STATISTIC = 0x3,
-  ALTER_SPEED = 0x4,
-  REQUEST_RPM = 0x5,
-  REBOOT = 0x6,
-  REQUEST_TEST_RESULT = 0x7,
-  REQUEST_POSITION = 0x8
-                     // UNKNOWN = 0x3,
+typedef enum {
+    RX_READY = 0x0,
+    PREPARE_TASK_TRANSFER = 0x1,
+    TRANSFER_TASK_BYTES = 0x2,
+    REQUEST_STATISTIC = 0x3,
+    ALTER_SPEED = 0x4, // @deprecated
+    REQUEST_RPM = 0x5, // @deprecated
+    REBOOT = 0x6,
+    REQUEST_TEST_RESULT = 0x7, // @deprecated
+    REQUEST_POSITION = 0x8, // @deprecated
+    SET_TIME = 0x9,
+    SET_DATE = 0xA,
+    READ_DATETIME_RAW = 0xB,
+    READ_DATETIME_CONVERTED = 0xC,
 } UartStates_t;
 
 extern UartStates_t state;

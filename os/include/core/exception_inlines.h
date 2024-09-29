@@ -35,7 +35,7 @@ static inline __attribute__((always_inline)) void restore_psp()
  */
 static inline __attribute__((always_inline)) void restore_psp_if_threadmode()
 {
-  __asm volatile (
+  __asm__ volatile (
     "TST lr, #4\n"
     "ITTT NE\n"
     "MRSNE r2, psp\n"

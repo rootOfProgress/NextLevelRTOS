@@ -3,6 +3,7 @@
 
 #define NUM_OF_EXTERNAL_FUNCTIONS 0
 
+
 static void (*func_ptr[NUM_OF_EXTERNAL_FUNCTIONS])() = {};
 
 #endif

@@ -7,20 +7,20 @@ timerConfiguration_t timer_configurations[5];
 
 void reset_timer(unsigned int tim_nr)
 {
-  SET_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));
-  CLEAR_BIT(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));
+  SET_BIT_INERNAL(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));
+  CLEAR_BIT_INERNAL(&((RccRegisterMap_t*) RccBaseAdress)->apb1rstr, 1 << (tim_nr - 2));
 }
 
 void timer_start(unsigned int tim_nr)
 {
   unsigned int tim_base = get_timx_base(tim_nr);
-  SET_BIT(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
+  SET_BIT_INERNAL(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
 }
 
 void timer_stop(unsigned int tim_nr)
 {
   unsigned int tim_base = get_timx_base(tim_nr);
-  CLEAR_BIT(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
+  CLEAR_BIT_INERNAL(&((timer25RegisterMap_t*) tim_base)->cr1, 1 << CEN);
 }
 
 void set_udis(unsigned int tim_nr)

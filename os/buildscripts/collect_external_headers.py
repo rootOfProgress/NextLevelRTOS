@@ -13,6 +13,7 @@ public_functions = [
     'create_task',
     'join_task',
     'memset_byte',
+    'memcpy_byte',
     'link_exti_src',
     'execute_priviledged',
     'link_adc_src',

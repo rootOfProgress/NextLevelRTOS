@@ -143,12 +143,30 @@ void rx_receive_isr()
         ackPackagePreloaded = 0;
 
         RxConfig_t *rxConfig = (RxConfig_t*) rx_answer;
+
         if (rxConfig->identifier == 0x12345678)
         {
-          uartOutputIsEnabled  = rxConfig->printUart;
-          timeToSettle = rxConfig->timeToSettle;
-          timeToSendAck = rxConfig->timeToSendAck;
+          if (rxConfig->configMask & OutputToUart)
+          {
+            uartOutputIsEnabled = 1;
+          }
+          else
+          {
+            uartOutputIsEnabled = 0;
+          }
+
+          if (rxConfig->configMask & ChangeChannel)
+          {
+            change_channel(rxConfig->channel); 
+          }
+
+          if (rxConfig->configMask & AdjustTimings)
+          {
+            timeToSettle = rxConfig->timeToSettle;
+            timeToSendAck = rxConfig->timeToSendAck;
+          }
         }
+
         if (uartOutputIsEnabled)
         {
           print(rx_answer, 27);

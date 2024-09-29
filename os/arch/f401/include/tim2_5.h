@@ -12,6 +12,14 @@ enum
   tim4Base = 0x40000800
 };
 
+enum
+{
+  CC1IF = 1,
+  CC2IF,
+  CC3IF,
+  CC4IF,
+};
+
 // 16 mhz
 enum { ahbFrequency = 16000000 };
 

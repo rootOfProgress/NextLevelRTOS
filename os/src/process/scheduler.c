@@ -2,6 +2,7 @@
 #include "hw/cpu.h"
 #include "memory.h"
 #include "panic.h"
+#include "rtc.h"
 
 Queue_t* running_tasks = NULL;
 Queue_t* waiting_tasks = NULL;
@@ -36,6 +37,20 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
 
 int init_scheduler(void)
 {
+  RTC_init();
+  
+  TimeRepresentation_t defaultTime;
+  DateRepresentation_t defaultDate;
+  defaultTime.hour = 0;
+  defaultTime.minute = 0;
+  defaultTime.second = 0;
+
+  defaultDate.year = 0;
+  defaultDate.month = 0;
+  defaultDate.day = 0;
+  defaultDate.weekDay = MONDAY;
+  RTC_setTimeAndDate(&defaultTime, &defaultDate);
+
   currently_running = NULL;
   running_tasks = new_queue();
 
@@ -62,12 +77,16 @@ int insert_scheduled_task(Tcb_t* tcb)
   switch (tcb->general.task_info.state)
   {
   case READY:
-    if (enqueue_element(running_tasks, (Tcb_t * ) tcb) < 0)
+    if (enqueue_element(running_tasks, (Tcb_t*) tcb) < 0)
+    {
       return -1;
+    }
     break;
   case WAITING:
-    if (enqueue_element(waiting_tasks, (Tcb_t * ) tcb) < 0)
+    if (enqueue_element(waiting_tasks, (Tcb_t*) tcb) < 0)
+    {
       return -1;
+    }
     break;
   default:
     return -1;
@@ -189,9 +208,22 @@ void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
   return;
 }
 
-unsigned int read_global_timer(void)
+unsigned long long read_global_timer(void)
 {
-  return timer_read_counter(TimerForGlobalCounting);
+  static unsigned int lastValue = 0;
+  unsigned int currentValue = timer_read_counter(TimerForGlobalCounting);
+  unsigned long long actualValue = 0;
+  // overflow occured
+  if (currentValue < lastValue)
+  {
+    actualValue = 0xFFFFFFFF - lastValue + currentValue + 1;
+  }
+  else
+  {
+    actualValue = currentValue;
+  }
+  lastValue = currentValue;
+  return actualValue;
 }
 
 int run_scheduler(void)
@@ -202,15 +234,20 @@ int run_scheduler(void)
     0, 0, 0, 0
   }, ResolutionForSleepFunction);
   enable_ccx_ir(TimerForTaskSleep, 1);
+  enable_ccx_ir(TimerForTaskSleep, 2);
+  enable_ccx_ir(TimerForTaskSleep, 3);
+  enable_ccx_ir(TimerForTaskSleep, 4);
 
   // set up global timer. resolution: 1 usec
-  //
-  timer_init(TimerForGlobalCounting, (unsigned int[4])
-  {
-    0, 0, 0, 0
-  }, 1);
+  // 
+  timer_init(TimerForGlobalCounting, (unsigned int[4]) {0,0,0,0}, 1);
+
   timer_flush_counter(TimerForGlobalCounting);
+  timer_flush_counter(TimerForTaskSleep);
+
   timer_start(TimerForGlobalCounting);
+  timer_start(TimerForTaskSleep);
+
   if (running_tasks->size == 0)
   {
     if (!(wakeup_pid(kernel_pids.idle_task)))
@@ -389,9 +426,8 @@ void finish_task(void)
 
 void task_sleep(unsigned int requested_time_to_sleep)
 {
+  // @todo handle timer overflow
   task_sleep_request.pid_of_sleeping_task = ((Tcb_t*) currently_running->data)->general.task_info.pid;
-  set_ccr(TimerForTaskSleep, requested_time_to_sleep, 1);
-  timer_flush_counter(TimerForTaskSleep);
-  timer_start(TimerForTaskSleep);
+  set_ccr(TimerForTaskSleep, timer_read_counter(TimerForTaskSleep) + requested_time_to_sleep, 2);
   block_current_task();
 }

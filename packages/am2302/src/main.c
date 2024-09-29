@@ -21,9 +21,11 @@ int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((o
     // t.pin = 0;
     // asm("bkpt");
     // t.port = 'A';
+    append_os_core_function(read_timer);
     am2302_init_peripherials(0, 'A');
+
     Am2302Readings_t readings;
     am2302_do_measurement(&readings);
-    asm("bkpt");
+    print((char*) &readings, sizeof(Am2302Readings_t));
     return 0;
 }

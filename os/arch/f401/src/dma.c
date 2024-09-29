@@ -13,6 +13,14 @@ void dma_init(void)
   WRITE_REGISTER(&rcc_registers->ahb1enr, READ_REGISTER(&rcc_registers->ahb1enr) | (1 << DMA2EN));
 }
 
+void DMA_setInitialConfig(DmaTransferSpecifics_t* config)
+{
+  config->chsel = 4;
+  config->minc = 1;
+  config->stream_number = 5;
+  config->tcie = 1;
+}
+
 void dma_transfer(
   DmaTransferSpecifics_t *dma_transfer_config,
   DmaModes_t dma_mode,
@@ -80,13 +88,14 @@ void dma2_stream5_ir_handler(void)
     switch (dma_interrupt_action)
     {
     case DmaWaitsForExternalTask:
-      dma_interrupt_action &= ~DmaWaitsForExternalTask;
-      dma_interrupt_action |= DmaTransferedExternalTask;
-      // notify task_create
-
-      // enable usart interrupt
+    {
+      dma_interrupt_action = DmaTransferedExternalTask;
       break;
-
+    }
+    case DmaWaitsForCurrentDateTime:
+    {
+      dma_interrupt_action = DmaTransferedCurrentDateTime;
+    }
     default:
       break;
     }

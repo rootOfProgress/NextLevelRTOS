@@ -56,6 +56,17 @@ void memset_byte(void* dest, unsigned int number_of_bytes, char pattern)
   }
 }
 
+void memcpy_byte(void* dest, void* src, unsigned int number_of_bytes)
+{
+  char *d = (char*) dest;
+  char *s = (char*) src;
+  for (unsigned int i = 0; i < number_of_bytes; i++)
+  {
+    d[i] = s[i];
+  }
+}
+
+
 void __attribute__((optimize("O0"))) defrag()
 {
   lock_mutex((void*) &mutex);

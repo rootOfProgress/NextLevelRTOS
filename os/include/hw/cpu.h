@@ -76,12 +76,12 @@ enum
 
 enum { STK = 0xE000E010 };
 
-#define AIRCR 0xE000ED0C
+// #define AIRCR 0xE000ED0C
 
-#define CTRL 0x00
-#define LOAD 0x04
-#define VAL 0x08
-#define CALIB 0x0C
+// #define CTRL 0x00
+// #define LOAD 0x04
+// #define VAL 0x08
+// #define CALIB 0x0C
 
 typedef struct Systick
 {
@@ -99,7 +99,7 @@ static inline __attribute__((always_inline)) void enable_systick(void)
 static inline __attribute__((always_inline)) void soft_reset(void)
 {
   __asm("dsb");
-  WRITE_REGISTER(AIRCR, 0x05FA0001);
+  WRITE_REGISTER(0xE000ED0C, 0x05FA0001);
   __asm("dsb");
 
   // reboot went wrong

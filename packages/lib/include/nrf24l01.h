@@ -8,6 +8,11 @@ void power_on();
 
 enum
 {
+  endpointIsRaspberryPi = 1
+};
+
+enum
+{
   PRIM_RX = 0,
   PWR_UP = 1,
   CRCO = 2,
@@ -26,7 +31,8 @@ typedef struct TxObserve
   unsigned int totalElapsed;
   unsigned int bytesSend;
   unsigned int totalRetransmits;
-  unsigned int signalStrength;
+  unsigned short signalStrength;
+  unsigned short currentChannel;
   unsigned int totalPackages;
 } TxObserve_t;
 
@@ -42,7 +48,7 @@ typedef struct TxObserveBenchmark
 
 typedef struct TxConfig
 {
-  unsigned int autoRetransmitDelay;
+  unsigned int autoRetransmitDelay; // usec
   unsigned int retransmitCount;
 } TxConfig_t;
 
@@ -462,6 +468,7 @@ char transmit_with_autoack(TxConfig_t *tx_config,
 TxObserve_t get_current_tx_state(void);
 void flush_current_tx_state(void);
 void append_os_core_function(unsigned int (*function_ptr)());
+void request_channel_change(TxConfig_t *tx_config, char *receivedAckPackage);
 
 /* --------------------------------------------------- */
 /* -------------------Custom Extensions--------------- */
@@ -523,7 +530,7 @@ unsigned int load_tx_buffer(unsigned int length, char* payload);
 void enable_rx_and_listen(void);
 void disable_rx(void);
 void nrf_flush_tx(void);
-
+unsigned int change_channel(unsigned char newChannel);
 char get_nrf_register(Nrf24l01RegisterNames_t);
 
 static inline __attribute__((always_inline)) char get_nrf_fifo(void);
@@ -534,14 +541,22 @@ static inline __attribute__((always_inline)) char get_nrf_fifo(void)
   return get_nrf_register(FIFO_STATUS);
 }
 
+typedef enum 
+{
+  OutputToUart = 1 << 0,
+  ChangeChannel = 1 << 1,
+  AdjustTimings = 1 << 2
+} RxConfigFlags_t;
+
 
 typedef struct 
 {
   unsigned int identifier;
-  char printUart;
-  char reserved[3];
-  unsigned int timeToSettle;
-  unsigned int timeToSendAck;
+  char configMask;
+  char channel;
+  char reserved[2];
+  unsigned short timeToSettle;
+  unsigned short timeToSendAck;
 } RxConfig_t;
 
 

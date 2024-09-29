@@ -8,7 +8,10 @@ CFLAGS = -O0  \
 	 -g -mcpu=cortex-m4 -mthumb \
 	 -nostartfiles -ffunction-sections  -Wall -Wextra -static -nostdlib  \
 
-SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
+SRC:=$(wildcard ./src/**/*.c) 
+SRC+=$(wildcard ./src/*.c)
+SRC+=../commonsrc/globals.c
+
 OBJ:=$(wildcard ./build/*.o)
 
 TARGET = nrf2401
@@ -25,7 +28,7 @@ build_platform_f401:
 	mv ../../../os/arch/f401/build/*.o ./build
 
 archive: 
-	ar -rc ../archives/lib$(TARGET).a build/*.o
+	ar -rc ../archives/lib$(TARGET).a build/*.o ../commonbuild/*.o
 
 clean:
 	rm -f $(OUTDIR)/*.o ./build/*

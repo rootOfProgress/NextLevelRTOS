@@ -10,16 +10,20 @@
 #include "uart.h"
 #include "health.h"
 #include "irq/gpio_isr.h"
+#include "rtc.h"
+#include "memory/memory_globals.h"
 
 typedef enum RebootTypes RebootTypes_t;
 
 IoChannel_t type_of_io_handler;
+DmaTransferSpecifics_t DmaTransferConfig;
 
 // @todo: Initialization does not work yet because whole structure lies in ram.
 OsLifetime_t lifetime_statistic = { .version.version_number = 0, .version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t), { .0 } };
 
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
+char *generalPurposeBuffer;
 void (*subtasks[maxNumOfWaitingKernelSubtasks])();
 
 static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
@@ -27,6 +31,28 @@ static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(voi
   update_memory_statistic(&lifetime_statistic.memoryStat);
   update_process_statistic(&lifetime_statistic.processStat);
   print((char*) &lifetime_statistic, sizeof(OsLifetime_t));
+}
+
+void RTC_collectConvertedDateTime(void) // @todo : function needs an own space
+{
+  generalPurposeBuffer = (char*) allocate(sizeof(DateRepresentation_t) + sizeof(TimeRepresentation_t));
+
+  TimeRepresentation_t currentTime;
+  RTC_readCurrentTime(&currentTime);
+  // print((char*) &currentTime, sizeof(TimeRepresentation_t));
+  
+  DateRepresentation_t currentDate;
+  RTC_readCurrentDate(&currentDate);
+  // print((char*) &currentDate, sizeof(DateRepresentation_t));
+  
+  char *helper = generalPurposeBuffer;
+
+  memcpy_byte(helper, &currentTime, sizeof(TimeRepresentation_t));
+  helper += sizeof(TimeRepresentation_t);
+  memcpy_byte(helper, &currentDate, sizeof(DateRepresentation_t));
+  print((char*) generalPurposeBuffer, sizeof(TimeRepresentation_t) + sizeof(DateRepresentation_t));
+
+  deallocate((unsigned int*) &generalPurposeBuffer);
 }
 
 void schedule_kernel_subtask(unsigned int task_number)
@@ -61,8 +87,8 @@ void NO_OPT external_io_runner(void)
 {
   while (1)
   {
-    // @todo Currently 10 IDs reserved for OS, sufficient?
-    if (rx_state < 10)
+    // @todo Currently 20 IDs reserved for OS, sufficient?
+    if (rx_state < 20)
     {
       switch ((UartStates_t) rx_state)
       {
@@ -71,27 +97,45 @@ void NO_OPT external_io_runner(void)
         tInfo.start_adress = allocate(tInfo.task_size);
 
         if (!tInfo.start_adress)
+        {
           invoke_panic(OUT_OF_MEMORY);
+        }
 
         // notify host to recompile with correct offset
         print((char*) &tInfo.start_adress, 4);
 
-        DmaTransferSpecifics_t dt;
-
-        dt.chsel = 4;
-        dt.minc = 1;
-        dt.ndtr = tInfo.task_size;
-        dt.destination_address = (unsigned int) tInfo.start_adress;
-        dt.stream_number = 5;
-        dt.tcie = 1;
-        dt.dma_job_type = DmaWaitsForExternalTask;
-
+        DmaTransferConfig.ndtr = tInfo.task_size;
+        DmaTransferConfig.destination_address = (unsigned int) tInfo.start_adress;
+        
         dma_interrupt_action = DmaWaitsForExternalTask;
-        dma_transfer(&dt, PeripherialToMemory, UART);
+
+        dma_transfer(&DmaTransferConfig, PeripherialToMemory, UART);
         break;
       case REQUEST_STATISTIC:
         schedule_kernel_subtask(statisticManager);
         break;
+      case SET_TIME:
+      case SET_DATE:
+      {
+        DmaTransferConfig.ndtr = sizeof(DateRepresentation_t) + sizeof(TimeRepresentation_t);
+        generalPurposeBuffer = (char*) allocate(DmaTransferConfig.ndtr);
+        DmaTransferConfig.destination_address = (unsigned int) generalPurposeBuffer;
+        dma_interrupt_action = DmaWaitsForCurrentDateTime;
+        dma_transfer(&DmaTransferConfig, PeripherialToMemory, UART);
+        break;
+      }
+      case READ_DATETIME_RAW:
+      {
+        DateTimeRepresentationRaw_t dateTimeRaw;
+        RTC_readCurrentDateTimeRaw(&dateTimeRaw);
+        print((char*) &dateTimeRaw, sizeof(DateTimeRepresentationRaw_t));
+        break;
+      }
+      case READ_DATETIME_CONVERTED:
+      {
+        RTC_collectConvertedDateTime();
+        break;
+      }
       default:
         rx_state = (unsigned int) RX_READY;
         break;
@@ -150,6 +194,9 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
     }
   }
 
+  memset_byte((void*) &DmaTransferConfig, sizeof(DmaTransferSpecifics_t), 0);
+  DMA_setInitialConfig(&DmaTransferConfig);
+
   while (1)
   {
     if (process_stats.clean_up_requests)
@@ -157,10 +204,26 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
       search_invalidate_tasks();
     }
 
-    if (dma_interrupt_action & DmaTransferedExternalTask)
+    switch (dma_interrupt_action)
     {
-      create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
-      dma_interrupt_action = DmaIsIdle;
+      case DmaTransferedExternalTask:
+      {
+        create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
+        dma_interrupt_action = DmaIsIdle;
+        break;
+      }
+      case DmaTransferedCurrentDateTime:
+      {
+        dma_interrupt_action = DmaIsIdle;
+        RTC_setTimeAndDate((TimeRepresentation_t*) generalPurposeBuffer, (DateRepresentation_t*) (generalPurposeBuffer + sizeof(TimeRepresentation_t)));
+        deallocate((unsigned int*) &generalPurposeBuffer);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+      // dma_interrupt_action = DmaIsIdle;
     }
 
     {
@@ -179,7 +242,10 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
     // now, os enters sleep only if the idle runner is the only one in line.
     if (running_tasks->size == 1)
     {
-      sleep();
+      if (!DEBUG)
+      {
+        sleep();
+      }
     }
 
     block_current_task();
@@ -213,7 +279,7 @@ void NO_OPT hardfault_handler(void)
 }
 
 // @todo: Untested
-void ISR usage_fault_handler(void)
+void ISR_INTERNAL usage_fault_handler(void)
 {
 
   // fatal

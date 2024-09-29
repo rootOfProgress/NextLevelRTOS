@@ -54,7 +54,9 @@ int create_task(void (*task_function)(), unsigned int ram_location)
   CpuRegister_t *cpu_register = prepare_cpu_register(task_stack_start_address, STACK_SIZE, task_function);
 
   if (!cpu_register)
+  {
     return -1;
+  }
 
   Tcb_t *tcb = (Tcb_t*) allocate(sizeof(Tcb_t));
 
@@ -91,12 +93,18 @@ int create_task(void (*task_function)(), unsigned int ram_location)
   tcb->join_pid = -1;
 
   if (!currently_running)
+  {
     tcb->parent_task = NULL;
+  }
   else
+  {
     tcb->parent_task = currently_running->data;
+  }
 
   if (currently_running)
+  {
     single_list_push(currently_running->data->child_tasks, (void * ) &tcb);
+  }
 
   tcb->child_tasks = new_list();
 
