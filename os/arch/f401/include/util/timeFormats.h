@@ -27,4 +27,10 @@ typedef struct DateRepresentation
   WeekDay_t weekDay;
 } DateRepresentation_t;
 
+typedef struct DateTimeRepresentationRaw
+{
+  unsigned int time;
+  unsigned int date;
+} DateTimeRepresentationRaw_t;
+
 #endif

@@ -59,9 +59,11 @@ typedef enum DmaModes {
 // used for IR Handling later
 typedef enum DmaJobType {
     DmaIsIdle = 0,
-    DmaTransferedExternalTask = 1 << 0,
-    DmaHadTransferError = 1 << 1,
-    DmaWaitsForExternalTask = 1 << 3
+    DmaTransferedExternalTask,
+    DmaHadTransferError,
+    DmaWaitsForExternalTask,
+    DmaWaitsForCurrentDateTime,
+    DmaTransferedCurrentDateTime,
 } DmaJobType_t;
 
 typedef struct DmaTransferSpecifics {
@@ -82,4 +84,5 @@ static inline __attribute__((always_inline)) unsigned int get_stream_offset(unsi
 void dma_init(void);
 void dma_transfer(DmaTransferSpecifics_t *dma_transfer_config, DmaModes_t dma_mode, SourcePeripherial_t source);
 
+void DMA_setInitialConfig(DmaTransferSpecifics_t* config);
 #endif

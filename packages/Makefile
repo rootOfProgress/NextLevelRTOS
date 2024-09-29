@@ -24,7 +24,8 @@ compile_c: $(SRC)
 
 build_platform_f401:
 	echo "Executing build_platform_f401..."
-	make -C ../os/arch/f401 HWFP=0
+	make -C ../os/arch/f401 clean
+	make -C ../os/arch/f401 ARCH=f401 HWFP=0
 	mv ../os/arch/f401/build/*.o ./$(TARGET)/build
 
 link:

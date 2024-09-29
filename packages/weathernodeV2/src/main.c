@@ -10,6 +10,9 @@
 #include "exti.h"
 #include "syscfg.h"
 #include "am2302.h"
+// #include "hal/stm32f4xx_hal.h"
+// #include <stdint.h> 
+// #include "hal/stm32f4xx.h"
 // #include "memory/memory_globals.h"
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
@@ -17,6 +20,7 @@
 
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
+
 
 typedef struct
 {
@@ -174,7 +178,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   receivedAckPackage = 0;
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
-  tx_config.autoRetransmitDelay = 9000;
+  tx_config.autoRetransmitDelay = 130000;
   tx_config.retransmitCount = 7;
   timeToSettle = 150;
 
@@ -206,19 +210,21 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   // @multiple pid sleep must be implemented/fixed (RTOS_MultipleSleep)
   // unsigned int pid = create_task(&led, 0);
   // join_task(pid);
-
-  if (!sendConfig())
-  {
-    NodePackage_t *package = (NodePackage_t*) outBuffer;
-    package->header.version = 99;
-    print((char*) &outBuffer, sizeof(NodePackage_t));
-    return 0;
-  };
+ 
+  // Uncomment as soon as HAL Test complete
+  // if (!sendConfig())
+  // {
+  //   NodePackage_t *package = (NodePackage_t*) outBuffer;
+  //   package->header.version = 99;
+  //   print((char*) &outBuffer, sizeof(NodePackage_t));
+  //   return 0;
+  // };
 
   while (1)
   {
     char *payloadPtr = outBuffer;
     am2302Retries = 0;
+    package->meta.nodeNumber = 15;
 
     // __asm ("CPSID I");
     while (am2302Retries++ < 100)
@@ -258,13 +264,14 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
     // memcpy_byte((void*) payloadPtr, (void*) &nodeInfo, sizeof(char));
     // payloadPtr += sizeof(char);
 
+
     transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
     print((char*) &outBuffer, sizeof(NodePackage_t));
     // request_channel_change(&tx_config, &receivedAckPackage);
     // __asm ("CPSIE I");
     adc_start_conv_regular();
 
-    sleep(1000);
+    sleep(3000);
   }
   return 0;
 }

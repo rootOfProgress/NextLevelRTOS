@@ -2,6 +2,7 @@
 #include "hw/cpu.h"
 #include "memory.h"
 #include "panic.h"
+#include "rtc.h"
 
 Queue_t* running_tasks = NULL;
 Queue_t* waiting_tasks = NULL;
@@ -36,6 +37,20 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
 
 int init_scheduler(void)
 {
+  RTC_init();
+  
+  TimeRepresentation_t defaultTime;
+  DateRepresentation_t defaultDate;
+  defaultTime.hour = 0;
+  defaultTime.minute = 0;
+  defaultTime.second = 0;
+
+  defaultDate.year = 0;
+  defaultDate.month = 0;
+  defaultDate.day = 0;
+  defaultDate.weekDay = MONDAY;
+  RTC_setTimeAndDate(&defaultTime, &defaultDate);
+
   currently_running = NULL;
   running_tasks = new_queue();
 
@@ -196,9 +211,22 @@ void kill_child_task(unsigned int pid_of_child, Tcb_t* parent)
   return;
 }
 
-unsigned int read_global_timer(void)
+unsigned long long read_global_timer(void)
 {
-  return timer_read_counter(TimerForGlobalCounting); 
+  static unsigned int lastValue = 0;
+  unsigned int currentValue = timer_read_counter(TimerForGlobalCounting);
+  unsigned long long actualValue = 0;
+  // overflow occured
+  if (currentValue < lastValue)
+  {
+    actualValue = 0xFFFFFFFF - lastValue + currentValue + 1;
+  }
+  else
+  {
+    actualValue = currentValue;
+  }
+  lastValue = currentValue;
+  return actualValue;
 }
 
 int run_scheduler(void)

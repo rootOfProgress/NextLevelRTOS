@@ -6,7 +6,7 @@
 typedef struct GpioObject GpioObject_t;
 
 #define INTERRUPT __attribute__((interrupt))
-#define ISR __attribute__ ((interrupt ("IRQ")))
+// #define ISR __attribute__ ((interrupt ("IRQ")))
 #define UNUSED __attribute__((unused))
 #define USED __attribute__((used))
 #define NO_OPT __attribute__((optimize("O0")))

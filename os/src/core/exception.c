@@ -13,7 +13,7 @@
 
 volatile unsigned int svc_number = 0;
 
-void ISR systick_isr()
+void ISR_INTERNAL systick_isr()
 {
 }
 
@@ -38,7 +38,7 @@ void NO_OPT kprint(void)
 
 void svcall_isr()
 {  
-  __asm volatile (
+  __asm__ volatile (
     "TST lr, #4\n"
     "ITTT NE\n"
     "MRSNE r2, PSP\n"
@@ -46,7 +46,7 @@ void svcall_isr()
     "MSRNE PSP, r2\n"
   );
   
-  __asm__("mov %0, r6" : "=r"(svc_number));
+  __asm__ volatile("mov %0, r6" : "=r"(svc_number));
 
   switch (svc_number)
   {
@@ -57,12 +57,13 @@ void svcall_isr()
     }
 
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
-    __asm volatile ("mov r0, %[sp]" :: [sp] "r" (tcb_of_pid0->sp));
-    __asm volatile ("ldmia.w  r0!, {r4-r11}");
-    __asm volatile ("msr psp, r0");
-    __asm volatile ("mov r1, 0xfffffffd");
-    __asm volatile ("mov lr, 0xfffffffd");
-    __asm volatile ("bx lr");
+
+    __asm__ volatile ("mov r0, %[sp]" :: [sp] "r" (tcb_of_pid0->sp));
+    __asm__ volatile ("ldmia.w  r0!, {r4-r11}");
+    __asm__ volatile ("msr psp, r0");
+    __asm__ volatile ("mov r1, 0xfffffffd");
+    __asm__ volatile ("mov lr, 0xfffffffd");
+    __asm__ volatile ("bx lr");
 
     return;
   case printMsg:
@@ -91,7 +92,7 @@ void svcall_isr()
     return;
   case execPriv:
     unsigned int function_adress;
-    __asm__("mov %0, r9" : "=r"(function_adress));
+    __asm__ volatile ("mov %0, r9" : "=r"(function_adress));
     void (*priv_fn)() = (void (*)()) (function_adress | 1);
     priv_fn();
     restore_psp();
@@ -100,19 +101,19 @@ void svcall_isr()
     // @todo: really needed? 
     // type_of_io_handler = ModExternalIo;
     unsigned int io_callback_adress;
-    __asm__("mov %0, r9" : "=r"(io_callback_adress));
+    __asm__ volatile ("mov %0, r9" : "=r"(io_callback_adress));
     io_handler = (void (*) (unsigned int)) io_callback_adress;
     restore_psp();
     return;
   case wakeupPid:
     unsigned int pid_id;
-    __asm__("mov %0, r9" : "=r"(pid_id));
+    __asm__ volatile ("mov %0, r9" : "=r"(pid_id));
     wakeup_pid(pid_id);
     restore_psp();
     return;
   case getIoBuffer:
     unsigned int** addr;
-    __asm__("mov %0, r9" : "=r"(addr));
+    __asm__ volatile ("mov %0, r9" : "=r"(addr));
     *addr = (unsigned int*) &rx_state;   
     return;
   case wakeupIoHandler:

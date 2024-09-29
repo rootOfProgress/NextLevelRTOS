@@ -81,6 +81,6 @@ void RTC_deactivateInitMode(void);
 void RTC_setTimeAndDate(TimeRepresentation_t* time, DateRepresentation_t* date);
 void RTC_readCurrentTime(TimeRepresentation_t* time);
 void RTC_readCurrentDate(DateRepresentation_t* date);
-
-
+void RTC_readCurrentDateTimeRaw(DateTimeRepresentationRaw_t* dateTime);
+void RTC_collectConvertedDateTime(void);
 #endif

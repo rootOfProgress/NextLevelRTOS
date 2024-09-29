@@ -1,5 +1,5 @@
 CC := arm-none-eabi-gcc
-INC = -Iinclude
+INC = -Iinclude -Iinclude/hal
 
 CFLAGS = -O0  \
 	 -mcpu=cortex-m4 -mthumb \
@@ -8,10 +8,10 @@ CFLAGS = -O0  \
 SRC:=$(wildcard ./src/**/*.c) $(wildcard ./src/*.c)
 OBJ:=$(wildcard ./build/*.o)
 
-TARGET = devices
-all: $(TARGET)
+# ARCH = devices
+all: $(ARCH)
 
-$(TARGET): clean compile_platform move_objects
+$(ARCH): clean compile_platform move_objects
 
 ifeq (1,$(HWFP))
 CFLAGS += -mfloat-abi=hard
