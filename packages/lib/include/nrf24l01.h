@@ -461,7 +461,7 @@ void get_nrf_config(Nrf24l01Registers_t*);
 unsigned int transmit_single_package(char settle);
 unsigned int transmit_all_packages(void);
 // char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
-unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers);
+unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer);
 char transmit_with_autoack(TxConfig_t *tx_config,
                            char *receivedAckPackage,
                            char *outBuffer);

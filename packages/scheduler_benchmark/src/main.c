@@ -9,19 +9,12 @@
 #include "uart.h"
 #include "tim2_5.h"
 
-static unsigned int start_measurement = 0b010;
-static unsigned int stop_measurement = 0b111;
 
-void spin()
-{
-
-        
-}
 typedef struct MeasurementResults {
     unsigned int results[32]; 
 } MeasurementResults_t;
 
-void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
+int __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((optimize("O0"))) main(void)
 {
     MeasurementResults_t measurements;
     unsigned int tStart, tEnd; 
@@ -33,5 +26,7 @@ void __attribute((section(".main"))) __attribute__((__noipa__))  __attribute__((
         measurements.results[j] = tEnd - tStart;
     }
         
-    print(&measurements.results, 32 * sizeof(int));
+    print((char*) &measurements.results, 32 * sizeof(int));
+
+    return 0;
 }

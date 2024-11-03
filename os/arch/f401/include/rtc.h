@@ -3,6 +3,13 @@
 
 #include "util/timeFormats.h"
 
+typedef enum RTCErrorCode
+{
+  RTC_LSEOscillatorStartupFail = 0,
+  RTC_EnumMax,
+  RTC_NoError = RTC_EnumMax
+} RTCErrorCode_t;
+
 typedef struct RTCRegisterMap
 {
     unsigned int TR;       // 0x00 RTC_TR
@@ -70,8 +77,8 @@ enum
   YT = 20 //  Zehnerstelle des Jahres.
 };
 
-void RTC_init(void);
-void RTC_activateClockSource(void);
+RTCErrorCode_t RTC_init(void);
+RTCErrorCode_t RTC_activateClockSource(void);
 void RTC_activateBackupDomain(void);
 void RTC_activateDeviceClock(void);
 void RTC_activateInitMode(void);

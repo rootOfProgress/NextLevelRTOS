@@ -56,7 +56,7 @@ void memset_byte(void* dest, unsigned int number_of_bytes, char pattern)
   }
 }
 
-void memcpy_byte(void* dest, void* src, unsigned int number_of_bytes)
+void memcpy_byte(void* dest, const void* src, unsigned int number_of_bytes)
 {
   char *d = (char*) dest;
   char *s = (char*) src;

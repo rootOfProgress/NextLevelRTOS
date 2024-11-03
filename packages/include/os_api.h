@@ -10,7 +10,7 @@ typedef struct GpioObject GpioObject_t;
 #define UNUSED __attribute__((unused))
 #define USED __attribute__((used))
 #define NO_OPT __attribute__((optimize("O0")))
-#define NULL ( (void *) 0)
+// #define NULL ( (void *) 0)
 #define BREAK asm("bkpt") 
 #define READ_REGISTER(addr)     (*(volatile unsigned int *) (addr))
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
@@ -20,8 +20,8 @@ static __attribute__((unused)) unsigned int (*deallocate)(unsigned int*) = (unsi
 static __attribute__((unused)) unsigned int (*sleep)(unsigned int) = (unsigned int (*)(unsigned int time_to_sleep)) task_sleep_addr;
 static __attribute__((unused)) unsigned int (*create_task)(void (*task_addr)(), unsigned int) = (unsigned int (*)(void (*task_addr)() , unsigned int external)) create_task_addr;
 static __attribute__((unused)) unsigned int (*join_task)(unsigned int) = (unsigned int (*)(unsigned int pid_to_wait_for)) join_task_addr;
-static __attribute__((unused)) unsigned int (*memset_byte)(void*, unsigned int, char) = (void (*)(void* dest, unsigned int number_of_bytes, char pattern)) memset_byte_addr;
-static __attribute__((unused)) unsigned int (*memcpy_byte)(void*, void*, unsigned int) = (void (*)(void* dest, void* src, unsigned int number_of_bytes)) memcpy_byte_addr;
+static __attribute__((unused)) void (*memset_byte)(void*, unsigned int, char) = (void (*)(void* dest, unsigned int number_of_bytes, char pattern)) memset_byte_addr;
+static __attribute__((unused)) void (*memcpy_byte)(void*, const void*, unsigned int) = (void (*)(void* dest, const void* src, unsigned int number_of_bytes)) memcpy_byte_addr;
 static __attribute__((unused)) void (*link_exti_src)(void (*isr_callback)(), GpioObject_t *gpio_obj) = (void (*)(void (*isr_callback)(), GpioObject_t *gpio_obj)) link_exti_src_addr;
 static __attribute__((unused)) void (*execute_priviledged)(void (*target_fn)()) = (void (*)(void (*task_addr)() )) execute_priviledged_addr;
 static __attribute__((unused)) void (*link_adc_isr)(void (*isr_callback)()) = (void (*)(void (*isr_callback)())) link_adc_src_addr;
@@ -40,8 +40,8 @@ typedef enum {
     execPspTask = 0,
     printMsg,
     yieldTask,
-    std,
-    ste,
+    stdisable,
+    stenable,
     reset,
     execPriv,
     wakeupPid,

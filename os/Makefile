@@ -16,11 +16,19 @@ SRC_AS=$(wildcard ./src/**/*.s) $(wildcard ./src/*.s)
 TARGET = os
 all: $(TARGET)
 
+# $(TARGET): 	clean \
+# 			prepare_environment \
+# 			build_non_os_src \
+# 			build_base_kernel \
+# 			build_platform_$(ARCH) \
+# 			link_objects \
+
 $(TARGET): 	clean \
 			prepare_environment \
 			build_non_os_src \
 			build_base_kernel \
-			compile_asm build_platform_$(ARCH) \
+			compile_asm \
+			build_platform_$(ARCH) \
 			link_objects \
 			clean_objects
 
@@ -67,20 +75,22 @@ build_non_os_src:
 # stage2: build sources from results
 	make -C $(NON_OS_SRC)
 
-stage_export_os_api:
-
 prepare_environment:
+	@echo "Prepare Environment..."
 	mkdir -p ./build
 
 build_base_kernel: $(SRC)
+	@echo "Build C Sources..."
 	$(CC) $(CFLAGS) $(INC) -c $^ 
 	mv *.o ./build
 
 compile_asm: $(SRC_AS)
+	@echo "Compile Assembly Sources..."
 	$(AS) $^ -o ./build/asm.o
 
 link_objects: 
-	make -C ./buildscripts
+	@echo "Execute Linker Stage..."
+	make -C ./buildscripts TARGET=$(ARCH)
 
 clean:
 	rm -f ./build/*.o ./build/*.$(ARCH) ./build/memmap.$(ARCH)

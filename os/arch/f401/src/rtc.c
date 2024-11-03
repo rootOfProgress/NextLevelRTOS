@@ -3,7 +3,7 @@
 #include "lang.h"
 #include "pwr.h"
 
-void RTC_activateClockSource(void)
+RTCErrorCode_t RTC_activateClockSource(void)
 {
   RccRegisterMap_t* rcc_registers = (RccRegisterMap_t*) RccBaseAdress;
 
@@ -23,11 +23,22 @@ void RTC_activateClockSource(void)
                  READ_REGISTER(&rcc_registers->bdcr) | (1 << LSEON)
                  );
 
-  while (!(READ_REGISTER(&rcc_registers->bdcr) & (1 << LSERDY))) {};
+  // @todo replace by non-blocking wait in os
+  unsigned int timeout = 1000000;
+  while (!(READ_REGISTER(&rcc_registers->bdcr) & (1 << LSERDY))) 
+  {
+    timeout--;
+    if (timeout == 0) 
+    {
+      return RTC_LSEOscillatorStartupFail;
+    }
+  };
 
   WRITE_REGISTER(&rcc_registers->bdcr, 
                  READ_REGISTER(&rcc_registers->bdcr) | RTCSEL_LSE
                  );
+                 
+  return RTC_NoError;
 }
 
 void RTC_activateBackupDomain(void)
@@ -196,14 +207,22 @@ void RTC_readCurrentDateTimeRaw(DateTimeRepresentationRaw_t* dateTime)
 // }
 
 
-void RTC_init(void)
+RTCErrorCode_t RTC_init(void)
 {
+  RTCErrorCode_t errorCode;
   RTC_activateBackupDomain();
-  RTC_activateClockSource();
+
+  if ((errorCode = RTC_activateClockSource()) != RTC_NoError)
+  {
+    return errorCode;
+  }
+
   RTC_activateDeviceClock();
 
   RTC_activateInitMode();
   RTC_configPreDiv();
   RTC_set24Format();
   RTC_deactivateInitMode();
+
+  return RTC_NoError;
 }

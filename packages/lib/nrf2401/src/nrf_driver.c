@@ -290,10 +290,6 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
     char *receivedAckPackage,
     char *outBuffer)
 {
-  // GpioObject_t gpio_b7_timetracking;
-  // gpio_b7_timetracking.pin = 7;
-  // gpio_b7_timetracking.port = 'B';
-  // init_gpio(&gpio_b7_timetracking);
 
   crc_reset();
   unsigned int crc = 0xFFFFFFFF;
@@ -317,22 +313,22 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
   }
 
   char *crc_ptr = (char*) &crc;
+  
   for (unsigned int i = 0; i < sizeof(unsigned int); i++)
   {
     outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
   }
 
   Nrf24l01Registers_t cfg;
+
   while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
     load_tx_buffer(31, outBuffer);
     transmit_single_package(1);
 
     enable_rx_and_listen();
-    // set_pin_on(&gpio_b7_timetracking);
     tStart = osCoreFunctions[readTimerFunctionPtr]();
     while ((osCoreFunctions[readTimerFunctionPtr]() - tStart) < tx_config->autoRetransmitDelay) {}
-    // set_pin_off(&gpio_b7_timetracking);
     disable_rx();
 
     if (!(*receivedAckPackage))
@@ -348,6 +344,7 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
       break;
     }
   }
+
   if (tx_observe.retransmitCount == tx_config->retransmitCount)
   {
     tx_observe.totalLostPackages++;
@@ -356,8 +353,8 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
   if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
   {
     tx_observe.maxRetransmits = tx_observe.retransmitCount;
-
   }
+
   *receivedAckPackage = 0;
 
   tx_observe.totalRetransmits += tx_observe.retransmitCount;
@@ -366,7 +363,7 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
   return transmitSucceded;
 }
 
-unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers)
+unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer)
 {
   tx_observe.timeUntilAckArrived = osCoreFunctions[readTimerFunctionPtr]();
   clear_rx_dr_flag();
@@ -377,7 +374,6 @@ unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Register
     return 0;
   }
   unsigned int fifo_status = 0;
-  char rx_answer[32];
   while (!((fifo_status = get_nrf_fifo()) & 1))
   {
     if (check_for_received_data(nrf_registers, rx_answer))

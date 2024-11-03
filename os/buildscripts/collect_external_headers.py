@@ -47,9 +47,9 @@ def generate_os_version():
 
     # write into os header
     path = os.getcwd() + "/../include/runtime.h"
-    sed_command_githash = "sed -i '/GIT_HASH/c\#define GIT_HASH 0x" + sha_short + ";'" + " " + path         
-    sed_command_osversion = "sed -i '/OS_VERSION/c\#define OS_VERSION " + str(os_version) + ";'" + " " + path         
-    sed_command_gccversion = "sed -i '/GCC_VERSION/c\#define GCC_VERSION " + str(gcc_version) + ";'" + " " + path         
+    sed_command_githash = "sed -i '/GIT_HASH/s/.*/#define GIT_HASH 0x" + sha_short + "/' " + path
+    sed_command_osversion = "sed -i '/OS_VERSION/s/.*/#define OS_VERSION " + str(os_version) + "/' " + path
+    sed_command_gccversion = "sed -i '/GCC_VERSION/s/.*/#define GCC_VERSION " + str(gcc_version) + "/' " + path
 
     os.system(sed_command_githash)
     os.system(sed_command_osversion)

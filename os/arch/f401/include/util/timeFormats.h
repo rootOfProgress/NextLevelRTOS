@@ -17,6 +17,7 @@ typedef struct TimeRepresentation
   char hour;
   char minute;
   char second;
+  char reserved;
 } TimeRepresentation_t;
 
 typedef struct DateRepresentation
@@ -26,6 +27,12 @@ typedef struct DateRepresentation
   char day;
   WeekDay_t weekDay;
 } DateRepresentation_t;
+
+typedef struct DateTimeRepresentation
+{
+  TimeRepresentation_t time;
+  DateRepresentation_t date;
+} DateTimeRepresentation_t;
 
 typedef struct DateTimeRepresentationRaw
 {

@@ -111,7 +111,6 @@ void rx_receive_isr()
   {
     if (check_for_received_data(&nrf_startup_config, rx_answer))
     {
-
       // @todo: better feed 4byte wise
       crc_reset();
       for (unsigned int i = 0; i < 27; i++)
@@ -175,7 +174,6 @@ void rx_receive_isr()
         lastReceivedCRC = crc;
         enable_rx_and_listen();
       }
-
     }
     else
     {

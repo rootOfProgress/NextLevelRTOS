@@ -10,11 +10,10 @@
 #include "exti.h"
 #include "syscfg.h"
 #include "am2302.h"
-// #include "hal/stm32f4xx_hal.h"
-// #include <stdint.h> 
-// #include "hal/stm32f4xx.h"
-// #include "memory/memory_globals.h"
-
+#include "nodeData.h"
+#include "nodeConfig.h"
+#include "util/timeFormats.h"
+#include "rtc.h"
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
@@ -22,36 +21,6 @@
 #define WRITE_REGISTER(addr, val) ((*(volatile unsigned int *) (addr)) = (unsigned int) (val))
 
 
-typedef struct
-{
-  unsigned short version;
-  unsigned short size;
-} StructHeader_t;
-
-typedef struct 
-{
-  char nodeNumber;
-  char reserved[3];
-} PayloadMetaData_t;
-
-typedef struct 
-{
-  char totalLostPackages;
-  char retransmitsForThisPackage;
-  char signalStrength;
-  char reserved;
-  unsigned short batteryHealth;
-  char currentChannel;
-  char reserved1[3];
-} DeviceEnvironmentData_t;
-
-typedef struct NodeFrame 
-{
-  StructHeader_t header;
-  PayloadMetaData_t meta;
-  DeviceEnvironmentData_t environment;
-  Am2302Readings_t readings;
-} NodePackage_t;
 
 Nrf24l01Registers_t nrf_registers;
 Am2302Readings_t readings;
@@ -67,10 +36,73 @@ unsigned int tAckReceived;
 char receivedAckPackage;
 char outBuffer[32];
 
+void memcpy_custom(void *dest, const void *src, unsigned int n)
+{
+  char *cdest = (char *)dest;
+  const char *csrc = (const char *)src;
+
+  // Copy each byte from source to destination
+  for (unsigned int i = 0; i < n; ++i)
+  {
+    cdest[i] = csrc[i];
+  }
+}
+
+
+unsigned int reverse_byte_order(unsigned int num)
+{
+  return ((num >> 24) & 0x000000FF) |
+         ((num >> 8) & 0x0000FF00) |
+         ((num << 8) & 0x00FF0000) |
+         ((num << 24) & 0xFF000000);
+}
+
+
+
 void  __attribute__((optimize("O0"))) tx_receive_isr()
 {
   exti_acknowledge_interrupt(&pinb);
-  receivedAckPackage = tx_ack_receive_isr(&nrf_registers);
+  char rx_answer[32];
+  receivedAckPackage = tx_ack_receive_isr(&nrf_registers, rx_answer);
+  // asm("bkpt");
+  // if (receivedAckPackage)
+  // {
+  //   // @todo: better feed 4byte wise
+  //   crc_reset();
+  //   for (unsigned int i = 0; i < 13; i++)
+  //   {
+  //     crc_feed((unsigned int)rx_answer[i]);
+  //   }
+
+  //   unsigned int crc_expected = crc_read();
+  //   unsigned int crc = 0;
+
+  //   memcpy_custom(&crc, &rx_answer[9], sizeof(unsigned int)); // Ensure proper endianness and alignment
+
+  //   crc = reverse_byte_order(crc);
+  //   // @todo: discard package if ack gots lost
+  //   // @todo: if crc==0, then no ack is required
+  //   if (crc == crc_expected)
+  //   {
+  //     AckPackage_t *ackPackage = (AckPackage_t*) rx_answer;
+  //     switch (ackPackage->typeOfAckPackage)
+  //     {
+  //     case PackageAcknowledge:
+  //       break;
+  //     case DateTimeUpdate:
+  //       char *tmp = ackPackage->ackPayload;
+  //       DateRepresentation_t* date = (DateRepresentation_t*) tmp;
+  //       tmp += sizeof(DateRepresentation_t); 
+
+  //       TimeRepresentation_t* time = (TimeRepresentation_t*) tmp;
+  //       RTC_setTimeAndDate(time, date);
+  //       break;
+        
+  //     default:
+  //       break;
+  //     }
+  //   }
+  // }
 }
 
 void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
@@ -86,7 +118,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
   nrf_registers->en_rxaddr = 1;
 
   // payload size of ack: 1 byte
-  nrf_registers->rx_pw_p0 = 1;
+  nrf_registers->rx_pw_p0 = 13;
 
 #endif
   /************ 1Mbps data rate, 0dBm ***************/
@@ -96,24 +128,21 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
   nrf_registers->setup_aw = 3;
 
   /************ Channel 3 ***************/
-  nrf_registers->rf_ch = 3;
+  nrf_registers->rf_ch = 16;
 
-  nrf_registers->config = 0; //(char) (1 << 2) | (char) (1 << 3);
-  // LSB is written first, will result in bfcecccecc
-  // char tx[5] = {0xCC, 0xCE, 0xCC, 0xCE, 0xBF};
-  // char tx[5] = {0x9A, 0x78, 0x56, 0x34, 0x12};
-  // char tx[5] = {0xc6, 0xc6, 0xc6, 0xc6, 0xc6};
-  // nrf_registers->tx_addr = 0xC5C5C5C5;
+  nrf_registers->config = 0; 
   char tx[5] = {0xc5, 0xc5, 0xc5, 0xc5, 0xc5};
-  for (unsigned int i = 0; i < sizeof(tx) / sizeof(char); i++)
-    nrf_registers->tx_addr[i] = tx[i];
-
   char rx_p0[5] = {0xc8, 0xc8, 0xc8, 0xc8, 0xc8};
-  // char rx_p0[5] = {0xc5, 0xc5, 0xc5, 0xc5, 0xc5};
-  // char rx_p0[5] = {0xa1, 0xa1, 0xa1, 0xa1, 0xa1};
+
+  for (unsigned int i = 0; i < sizeof(tx) / sizeof(char); i++)
+  {
+    nrf_registers->tx_addr[i] = tx[i];
+  }
+
   for (unsigned int i = 0; i < sizeof(rx_p0) / sizeof(char); i++)
+  {
     nrf_registers->rx_addr_p0[i] = rx_p0[i];
-  // for (int i = sizeof(rx_p0)/sizeof(char) - 1; i >= 0; i--)
+  }
 }
 
 static void init_irq()
@@ -169,9 +198,8 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
 {
   memset_byte((void*) outBuffer, 32, 0);
   NodePackage_t *package = (NodePackage_t*) outBuffer;
-
+  package->meta.nodeNumber = 15;
   package->header.size = sizeof(NodePackage_t) - sizeof(StructHeader_t);
-  package->meta.nodeNumber = 0;
 
   append_os_core_function(read_timer);
 
@@ -179,7 +207,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
   tx_config.autoRetransmitDelay = 130000;
-  tx_config.retransmitCount = 7;
+  tx_config.retransmitCount = 1;
   timeToSettle = 150;
 
   crc_activate();
@@ -219,15 +247,33 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   //   print((char*) &outBuffer, sizeof(NodePackage_t));
   //   return 0;
   // };
+  // {
+  //   char dateTimeIsUpToDate = 0;
+  //   DateRepresentation_t currentDate;
+  //   do 
+  //   {
+  //     RTC_readCurrentDate(&currentDate);
+  //     if (currentDate.year == 0) // year 2000 is default value
+  //     {
+  //       package->meta.packageType = (char) DateTimeRequest;
+  //       transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+  //       sleep(1000);
+  //     }
+  //     else 
+  //     {
+  //       dateTimeIsUpToDate = 1;
+  //     }
+  //   } while (!dateTimeIsUpToDate); 
+  // }
 
   while (1)
   {
     char *payloadPtr = outBuffer;
     am2302Retries = 0;
-    package->meta.nodeNumber = 15;
+
 
     // __asm ("CPSID I");
-    while (am2302Retries++ < 100)
+    while (am2302Retries++ < Am2302RetryCount)
     {
       if (am2302_do_measurement(&package->readings))
       {
@@ -265,13 +311,15 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
     // payloadPtr += sizeof(char);
 
 
+    memset_byte((void*) outBuffer, 32, 0xA5);
+
     transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
     print((char*) &outBuffer, sizeof(NodePackage_t));
     // request_channel_change(&tx_config, &receivedAckPackage);
     // __asm ("CPSIE I");
     adc_start_conv_regular();
 
-    sleep(3000);
+    // sleep(3000);
   }
   return 0;
 }
