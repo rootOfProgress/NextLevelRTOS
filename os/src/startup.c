@@ -34,7 +34,9 @@ extern void usage_fault_handler(void);
 extern void hardfault_handler(void);
 
 extern void adc_isr_handler(void);
+extern unsigned int _sdata;                             //!< Defined in linker script. Containts address of  */
 extern unsigned int _edata;                             //!< Defined in linker script. Containts address of  */
+extern unsigned int _sbss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
 extern unsigned int _ebss;                              //!< Defined in linker script. End of block starting symbol, containts static variables, located in RAM */
 extern unsigned int _sidata;                            //!< Defined in linker script. Containts address */
 extern unsigned int ram_size;                           //!< Defined in linker script. Needed for internal statistic purposes */
@@ -42,7 +44,7 @@ extern unsigned int stack_top;                          //!< Defined in linker s
 
 BootFlags_t boot_flags;
 
-void bootstrap(void)
+void __attribute__((optimize("O0"))) bootstrap(void)
 {
   unsigned int max = (unsigned int) &_ebss;
 
@@ -55,47 +57,22 @@ void bootstrap(void)
     max = (unsigned int) &_sidata;
   }
 
-  // @todo
-  // if ((READ_REGISTER((unsigned int*) 0x20000000) != 0x12345678))
-  // {
-  //   WRITE_REGISTER(0x20000000, 0x12345678);
-  //   boot_flags.isColdStart = 1;
-  //   boot_flags.reboot_type = IsColdStart;
+  // copy .data segment from flash to ram
+  unsigned int *addressOfSegmentInFlash = &_sidata;
+  unsigned int *addressOfSegmentInRam = &_sdata;
 
-  //   // enable external interrupt sources for tim2/3
-  //   WRITE_REGISTER(CPU_NVIC_ISER0, READ_REGISTER(CPU_NVIC_ISER0) | 1 << 28 | 1 << 29);
-
-  //   // CCR DIV_0_TRP , UNALIGN_ TRP
-  //   WRITE_REGISTER(CPU_SCB_CCR, READ_REGISTER(CPU_SCB_CCR) | 3 << 3);
-
-  //   // enable memfaults etc.
-  //   WRITE_REGISTER(CPU_SCB_SHCSR, READ_REGISTER(CPU_SCB_SHCSR) | (0x1 << 16) | (0x1 << 17) | (0x1 << 18));
-
-  // }
-  // else
-  // {
-  //   boot_flags.isColdStart = 0;
-  //   switch (boot_flags.reboot_type)
-  //   {
-  //   case RebootRequestedByOperator:
-  //     // do something interesting here
-  //     break;
-  //   case RebootAfterHardFault:
-  //     // do something interesting here
-  //     break;
-  //   case RebootAfterUsageFault:
-  //     // do something interesting here
-  //     break;
-  //   default:
-  //     break;
-  //   }
-  // }
-
-  // @todo
-  for (unsigned int i = 0x20000000; i < 0x20007000; i += 4)
+  while (addressOfSegmentInRam < &_edata) 
   {
-    WRITE_REGISTER(i, 0);
+    *addressOfSegmentInRam++ = *addressOfSegmentInFlash++;
   }
+
+  // clear out .bss section in ram
+  addressOfSegmentInRam = &_sbss;
+  while (addressOfSegmentInRam < &_ebss) 
+  {
+    *addressOfSegmentInRam++ = 0;
+  }
+
   init_allocator( max, (unsigned int*) &ram_size );
 
   boot_flags.isColdStart = 1;

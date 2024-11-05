@@ -18,15 +18,21 @@ typedef enum RebootTypes RebootTypes_t;
 IoChannel_t type_of_io_handler;
 DmaTransferSpecifics_t DmaTransferConfig;
 
-// @todo: Initialization does not work yet because whole structure lies in ram.
-OsLifetime_t lifetime_statistic = { .version.version_number = 0, .version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t), { .0 } };
+OsLifetime_t lifetime_statistic = { .version.version_number = 1, 
+                                    .version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t), 
+                                    .osMeta.git_hash = GIT_HASH,  
+                                    .osMeta.os_version = OS_VERSION,
+                                    .osMeta.gcc_version = GCC_VERSION,
+                                    .osMeta.magic = 0x12345678,
+                                    .osMeta.debug_mode = DEBUG ? 1 : 0,
+                                    .osMeta.systick_enabled = SYSTICK ? 1 : 0 };
 
 void (*io_handler) (unsigned int uart_rx_buffer);
 unsigned int rx_state;
 char *generalPurposeBuffer;
 void (*subtasks[maxNumOfWaitingKernelSubtasks])();
 
-static void __attribute__((__noipa__))  __attribute__((optimize("O0"))) stat(void)
+static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) stat(void)
 {
   update_memory_statistic(&lifetime_statistic.memoryStat);
   update_process_statistic(&lifetime_statistic.processStat);
@@ -161,21 +167,6 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
   {
     create_task(func_ptr[i], 0);
   }
-
-  if (!(boot_flags.reboot_type == RebootRequestedByOperatorKeepStat))
-  {
-    memset_byte((void*) &lifetime_statistic, sizeof(OsLifetime_t), 0);
-  }
-
-  lifetime_statistic.osMeta.git_hash = GIT_HASH;
-  lifetime_statistic.osMeta.os_version = OS_VERSION;
-  lifetime_statistic.osMeta.gcc_version = GCC_VERSION;
-  lifetime_statistic.osMeta.magic = 0x12345678;
-  lifetime_statistic.osMeta.debug_mode = DEBUG ? 1 : 0;
-  lifetime_statistic.osMeta.systick_enabled = SYSTICK ? 1 : 0;
-
-  lifetime_statistic.version.version_number = 1;
-  lifetime_statistic.version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t);
 
   update_memory_statistic(&lifetime_statistic.memoryStat);
   update_process_statistic(&lifetime_statistic.processStat);

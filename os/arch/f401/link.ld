@@ -17,20 +17,44 @@ SECTIONS
 		KEEP(*(.isr_vector))
 		*(.text)
 		*(.text.*)
-		*(.rodata)
-		*(.rodata.*)
-		_sromdev = .;
+		/* *(.rodata)
+		*(.rodata.*) */
+		/* _sromdev = .;
 		_eromdev = .;
-		_sidata = .;
+		_sidata = .; */
+	} >FLASH
+
+	/* Constant data into ROM memory*/
+	.rodata :
+	{
+		. = ALIGN(4);
+		*(.rodata)         /* .rodata sections (constants, strings, etc.) */
+		*(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+		. = ALIGN(4);
 	} >FLASH
 	
-	.data :
+	/* Used by the startup to initialize data */
+	_sidata = LOADADDR(.data);
+
+	/* Initialized data sections into RAM memory */
+	.data : 
+	{
+		. = ALIGN(4);
+		_sdata = .;        /* create a global symbol at data start */
+		*(.data)           /* .data sections */
+		*(.data*)          /* .data* sections */
+
+		. = ALIGN(4);
+		_edata = .;        /* define a global symbol at data end */
+	} >RAM AT> FLASH
+	
+	/* .data :
 	{
 		_sdata = .;
 		*(.data)
 		*(.data*)
 		_edata = .;
-	} >RAM
+	} >RAM */
 
 	.bss :
 	{
@@ -40,6 +64,6 @@ SECTIONS
 	} >RAM
 
 	stack_top = ORIGIN(RAM) + LENGTH(RAM);
-    _sidata = LOADADDR(.data);
+    /* _sidata = LOADADDR(.data); */
 
 }

@@ -37,6 +37,8 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
 
 int init_scheduler(void)
 {
+  disable_irq();
+  
   RTCErrorCode_t rtcError;
   
   if ((rtcError = RTC_init()) == RTC_NoError)
@@ -76,6 +78,8 @@ int init_scheduler(void)
   memset_byte((void*) &process_stats, sizeof(ProcessStats_t), 0);
   memset_byte((void*) &kernel_pids, sizeof(KernelPids_t), -1);
 
+  enable_irq();
+
   return 0;
 }
 
@@ -104,6 +108,8 @@ int insert_scheduled_task(Tcb_t* tcb)
 
 void reboot(RebootTypes_t reboot_type)
 {
+  // disable_irq();
+  // @todo : Bug - does not reset interrupt request, 
   boot_flags.reboot_type = reboot_type;
   soft_reset();
 }

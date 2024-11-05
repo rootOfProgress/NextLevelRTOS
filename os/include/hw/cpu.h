@@ -3,6 +3,22 @@
 
 #include "../lang.h"
 
+// typedef struct CpuSCB 
+// {
+//   union
+//   {
+//     unsigned int CPU_ACTLR;
+//     unsigned int CPU_CPUID;
+//   };
+//   unsigned int CPU_ICSR;
+//   unsigned int CPU_VTOR;
+//   unsigned int CPU_AIRCR;
+//   unsigned int CPU_SCR;
+//   unsigned int CPU_ССR;
+//   // ...
+// } CpuSCB_t;
+
+
 typedef enum
 {
   Icsr = 0xE000ED04
@@ -74,14 +90,18 @@ enum
   CPU_SCB_SHCSR = 0xE000ED24,
 };
 
+enum 
+{
+  CPU_AIRCR_SYSRESETREQ = 2
+};
+
+enum
+{
+ CPU_AIRCR_BASEADRESS = 0xE000ED0C
+};
+
 enum { STK = 0xE000E010 };
 
-// #define AIRCR 0xE000ED0C
-
-// #define CTRL 0x00
-// #define LOAD 0x04
-// #define VAL 0x08
-// #define CALIB 0x0C
 
 typedef struct Systick
 {
@@ -96,15 +116,30 @@ static inline __attribute__((always_inline)) void enable_systick(void)
   WRITE_REGISTER(&((SystickRegisters_t*) STK)->ctrl, READ_REGISTER(&((SystickRegisters_t*) STK)->ctrl) | 1);
 }
 
-static inline __attribute__((always_inline)) void soft_reset(void)
-{
-  __asm("dsb");
-  WRITE_REGISTER(0xE000ED0C, 0x05FA0001);
-  __asm("dsb");
+// static inline __attribute__((always_inline)) void soft_reset(void)
+// {
+//   __asm("dsb");
+//   WRITE_REGISTER(0xE000ED0C, 0x05FA0001);
+//   __asm("dsb");
 
-  // reboot went wrong
-  __builtin_unreachable();
-}
+//   // reboot went wrong
+//   __builtin_unreachable();
+// }
+
+// static inline __attribute__((always_inline)) void soft_reset(void)
+// {
+//   __asm("dsb");
+  
+//   // Notify system to reset all peripherials
+//   WRITE_REGISTER(0xE000ED0C, READ_REGISTER(0xE000ED0C) | (1 << CPU_AIRCR_SYSRESETREQ));
+  
+//   // Reboot. Note: Maybe undefined behaviour, better switch PC to entry function.
+//   WRITE_REGISTER(0xE000ED0C, 0x05FA0001);
+//   __asm("dsb");
+
+//   // reboot went wrong
+//   __builtin_unreachable();
+// }
 
 static inline __attribute__((always_inline)) void set_pendsv(void)
 {
@@ -138,5 +173,6 @@ void enable_nvic_interrupt(unsigned nvic_number);
 void clear_nvic_interrupt(unsigned nvic_number);
 void init_systick(unsigned int);
 void sleep(void);
+void soft_reset(void);
 
 #endif

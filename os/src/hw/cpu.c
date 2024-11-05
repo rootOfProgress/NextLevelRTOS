@@ -1,6 +1,9 @@
 #include "hw/cpu.h"
 #include "lang.h"
 
+// CpuSCB_t *CpuSystemControlBlock = (CpuSCB_t*) CPU_SCB_BASEADRESS;
+
+
 void init_systick(unsigned int period)
 {
   unsigned int cycles_until_zero = period * 8000;
@@ -42,6 +45,26 @@ unsigned int calculate_nvic_target_register(unsigned int nvic_number, NvicType_t
   }
   return nvic_register_base + (0x04 * nvic_register_block);
 }
+
+void soft_reset(void)
+{
+  __asm("dsb");
+  
+  // Notify system to reset all peripherials
+  WRITE_REGISTER(CPU_AIRCR_BASEADRESS, 0xFA05 | (1 << CPU_AIRCR_SYSRESETREQ));
+  // while (1)
+  // {
+  //   /* code */
+  // }
+  
+  // Reboot. Note: Maybe undefined behaviour, better switch PC to entry function.
+  WRITE_REGISTER(CPU_AIRCR_BASEADRESS, 0x05FA0001);
+  __asm("dsb");
+
+  // reboot went wrong
+  __builtin_unreachable();
+}
+
 
 void NO_OPT enable_nvic_interrupt(unsigned nvic_number)
 {
