@@ -179,3 +179,10 @@ void enable_ccx_ir(unsigned int tim_nr, unsigned int ccr_nr)
   unsigned int tim_base = get_timx_base(tim_nr);
   WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->dier, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->dier) | (1 << ccr_nr));
 }
+
+void disable_ccx_ir(unsigned int tim_nr, unsigned int ccr_nr)
+{
+  unsigned int tim_base = get_timx_base(tim_nr);
+  WRITE_REGISTER(&((timer25RegisterMap_t*) tim_base)->dier, READ_REGISTER(&((timer25RegisterMap_t*) tim_base)->dier) & ~(1 << ccr_nr));
+}
+

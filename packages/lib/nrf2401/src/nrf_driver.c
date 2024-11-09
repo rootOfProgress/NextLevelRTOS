@@ -105,6 +105,7 @@ unsigned int change_channel(unsigned char newChannel)
 
 void request_channel_change(TxConfig_t *tx_config, char *receivedAckPackage)
 {
+#ifdef REWORK_NEEDED
   char outBuffer[32];
   for (unsigned int i = 0; i < 32; i++)
   {
@@ -121,6 +122,7 @@ void request_channel_change(TxConfig_t *tx_config, char *receivedAckPackage)
     change_channel(rxConfig->channel);
     tx_observe.currentChannel = rxConfig->channel;
   }
+#endif
 }
 
 char configure_device(Nrf24l01Registers_t* nrf_regs, __attribute__((unused)) OperatingMode_t mode)
@@ -286,10 +288,12 @@ unsigned int transmit_all_packages(void)
   return 1;
 }
 
-char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config,
+RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config,
     char *receivedAckPackage,
-    char *outBuffer)
+    char *outBuffer,
+    char *inBuffer)
 {
+  tx_observe.retransmitCount = 0;
 
   crc_reset();
   unsigned int crc = 0xFFFFFFFF;
@@ -305,7 +309,7 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
     }
   }
 
-  char transmitSucceded = 0;
+  RxAckStatusMask_t ackStatus = RxAckNotReceived;
 
   if (!endpointIsRaspberryPi)
   {
@@ -318,8 +322,6 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
   {
     outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
   }
-
-  Nrf24l01Registers_t cfg;
 
   while (tx_observe.retransmitCount < tx_config->retransmitCount)
   {
@@ -340,7 +342,31 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
       tx_observe.timeUntilAckArrived = (tx_observe.timeUntilAckArrived - tStart);
       tx_observe.totalPackages++;
       tx_observe.bytesSend += 32;
-      transmitSucceded = 1;
+      ackStatus |= RxAckReceived;
+
+      unsigned int expectedCrcValue = 0xFFFFFFFF;
+      unsigned int sentCrcValue;
+
+      if (endpointIsRaspberryPi)
+      {
+        for (unsigned int i = 0; i < 8; i++)
+        {
+          expectedCrcValue = soft_crc32(expectedCrcValue, inBuffer[i]);
+        }
+
+        char *dst = (char*) &sentCrcValue;
+
+        for (unsigned int i = 8, j = 0; i < 12; i++)
+        {
+          dst[j] = inBuffer[i];
+        }
+
+        if (sentCrcValue == expectedCrcValue)
+        {
+          ackStatus |= RxAckContainsInformation;
+          // ack package is valid and contains valid information
+        }
+      }
       break;
     }
   }
@@ -359,11 +385,10 @@ char __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config
 
   tx_observe.totalRetransmits += tx_observe.retransmitCount;
   tx_observe.signalStrength = (unsigned int)( (float) ( ((float)  tx_observe.totalPackages / ((float)  tx_observe.totalPackages + (float)  tx_observe.totalRetransmits) )) * 100);
-  tx_observe.retransmitCount = 0;
-  return transmitSucceded;
+  return ackStatus;
 }
 
-unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer)
+RxDataStatus_t __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer)
 {
   tx_observe.timeUntilAckArrived = osCoreFunctions[readTimerFunctionPtr]();
   clear_rx_dr_flag();
@@ -371,17 +396,17 @@ unsigned int __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Register
   if (status & (1 << 5))
   {
     clear_tx_ds_flag();
-    return 0;
+    return RxDataInvalid;
   }
   unsigned int fifo_status = 0;
-  while (!((fifo_status = get_nrf_fifo()) & 1))
+  while (!((fifo_status = get_nrf_fifo()) & RX_EMPTY))
   {
     if (check_for_received_data(nrf_registers, rx_answer))
     {
-      return 1;
+      return RxDataValid;
     }
   }
-  return 0;
+  return RxDataInvalid;
 }
 
 void enable_rx_and_listen()

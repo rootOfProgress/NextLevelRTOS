@@ -5,6 +5,7 @@
 #include "process/task.h"
 #include "panic.h"
 #include "data/list.h"
+#include "runtime.h"
 
 // @todo
 #define STACK_SIZE 1536
@@ -19,7 +20,7 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
   if (!cpu_register)
   {
-    invoke_panic(OUT_OF_MEMORY);
+    writeOsError(OS_MemoryAllocationFailed, __FUNCTION__, __LINE__);
     return NULL;
   }
 
@@ -34,20 +35,13 @@ CpuRegister_t* prepare_cpu_register(unsigned int address, unsigned int buffer_si
 
 int create_task(void (*task_function)(), unsigned int ram_location)
 {
-  if (SYSTICK)
-  {
-    __asm volatile(
-      "mov.w	r2, #3758153728\n"
-      "ldr	r3, [r2, #16]\n"
-      "bic.w	r3, r3, #1\n"
-      "str	r3, [r2, #16]\n"
-    );
-  }
+  disable_irq();
+
   unsigned int task_stack_start_address = (unsigned int) allocate(sizeof(CpuRegister_t) + STACK_SIZE);
 
   if (!task_stack_start_address)
   {
-    invoke_panic(OUT_OF_MEMORY);
+    writeOsError(OS_MemoryAllocationFailed, __FUNCTION__, __LINE__);
     return -1;
   }
 
@@ -62,7 +56,7 @@ int create_task(void (*task_function)(), unsigned int ram_location)
 
   if (!tcb)
   {
-    invoke_panic(OUT_OF_MEMORY);
+    writeOsError(OS_MemoryAllocationFailed, __FUNCTION__, __LINE__);
     return -1;
   }
   else
@@ -114,30 +108,12 @@ int create_task(void (*task_function)(), unsigned int ram_location)
     tcb->lifetime_info->lifetime.forced_interrupts = 0;
     tcb->lifetime_info->lifetime.cpu_time = 0;
   }
-//@leave it
-//     volatile unsigned int *shcsr = (void *)0xE000ED24;
-//     *shcsr |= (0x1 << 16) | (0x1 << 17) | (0x1 << 18);
 
-//    *((unsigned int*) 0xE000ED98) = *((unsigned int*) 0xE000ED98) | 0x3; //
-//    *((unsigned int*) 0xE000ED9C) = 0x20000200;//((unsigned int) address + 16) & ~16; // rbar
-
-//     volatile unsigned int *mpu_rasr = (void *)0xE000EDA0;
-
-//     *mpu_rasr = (0b000 << 24) | (0b000110 << 16) | (4 << 1) | 0x1;
-//     volatile unsigned int *mpu_ctrl = (void *)0xE000ED94;
-//     *mpu_ctrl = 0x5;
-  if (insert_scheduled_task((Tcb_t * ) tcb) == -1)
+  if (insert_scheduled_task((Tcb_t * ) tcb) == -1) // BUG IN JOIN_TASK!!!
   {
+    writeOsError(OS_TaskInsertionFailed, __FUNCTION__, __LINE__);
     return -1;
   }
-  if (SYSTICK)
-  {
-    __asm volatile(
-      "mov.w	r2, #3758153728\n"
-      "ldr	r3, [r2, #16]\n"
-      "orr.w	r3, r3, #1\n"
-      "str	r3, [r2, #16]\n"
-    );
-  }
+  enable_irq();
   return tcb->general.task_info.pid;
 }

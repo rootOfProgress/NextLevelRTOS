@@ -35,6 +35,8 @@ unsigned short battery;
 unsigned int tAckReceived;
 char receivedAckPackage;
 char outBuffer[32];
+char *rx_answer;
+
 
 void memcpy_custom(void *dest, const void *src, unsigned int n)
 {
@@ -62,8 +64,8 @@ unsigned int reverse_byte_order(unsigned int num)
 void  __attribute__((optimize("O0"))) tx_receive_isr()
 {
   exti_acknowledge_interrupt(&pinb);
-  char rx_answer[32];
-  receivedAckPackage = tx_ack_receive_isr(&nrf_registers, rx_answer);
+  // char rx_answer[32];
+  receivedAckPackage = (char) tx_ack_receive_isr(&nrf_registers, rx_answer);
   // asm("bkpt");
   // if (receivedAckPackage)
   // {
@@ -118,7 +120,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
   nrf_registers->en_rxaddr = 1;
 
   // payload size of ack: 1 byte
-  nrf_registers->rx_pw_p0 = 13;
+  nrf_registers->rx_pw_p0 = 12;
 
 #endif
   /************ 1Mbps data rate, 0dBm ***************/
@@ -128,7 +130,7 @@ void apply_nrf_config(Nrf24l01Registers_t *nrf_registers)
   nrf_registers->setup_aw = 3;
 
   /************ Channel 3 ***************/
-  nrf_registers->rf_ch = 16;
+  nrf_registers->rf_ch = 3;
 
   nrf_registers->config = 0; 
   char tx[5] = {0xc5, 0xc5, 0xc5, 0xc5, 0xc5};
@@ -159,6 +161,7 @@ static void init_irq()
 
 char sendConfig()
 {
+#ifdef REWORK_NEEDED
   char outBuffer[32];
   for (unsigned int i = 0; i < 32; i++)
   {
@@ -176,6 +179,7 @@ char sendConfig()
     outBuffer[i] = payloadPtr[i];
   }
   return transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+#endif
 }
 
 void adc_isr()
@@ -200,6 +204,8 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   NodePackage_t *package = (NodePackage_t*) outBuffer;
   package->meta.nodeNumber = 15;
   package->header.size = sizeof(NodePackage_t) - sizeof(StructHeader_t);
+  
+  rx_answer = (char*) allocate(32);
 
   append_os_core_function(read_timer);
 
@@ -207,7 +213,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
   tx_config.autoRetransmitDelay = 130000;
-  tx_config.retransmitCount = 1;
+  tx_config.retransmitCount = 7;
   timeToSettle = 150;
 
   crc_activate();
@@ -288,38 +294,24 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
     package->environment.signalStrength = (char) observe.signalStrength;
     // @todo : don't cast datatypes
     package->environment.totalLostPackages = (char) observe.totalLostPackages;
-    package->environment.batteryHealth = battery;
+    // package->environment.batteryHealth = battery;
     package->environment.currentChannel = observe.currentChannel;
 
-    // memcpy_byte((void*) payloadPtr, (void*) &package, sizeof(NodePackage_t));
-    // payloadPtr += sizeof(NodePackage_t);
-
-    // memcpy_byte((void*) payloadPtr, (void*) &readings, sizeof(Am2302Readings_t));
-    // payloadPtr += sizeof(Am2302Readings_t);
-
-    // memcpy_byte((void*) payloadPtr, (void*) &observe.totalLostPackages, sizeof(unsigned int));
-    // payloadPtr += sizeof(unsigned int);
-
-    // memcpy_byte((void*) payloadPtr, (void*) &observe.totalRetransmits, sizeof(unsigned int));
-    // payloadPtr += sizeof(unsigned int);
-
-    // memcpy_byte((void*) payloadPtr, (void*) &observe.signalStrength, sizeof(unsigned int));
-    // payloadPtr += sizeof(unsigned int);
-
-    // char nodeInfo = 0xAB;
-    // memcpy_byte((void*) payloadPtr, (void*) &nodeInfo, sizeof(char));
-    // payloadPtr += sizeof(char);
-
-
-    memset_byte((void*) outBuffer, 32, 0xA5);
-
-    transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer);
+    RxAckStatusMask_t rxAckStatus = transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer, rx_answer);
+    if (rxAckStatus & RxAckReceived)
+    {
+      if (rxAckStatus & RxAckContainsInformation)
+      {
+        // test!!!
+        package->environment.batteryHealth++;
+      }
+    }
+    // memcpy_custom(&package->meta, rx_answer, 12);
     print((char*) &outBuffer, sizeof(NodePackage_t));
     // request_channel_change(&tx_config, &receivedAckPackage);
-    // __asm ("CPSIE I");
     adc_start_conv_regular();
 
-    // sleep(3000);
+    sleep(3000);
   }
   return 0;
 }

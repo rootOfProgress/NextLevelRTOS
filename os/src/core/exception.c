@@ -13,8 +13,17 @@
 
 volatile unsigned int svc_number = 0;
 
-void ISR_INTERNAL systick_isr()
+void ISR_INTERNAL NO_OPT systick_isr()
 {
+  __asm__ volatile (
+    "TST lr, #4\n"
+    "ITTT NE\n"
+    "MRSNE r2, PSP\n"
+    "STMDBNE r2!, {r4-r11}\n"
+    "MSRNE PSP, r2\n"
+  );
+
+  set_pendsv();
 }
 
 USED void uprint(UNUSED volatile unsigned int* transfer_info )
@@ -53,8 +62,8 @@ void svcall_isr()
   case execPspTask:
     if (SYSTICK)
     {
-      init_systick(200);
-    }
+      init_systick(1000);
+     }
 
     Tcb_t* tcb_of_pid0 = ((Tcb_t*)currently_running->data);
 

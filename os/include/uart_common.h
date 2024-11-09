@@ -31,6 +31,8 @@ typedef enum {
     SET_DATE = 0xA,
     READ_DATETIME_RAW = 0xB,
     READ_DATETIME_CONVERTED = 0xC,
+    READ_ERROR_CODE = 0xD,
+    READ_ERROR_LOG = 0xE,
 } UartStates_t;
 
 extern UartStates_t state;

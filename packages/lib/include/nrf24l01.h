@@ -6,6 +6,19 @@
 void spin(int);
 void power_on();
 
+typedef enum RxAckStatusMask
+{
+  RxAckNotReceived = 0,
+  RxAckReceived = 1 << 1,
+  RxAckContainsInformation = 1 << 2
+} RxAckStatusMask_t;
+
+typedef enum RxDataStatus
+{
+  RxDataInvalid = 0,
+  RxDataValid,
+} RxDataStatus_t;
+
 enum
 {
   endpointIsRaspberryPi = 1
@@ -461,10 +474,12 @@ void get_nrf_config(Nrf24l01Registers_t*);
 unsigned int transmit_single_package(char settle);
 unsigned int transmit_all_packages(void);
 // char check_for_received_data(Nrf24l01Registers_t* config, char* response_buffer);
-unsigned int tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer);
-char transmit_with_autoack(TxConfig_t *tx_config,
-                           char *receivedAckPackage,
-                           char *outBuffer);
+
+RxDataStatus_t tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer);
+RxAckStatusMask_t transmit_with_autoack(TxConfig_t *tx_config,
+                                        char *receivedAckPackage,
+                                        char *outBuffer,
+                                        char *inBuffer);
 TxObserve_t get_current_tx_state(void);
 void flush_current_tx_state(void);
 void append_os_core_function(unsigned int (*function_ptr)());

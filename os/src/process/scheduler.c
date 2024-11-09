@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "panic.h"
 #include "rtc.h"
+#include "runtime_types.h"
 
 Queue_t* running_tasks = NULL;
 Queue_t* waiting_tasks = NULL;
@@ -37,7 +38,7 @@ void update_process_statistic(ProcessLifetime_t* process_lifetime)
 
 int init_scheduler(void)
 {
-  disable_irq();
+  // disable_irq();
   
   RTCErrorCode_t rtcError;
   
@@ -57,7 +58,7 @@ int init_scheduler(void)
   }
   else 
   {
-
+    writeOsError(OS_RTCInitializationFailed, __FUNCTION__, __LINE__);
   }
 
   currently_running = NULL;
@@ -65,6 +66,7 @@ int init_scheduler(void)
 
   if (running_tasks == NULL)
   {
+    writeOsError(OS_TaskQueueInitializationFailed, __FUNCTION__, __LINE__);
     return -1;
   }
 
@@ -72,13 +74,14 @@ int init_scheduler(void)
 
   if (waiting_tasks == NULL)
   {
+    writeOsError(OS_TaskQueueInitializationFailed, __FUNCTION__, __LINE__);
     return -1;
   }
 
   memset_byte((void*) &process_stats, sizeof(ProcessStats_t), 0);
   memset_byte((void*) &kernel_pids, sizeof(KernelPids_t), -1);
 
-  enable_irq();
+  // enable_irq();
 
   return 0;
 }
@@ -100,7 +103,8 @@ int insert_scheduled_task(Tcb_t* tcb)
     }
     break;
   default:
-    return -1;
+    {
+    }
     break;
   }
   return 1;
@@ -146,7 +150,9 @@ char check_tasks_availability(unsigned int pid)
   Node_t *q = get_head_element(waiting_tasks);
 
   if (!q)
+  {
     return 0;
+  }
 
   for (unsigned int i = 0; i < waiting_tasks->size; i++)
   {
@@ -246,6 +252,7 @@ int run_scheduler(void)
   {
     0, 0, 0, 0
   }, ResolutionForSleepFunction);
+
   enable_ccx_ir(TimerForTaskSleep, 1);
   enable_ccx_ir(TimerForTaskSleep, 2);
   enable_ccx_ir(TimerForTaskSleep, 3);
@@ -318,10 +325,10 @@ void __attribute__ ((hot)) pendsv_isr(void)
   // @todo what is that???
   __asm volatile (
     "ldmfd r2!, {r4-r11}\n"
-    "mov.w r0, #3758153728\n"
-    "ldr   r1, [r0, #16]\n"
-    "orr.w r1, r1, #1\n"
-    "str   r1, [r0, #16]\n"
+    // "mov.w r0, #3758153728\n"
+    // "ldr   r1, [r0, #16]\n"
+    // "orr.w r1, r1, #1\n"
+    // "str   r1, [r0, #16]\n"
     "msr psp, r2\n"
   );
 }
@@ -439,6 +446,7 @@ void finish_task(void)
 
 void task_sleep(unsigned int requested_time_to_sleep)
 {
+  // enable_ccx_ir(TimerForTaskSleep, 2);
   // @todo handle timer overflow
   task_sleep_request.pid_of_sleeping_task = ((Tcb_t*) currently_running->data)->general.task_info.pid;
   set_ccr(TimerForTaskSleep, timer_read_counter(TimerForTaskSleep) + requested_time_to_sleep, 2);

@@ -46,7 +46,16 @@ enum KernelTasks
   transferManager = 1,
 };
 
+typedef struct OsErrorInformation
+{
+  OsErrorCodes_t errorCode;
+  char reserved[3];
+  char functionName[32];
+  unsigned int lineNumber;
+} OsErrorInformation_t;
+
 enum { maxNumOfWaitingKernelSubtasks = 3 };
+enum { numberOfErrorLogSlots = 16 };
 
 extern void (*io_handler) (unsigned int uart_rx_buffer);
 extern IoChannel_t type_of_io_handler;

@@ -17,6 +17,10 @@ typedef enum RebootTypes RebootTypes_t;
 
 IoChannel_t type_of_io_handler;
 DmaTransferSpecifics_t DmaTransferConfig;
+OsErrorInformation_t osErrorLog[DEBUG ? numberOfErrorLogSlots : 0];
+
+unsigned int osErrorCode;
+static unsigned int osErrorCodeLoggingIdx = 0;
 
 OsLifetime_t lifetime_statistic = { .version.version_number = 1, 
                                     .version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t), 
@@ -61,6 +65,32 @@ void RTC_collectConvertedDateTime(void) // @todo : function needs an own space
   deallocate((unsigned int*) &generalPurposeBuffer);
 }
 
+void writeOsError(OsErrorCodes_t error, const volatile char* functionNameSrc, unsigned int line_number)
+{
+  osErrorCode |= error;
+
+  if (DEBUG)
+  {
+    osErrorLog[osErrorCodeLoggingIdx % numberOfErrorLogSlots].errorCode = error;
+
+    const volatile char *helper = functionNameSrc;
+
+    while (*helper != '\0') 
+    {
+      helper++;
+    }
+
+    memcpy_byte(&osErrorLog[osErrorCodeLoggingIdx % numberOfErrorLogSlots].functionName, 
+                (void*) functionNameSrc, 
+                helper - functionNameSrc);
+
+    osErrorLog[osErrorCodeLoggingIdx % numberOfErrorLogSlots].lineNumber = line_number;
+
+    osErrorCodeLoggingIdx++;
+  }
+
+}
+
 void schedule_kernel_subtask(unsigned int task_number)
 {
   unsigned int idx = 0;
@@ -102,20 +132,22 @@ void NO_OPT external_io_runner(void)
         tInfo.task_size = (unsigned int) * ((unsigned int*) uart_rx_buffer) >> 8;
         tInfo.start_adress = allocate(tInfo.task_size);
 
-        if (!tInfo.start_adress)
-        {
-          invoke_panic(OUT_OF_MEMORY);
-        }
-
         // notify host to recompile with correct offset
         print((char*) &tInfo.start_adress, 4);
 
-        DmaTransferConfig.ndtr = tInfo.task_size;
-        DmaTransferConfig.destination_address = (unsigned int) tInfo.start_adress;
-        
-        dma_interrupt_action = DmaWaitsForExternalTask;
+        if (tInfo.start_adress)
+        {
+          DmaTransferConfig.ndtr = tInfo.task_size;
+          DmaTransferConfig.destination_address = (unsigned int) tInfo.start_adress;
+          
+          dma_interrupt_action = DmaWaitsForExternalTask;
 
-        dma_transfer(&DmaTransferConfig, PeripherialToMemory, UART);
+          dma_transfer(&DmaTransferConfig, PeripherialToMemory, UART);
+        }
+        else 
+        {
+          invoke_panic(OUT_OF_MEMORY);
+        }
         break;
       case REQUEST_STATISTIC:
         schedule_kernel_subtask(statisticManager);
@@ -142,6 +174,27 @@ void NO_OPT external_io_runner(void)
         RTC_collectConvertedDateTime();
         break;
       }
+      case READ_ERROR_CODE:
+      {
+        print((char*) &osErrorCode, sizeof(unsigned int));
+        break;
+      }
+      case READ_ERROR_LOG:
+      {
+        // notify host about log size
+        volatile unsigned int logSize = sizeof(OsErrorInformation_t) * numberOfErrorLogSlots;
+        unsigned int actualSize = sizeof(osErrorLog) / sizeof(OsErrorInformation_t);
+        print((char*) &logSize, sizeof(unsigned int));
+        task_sleep(500);
+        if (DEBUG)
+        {
+          for (unsigned int logIdx = 0; logIdx < actualSize; logIdx++)
+          {
+            print((char*) &osErrorLog[logIdx], sizeof(OsErrorInformation_t));
+          }
+        }
+        break;
+      }
       default:
         rx_state = (unsigned int) RX_READY;
         break;
@@ -165,7 +218,10 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
   // execute non-os modules
   for (int i = 0; i < NUM_OF_EXTERNAL_FUNCTIONS; i++)
   {
-    create_task(func_ptr[i], 0);
+    if (create_task(func_ptr[i], 0) < 0)
+    {
+      writeOsError(OS_TaskCreationFailed, __FUNCTION__, __LINE__);
+    }
   }
 
   update_memory_statistic(&lifetime_statistic.memoryStat);
@@ -173,6 +229,11 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
 
   // @todo: create subtask (function pointer) to save ram space
   kernel_pids.external_io_runner = create_task(&external_io_runner, 0);
+
+  if (kernel_pids.external_io_runner < 0)
+  {
+    writeOsError(OS_TaskCreationFailed, __FUNCTION__, __LINE__);
+  }
 
   type_of_io_handler = OsInternalIo;
   io_handler = NULL;
@@ -199,7 +260,10 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
     {
       case DmaTransferedExternalTask:
       {
-        create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress);
+        if (create_task((void (*)()) tInfo.start_adress, (unsigned int) tInfo.start_adress) < 0)
+        {
+          writeOsError(OS_TaskCreationFailed, __FUNCTION__, __LINE__);
+        }
         dma_interrupt_action = DmaIsIdle;
         break;
       }
@@ -247,16 +311,22 @@ KernelErrorCodes_t __attribute__((__noipa__))  __attribute__((optimize("O0"))) s
 {
   if (init_scheduler() == -1)
   {
+    writeOsError(OS_SchedulerInitializationFailed, __FUNCTION__, __LINE__);
+
     return SCHEDULER_INIT_FAILED;
   }
 
   if ((kernel_pids.idle_task = create_task(&idle_runner, 0)) == -1)
   {
+    writeOsError(OS_TaskCreationFailed, __FUNCTION__, __LINE__);
     return TASK_CREATION_FAILED;
   }
 
   if (run_scheduler() == -1)
+  {
+    writeOsError(OS_SchedulerInitializationFailed, __FUNCTION__, __LINE__);
     return SCHEDULER_INIT_FAILED;
+  }
 
   return KERNEL_INIT_SUCCEDED;
 }

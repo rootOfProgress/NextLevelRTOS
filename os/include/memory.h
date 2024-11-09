@@ -19,6 +19,11 @@ typedef struct MemoryStatisticLocal
   unsigned int ram_size;
 } MemoryStatisticLocal_t;
 
+enum 
+{
+  MemoryAllocationFailed = 0
+};
+
 typedef union MemoryEntry
 {
   struct

@@ -20,7 +20,9 @@ void single_list_push(List_t* list, void* data)
   SingleLinkedNode_t* new_node = (SingleLinkedNode_t*) allocate(sizeof(SingleLinkedNode_t));
 
   if (new_node == NULL)
+  {
     invoke_panic(OUT_OF_MEMORY);
+  }
 
   new_node->next = NULL;
   new_node->data = data;

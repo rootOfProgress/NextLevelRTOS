@@ -1,5 +1,7 @@
 #include "panic.h"
 #include "process/scheduler.h"
+#include "uart_common.h"
+#include "runtime.h"
 
 PanicTypes_t panic_state;
 

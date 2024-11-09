@@ -3,6 +3,7 @@
 
 void __attribute__((optimize("O0"))) tim3_isr_handler(void)
 {
+
   unsigned tim_sr = timer_get_sr(TimerForTaskSleep);
   
   if (tim_sr & (1 << CC1IF))
@@ -22,5 +23,9 @@ void __attribute__((optimize("O0"))) tim3_isr_handler(void)
     timer_set_sr(TimerForTaskSleep, tim_sr & ~(1 << CC4IF));
   }
 
-  wakeup_pid(task_sleep_request.pid_of_sleeping_task);
+  if (task_sleep_request.pid_of_sleeping_task != 0)
+  {
+    wakeup_pid(task_sleep_request.pid_of_sleeping_task);
+  }
+  return;
 }

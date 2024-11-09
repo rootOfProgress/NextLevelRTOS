@@ -4,6 +4,7 @@
 #include "process/scheduler.h"
 #include "uart.h"
 #include "uart_common.h"
+#include "hw/cpu.h"
 #include "data/quicksort.h"
 
 static unsigned int* MEM_TABLE_START = 0;
@@ -65,7 +66,6 @@ void memcpy_byte(void* dest, const void* src, unsigned int number_of_bytes)
     d[i] = s[i];
   }
 }
-
 
 void __attribute__((optimize("O0"))) defrag()
 {
@@ -250,14 +250,17 @@ void __attribute__ ((cold)) update_memory_statistic(MemoryLifetime_t *lifetime_i
 
 unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
 {
-  ST_DISABLE;
+  // ST_DISABLE;
+  disable_irq();
   lock_mutex((void*) &mutex);
   unsigned int next_useable_chunk = 0;
 
   // 32kbyte is max locateable chunk
   // @todo: count total alloced etc
   if (size == 0 || size > 32768)
+  {
     return NULL;
+  }
 
   while ((size % 4) != 0)
   {
@@ -303,6 +306,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
         mstat_local.num_of_allocs++;
       }
       release_mutex((void*) &mutex);
+      enable_irq();
       return (unsigned int*) ((memory_entry->raw >> 16) + (unsigned int) USEABLE_MEM_START);
     }
     // check if size fits on new chunk
@@ -329,8 +333,7 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
       }
 
       release_mutex((void*) &mutex);
-
-      ST_ENABLE;
+      enable_irq();
       return (unsigned int*) (memory_entry->mementry_fields.base_offset + (unsigned int) USEABLE_MEM_START);
 
     }
@@ -338,6 +341,6 @@ unsigned int* __attribute__((optimize("O0"))) allocate(unsigned int size)
   }
 
   release_mutex((void*) &mutex);
-  ST_ENABLE;
+  enable_irq();
   return NULL;
 }

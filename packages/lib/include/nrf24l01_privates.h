@@ -22,6 +22,11 @@ enum
   FLUSH_RX = 0xE2
 };
 
+typedef enum FifoStatus
+{
+  RX_EMPTY = 1,
+} FifoStatus_t;
+
 enum
 {
   readTimerFunctionPtr = 0,

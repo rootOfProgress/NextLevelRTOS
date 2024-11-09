@@ -10,12 +10,14 @@ void init_systick(unsigned int period)
 
   SystickRegisters_t* stk = (SystickRegisters_t*) STK;
 
-  WRITE_REGISTER(&stk->load, READ_REGISTER(&stk->load) & ~0x00FFFFFF);
-  WRITE_REGISTER(&stk->load, cycles_until_zero);
+  // Setze den Reload-Wert für die gewünschte Periode
+  WRITE_REGISTER(&stk->load, cycles_until_zero & 0x00FFFFFF);
 
-  WRITE_REGISTER(&stk->val, READ_REGISTER(&stk->load) & ~0x00FFFFFF);
-  WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) & ~0b111);
-  WRITE_REGISTER(&stk->ctrl, READ_REGISTER(&stk->ctrl) | 0b110);
+  // Setze den aktuellen Wert auf 0, um den Timer zu starten
+  WRITE_REGISTER(&stk->val, 0);
+
+  // Konfiguriere und aktiviere SysTick: Prozessortakt, Interrupt und Enable
+  WRITE_REGISTER(&stk->ctrl, 0b111);
 }
 
 unsigned int calculate_nvic_target_register(unsigned int nvic_number, NvicType_t nvic_type)
