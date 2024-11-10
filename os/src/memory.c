@@ -192,14 +192,32 @@ unsigned int __attribute__((optimize("O0"))) deallocate(unsigned int* address)
   return 0;
 }
 
-void __attribute__ ((cold)) update_memory_statistic(MemoryLifetime_t *lifetime_info)
+static void NO_OPT walkTaskList(MemoryLifetime_t *memory_lifetime, Queue_t *taskQueue)
+{
+  Node_t *headPtr = get_head_element(taskQueue);
+  if (!headPtr)
+  {
+    return;
+  }
+
+  do
+  {
+    Tcb_t* tcbOfTask = headPtr->data;
+
+    memory_lifetime->usedMemory -= (tcbOfTask->sp - tcbOfTask->stacksection_lower_bound);
+    headPtr = headPtr->next;
+  }
+  while (headPtr != taskQueue->head);
+}
+
+void NO_OPT update_memory_statistic(MemoryLifetime_t *lifetime_info)
 {
   unsigned int msp_position;
   __asm volatile ("mrs %0, msp" : "=r"(msp_position));
 
-  lifetime_info->total_byte_alloced = (RAM_START + lifetime_info->ram_size) - msp_position;
-  lifetime_info->total_byte_alloced += (unsigned int) MEM_TABLE_START - RAM_START;
-  lifetime_info->total_byte_alloced += NUM_OF_SLOTS * sizeof(unsigned int);
+  lifetime_info->reservedMemory = (RAM_START + lifetime_info->ram_size) - msp_position;
+  lifetime_info->reservedMemory += (unsigned int) MEM_TABLE_START - RAM_START;
+  lifetime_info->reservedMemory += NUM_OF_SLOTS * sizeof(unsigned int);
 
   lifetime_info->ram_size = mstat_local.ram_size;
   lifetime_info->num_of_allocs = mstat_local.num_of_allocs;
@@ -211,16 +229,34 @@ void __attribute__ ((cold)) update_memory_statistic(MemoryLifetime_t *lifetime_i
     unsigned int entry = *(MEM_TABLE_START + index);
     if ((entry & 1) == 1)
     {
-      lifetime_info->total_byte_alloced += (entry & 0xFFFE) >> 1;
+      lifetime_info->reservedMemory += (entry & 0xFFFE) >> 1;
     }
   }
   // Node_t* q = running_tasks->head;
-  lifetime_info->total_byte_used = 0;
+  lifetime_info->usedMemory = lifetime_info->reservedMemory;
 
-  unsigned int *memory = NULL;
+  walkTaskList(lifetime_info, running_tasks);
+  walkTaskList(lifetime_info, waiting_tasks);
+  // do
+  // {
+  //   Tcb_t* tcbOfTask = headPtr->data;
 
-  // collect_os_statistics((char*)memory);
-  deallocate(memory);
+
+  //   lifetime_info->usedMemory -= tcbOfTask->sp - tcbOfTask->stacksection_lower_bound;
+  //   headPtr = headPtr->next;
+  // }
+  // while (headPtr != running_tasks->head);
+
+  // do
+  // {
+  //   Tcb_t* tcbOfTask = headPtr->data;
+
+
+  //   lifetime_info->usedMemory -= tcbOfTask->sp - tcbOfTask->stacksection_lower_bound;
+  //   headPtr = headPtr->next;
+  // }
+  // while (headPtr != running_tasks->head);
+
 
 #define BUG
 #ifndef BUG

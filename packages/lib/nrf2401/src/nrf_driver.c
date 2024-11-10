@@ -356,15 +356,14 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
 
         char *dst = (char*) &sentCrcValue;
 
-        for (unsigned int i = 8, j = 0; i < 12; i++)
+        for (unsigned int i = 8, j = 0; i < 12; i++, j++)
         {
           dst[j] = inBuffer[i];
         }
 
         if (sentCrcValue == expectedCrcValue)
         {
-          ackStatus |= RxAckContainsInformation;
-          // ack package is valid and contains valid information
+          ackStatus |= RxAckCRCMatch;
         }
       }
       break;

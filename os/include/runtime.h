@@ -1,9 +1,9 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#define GIT_HASH 0xd00a5ca4;
-#define OS_VERSION 23032024;
-#define GCC_VERSION 1320;
+#define GIT_HASH 0xf8be118e
+#define OS_VERSION 23032024
+#define GCC_VERSION 1410
 
 #include "runtime_types.h"
 
@@ -33,6 +33,7 @@ void __attribute__((__noipa__)) __attribute__((optimize("O0"))) idle_runner(void
  * @param task_number The task number of the kernel subtask to be scheduled.
  */
 void schedule_kernel_subtask(unsigned int task_number);
+
 
 typedef enum IoChannel
 {

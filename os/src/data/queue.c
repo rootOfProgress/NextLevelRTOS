@@ -46,7 +46,11 @@ Node_t* dequeue_element(Queue_t* queue, Node_t* currently_running)
 
 Node_t* get_head_element(Queue_t* queue)
 {
-  return queue->head;
+  if (queue->size != 0)
+  {
+    return queue->head;
+  }
+  return NULL;
 }
 
 void isolate_node(Queue_t* source_queue, Node_t* node)

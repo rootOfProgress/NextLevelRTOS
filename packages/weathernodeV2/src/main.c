@@ -14,6 +14,8 @@
 #include "nodeConfig.h"
 #include "util/timeFormats.h"
 #include "rtc.h"
+#include "rxSpecifics.h"
+
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
 
@@ -198,31 +200,56 @@ void led()
   }
 }
 
+void processMeasurement(NodePackage_t *package)
+{
+  unsigned int am2302Retries = 0;
+
+  while (am2302Retries++ < Am2302RetryCount)
+  {
+    if (am2302_do_measurement(&package->readings))
+    {
+      break;
+    }
+  }
+
+  observe = get_current_tx_state();
+
+  package->environment.retransmitsForThisPackage = observe.retransmitCount;
+  // @todo : don't cast datatypes
+  package->environment.signalStrength = (char) observe.signalStrength;
+  // @todo : don't cast datatypes
+  package->environment.totalLostPackages = (char) observe.totalLostPackages;
+  // package->environment.batteryHealth = battery;
+  package->environment.currentChannel = observe.currentChannel;
+}
+
 int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((optimize("O0"))) main(void)
 {
-  memset_byte((void*) outBuffer, 32, 0);
   NodePackage_t *package = (NodePackage_t*) outBuffer;
+  NodeState_t nodeState = NodeOperation_ProcessWeatherdata;
+
+  memset_byte((void*) outBuffer, 32, 0);
+  memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
+
+  
   package->meta.nodeNumber = 15;
   package->header.size = sizeof(NodePackage_t) - sizeof(StructHeader_t);
   
   rx_answer = (char*) allocate(32);
-
-  append_os_core_function(read_timer);
-
   receivedAckPackage = 0;
-  memset_byte((void*) &tx_config, sizeof(TxConfig_t), 0);
 
   tx_config.autoRetransmitDelay = 130000;
   tx_config.retransmitCount = 7;
   timeToSettle = 150;
 
+  append_os_core_function(read_timer);
   crc_activate();
   apply_nrf_config(&nrf_registers);
   configure_device(&nrf_registers, MASTER);
   init_irq();
 
   
-  append_os_core_function(read_timer);
+  // append_os_core_function(read_timer);
   am2302_init_peripherials(0, 'A');
 
   gpio_adc_a1.pin = 1;
@@ -238,7 +265,6 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   set_moder(&gpio_a3_notify, GeneralPurposeOutputMode);
   set_pin_on(&gpio_a3_notify);
 
-  unsigned int am2302Retries;
   char *transmitterState;
 
   // @multiple pid sleep must be implemented/fixed (RTOS_MultipleSleep)
@@ -275,39 +301,68 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   while (1)
   {
     char *payloadPtr = outBuffer;
-    am2302Retries = 0;
-
-
-    // __asm ("CPSID I");
-    while (am2302Retries++ < Am2302RetryCount)
+    switch (nodeState)
     {
-      if (am2302_do_measurement(&package->readings))
-      {
-        break;
-      }
+    case NodeOperation_ProcessWeatherdata:
+      processMeasurement(package);
+      package->meta.packageType = (char) PackageType_WeatherData;
+      break;    
+    case NodeOperation_RequestLifetime:
+    {
+      break;
+    }
+    default:
+      break;
     }
 
-    observe = get_current_tx_state();
-
-    package->environment.retransmitsForThisPackage = observe.retransmitCount;
-    // @todo : don't cast datatypes
-    package->environment.signalStrength = (char) observe.signalStrength;
-    // @todo : don't cast datatypes
-    package->environment.totalLostPackages = (char) observe.totalLostPackages;
-    // package->environment.batteryHealth = battery;
-    package->environment.currentChannel = observe.currentChannel;
-
     RxAckStatusMask_t rxAckStatus = transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer, rx_answer);
+    
     if (rxAckStatus & RxAckReceived)
     {
-      if (rxAckStatus & RxAckContainsInformation)
+      if (rxAckStatus & RxAckCRCMatch)
       {
-        // test!!!
-        package->environment.batteryHealth++;
+        AckPayload_t *ackPayload = (AckPayload_t*) rx_answer;
+
+        switch ((AckTypes_t) ackPayload->ackType)
+        {
+        case Ack_Default:
+          nodeState = NodeOperation_ProcessWeatherdata;
+          package->environment.batteryHealth = 0;
+          break;
+        case Ack_ContainsDate:
+          RTC_setTimeAndDate(NULL, &ackPayload->specific.date.dateRepresentation);
+          nodeState = NodeOperation_ProcessWeatherdata;
+
+          break;
+        case Ack_ContainsTime:
+          RTC_setTimeAndDate(&ackPayload->specific.time.timeRepresentation, NULL);
+          nodeState = NodeOperation_ProcessWeatherdata;
+          break;
+        case Ack_RequestLifetime:
+          // send Lifetime
+          nodeState = NodeOperation_RequestLifetime;
+          break;
+        case Ack_RequestErrorCode:
+          // send errorcode
+          package->environment.batteryHealth = 5;
+          break;
+        case Ack_RequestErrorLog:
+          // send errorlog
+          package->environment.batteryHealth = 6;
+          break;
+        default:
+          nodeState = NodeOperation_ProcessWeatherdata;
+          break;
+        }
+      }
+      else 
+      {
+          package->environment.batteryHealth = 7;
       }
     }
     // memcpy_custom(&package->meta, rx_answer, 12);
     print((char*) &outBuffer, sizeof(NodePackage_t));
+
     // request_channel_change(&tx_config, &receivedAckPackage);
     adc_start_conv_regular();
 

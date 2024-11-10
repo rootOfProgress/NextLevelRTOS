@@ -46,17 +46,6 @@ BootFlags_t boot_flags;
 
 void __attribute__((optimize("O0"))) bootstrap(void)
 {
-  unsigned int max = (unsigned int) &_ebss;
-
-  if ((unsigned int) &_edata > max)
-  {
-    max = (unsigned int) &_edata;
-  }
-  if ((unsigned int) &_sidata > max)
-  {
-    max = (unsigned int) &_sidata;
-  }
-
   // copy .data segment from flash to ram
   unsigned int *addressOfSegmentInFlash = &_sidata;
   unsigned int *addressOfSegmentInRam = &_sdata;
@@ -73,7 +62,7 @@ void __attribute__((optimize("O0"))) bootstrap(void)
     *addressOfSegmentInRam++ = 0;
   }
 
-  init_allocator( max, (unsigned int*) &ram_size );
+  init_allocator((unsigned int) &_ebss, (unsigned int*) &ram_size );
 
   boot_flags.isColdStart = 1;
   boot_flags.reboot_type = IsColdStart;

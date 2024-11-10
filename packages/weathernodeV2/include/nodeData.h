@@ -4,11 +4,11 @@
 #include "am2302.h"
 #include "util/timeFormats.h"
 
-enum 
+typedef enum PackageType
 {
-  WeatherData = 0,
-  DateTimeRequest,
-};
+  PackageType_WeatherData = 0,
+  PackageType_DateTimeRequest,
+} PackageType_t; 
 
 typedef struct
 {

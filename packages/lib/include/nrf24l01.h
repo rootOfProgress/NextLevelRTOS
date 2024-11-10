@@ -10,7 +10,7 @@ typedef enum RxAckStatusMask
 {
   RxAckNotReceived = 0,
   RxAckReceived = 1 << 1,
-  RxAckContainsInformation = 1 << 2
+  RxAckCRCMatch = 1 << 2
 } RxAckStatusMask_t;
 
 typedef enum RxDataStatus

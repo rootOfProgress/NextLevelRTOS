@@ -8,8 +8,8 @@ typedef struct MemoryLifetime
   unsigned int num_of_allocs;
   unsigned int num_of_deallocs;
   unsigned int ram_size;
-  unsigned int total_byte_alloced;
-  unsigned int total_byte_used;
+  unsigned int reservedMemory;
+  unsigned int usedMemory;
 } MemoryLifetime_t;
 
 typedef struct OsMetaInformation
