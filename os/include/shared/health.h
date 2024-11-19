@@ -31,6 +31,11 @@ typedef struct ProcessLifetime
   char running_tasks;
 } ProcessLifetime_t;
 
+enum 
+{
+  VersionOfLifetimeInfo = 1
+};
+
 typedef struct OsLifetime
 {
   VersionOfStructure_t version;

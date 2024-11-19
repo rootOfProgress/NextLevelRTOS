@@ -27,14 +27,6 @@ typedef enum FifoStatus
   RX_EMPTY = 1,
 } FifoStatus_t;
 
-enum
-{
-  readTimerFunctionPtr = 0,
-  crcResetFunctionPtr = 1,
-  crcLoadFunctionPtr = 2,
-  crcReadFunctionPtr = 3,
-};
-
 typedef enum transferType
 {
   ReadRegister,
@@ -81,4 +73,7 @@ char* transfer(char target_register, unsigned int length, TransferType_t transfe
 void unset_ce(void);
 void set_ce(void);
 void get_nrf_register_long(Nrf24l01RegisterNames_t, char*);
+
+#include "nrf24l01_inlines.h"
+
 #endif

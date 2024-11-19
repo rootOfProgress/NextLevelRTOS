@@ -12,7 +12,7 @@
 #include "dma.h"
 #include "tim2_5.h"
 #include "startup.h"
-#include "health.h"
+#include "shared/health.h"
 
 typedef struct proc_stats
 {

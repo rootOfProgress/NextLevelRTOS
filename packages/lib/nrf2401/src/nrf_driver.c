@@ -5,6 +5,8 @@
 #include "crc.h"
 #include "globals.h"
 #include "soft_crc.h"
+#include "nrf24l01_types.h"
+#include <stdint.h>
 
 GpioObject_t gpio_pa5_ce;
 TxObserve_t tx_observe;
@@ -241,7 +243,7 @@ static unsigned int check_tx_availability(void)
   return 1;
 }
 
-unsigned int load_tx_buffer(unsigned int length, char* payload)
+uint8_t load_tx_buffer(unsigned int length, char* payload)
 {
   char fifo_status = get_nrf_register(FIFO_STATUS);
   if (fifo_status & (1 << 5)) // fifo full
@@ -259,7 +261,7 @@ unsigned int transmit_single_package(char settle)
     return 0;
   }
 
-  unsigned int tStart = osCoreFunctions[readTimerFunctionPtr]();
+  unsigned int tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
   unsigned int tEnd;
 
   set_ce();
@@ -267,13 +269,84 @@ unsigned int transmit_single_package(char settle)
   if (settle)
   {
 
-    while (((tEnd = osCoreFunctions[readTimerFunctionPtr]()) - tStart) < timeToSettle)
+    while (((tEnd = osCoreFunctions[readTimerFunctionPtr].funcNoArg()) - tStart) < timeToSettle)
     {
       /* code */
     }
   }
   unset_ce();
   return 1;
+}
+
+PackageFrame_t* assemblePackage(char sendTransmitterState, 
+                                char *payload, 
+                                unsigned int payloadSize,
+                                unsigned int *numberOfPackages)
+{
+  unsigned int numberOfPayloadPackages = (payloadSize / MaxUseablePayloadSize) + ((payloadSize % MaxUseablePayloadSize == 0) ? 0 : 1);
+  unsigned int totalSize = numberOfPayloadPackages * sizeof(char) + 
+                           numberOfPayloadPackages * sizeof(unsigned int) +
+                           payloadSize +
+                           (sendTransmitterState ? sizeof(TransmitterState_t) : 0);
+  unsigned int totalPackages = (totalSize + sizeof(PackageFrame_t) - 1) / sizeof(PackageFrame_t);
+  *numberOfPackages = totalPackages;
+
+  char *packageArray = (char*) osCoreFunctions[allocateFunctionPtr].funcWithArg(totalPackages * sizeof(PackageFrame_t));
+  
+  if (!packageArray)
+  {
+    return (PackageFrame_t*) 0;
+  }
+  for (unsigned int  i = 0; i < totalPackages * sizeof(PackageFrame_t); i++)
+  {
+    packageArray[i] = 0;
+  }
+
+  PackageFrame_t *frames = (PackageFrame_t*) packageArray;
+
+  unsigned int payloadSrcPtr = 0;
+
+  for (unsigned int packageIndex = 0; packageIndex < totalPackages; packageIndex++)
+  {
+    frames[packageIndex].indexOfThisPackage = (packageIndex + 1);
+    frames[packageIndex].totalAmountOfPackages = totalPackages;
+    // frames[packageIndex].indexOfThisPackage = 1;
+    // frames[packageIndex].totalAmountOfPackages = 0;
+    unsigned int payloadDstPtr = 0;
+
+    while (payloadDstPtr < MaxUseablePayloadSize && payloadSrcPtr < payloadSize)
+    {
+      frames[packageIndex].payload[payloadDstPtr++] = payload[payloadSrcPtr++];
+    }
+    
+    unsigned int crc = 0xFFFFFFFF;
+
+    if (endpointIsRaspberryPi)
+    {
+      char *startOfCurrentFrame = &frames[packageIndex].indexOfThisPackage;
+      for (unsigned int i = 0; i < MaxPayloadSizeWithoutCRC; i++)
+      {
+        crc = soft_crc32(crc, startOfCurrentFrame[i]);
+      }
+      // asm("bkpt");
+    } 
+    else
+    {
+      // @deprecated
+      crc_reset();
+      for (unsigned int i = 0; i < MaxPayloadSizeWithoutCRC; i++)
+      {
+        crc_feed((unsigned int) frames[packageIndex].payload[i]);
+      }
+      crc = crc_read();
+    }
+
+    frames[packageIndex].crc = crc;
+    // frames[packageIndex].reserved[0] = 0xFF;
+    // frames[packageIndex].reserved[1] = 0xD;
+  }
+  // asm("bkpt");
+  return frames;
 }
 
 unsigned int transmit_all_packages(void)
@@ -291,82 +364,68 @@ unsigned int transmit_all_packages(void)
 RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig_t *tx_config,
     char *receivedAckPackage,
     char *outBuffer,
-    char *inBuffer)
+    char *inBuffer,
+    unsigned int payloadSize)
 {
-  tx_observe.retransmitCount = 0;
-
-  crc_reset();
-  unsigned int crc = 0xFFFFFFFF;
-  for (unsigned int i = 0; i < 27; i++)
-  {
-    if (endpointIsRaspberryPi)
-    {
-      crc = soft_crc32(crc, outBuffer[i]);
-    }
-    else
-    {
-      crc_feed((unsigned int)outBuffer[i]);
-    }
-  }
-
+  unsigned int numberOfPackages;
+  PackageFrame_t *frames = assemblePackage(0, outBuffer, payloadSize, &numberOfPackages);
   RxAckStatusMask_t ackStatus = RxAckNotReceived;
 
-  if (!endpointIsRaspberryPi)
+  if (!frames)
   {
-    crc = crc_read();
+    return OutOfMemory;
   }
 
-  char *crc_ptr = (char*) &crc;
-  
-  for (unsigned int i = 0; i < sizeof(unsigned int); i++)
+  tx_observe.retransmitCount = 0;
+
+  for (int idOfCurrentPackage = 0; idOfCurrentPackage < numberOfPackages; idOfCurrentPackage++)
   {
-    outBuffer[27 + i] = crc_ptr[sizeof(unsigned int) - 1 - i];
-  }
-
-  while (tx_observe.retransmitCount < tx_config->retransmitCount)
-  {
-    load_tx_buffer(31, outBuffer);
-    transmit_single_package(1);
-
-    enable_rx_and_listen();
-    tStart = osCoreFunctions[readTimerFunctionPtr]();
-    while ((osCoreFunctions[readTimerFunctionPtr]() - tStart) < tx_config->autoRetransmitDelay) {}
-    disable_rx();
-
-    if (!(*receivedAckPackage))
+    while (tx_observe.retransmitCount < tx_config->retransmitCount)
     {
-      tx_observe.retransmitCount++;
-    }
-    else
-    {
-      tx_observe.timeUntilAckArrived = (tx_observe.timeUntilAckArrived - tStart);
-      tx_observe.totalPackages++;
-      tx_observe.bytesSend += 32;
-      ackStatus |= RxAckReceived;
+      load_tx_buffer(31, (char*) &frames[idOfCurrentPackage]);
+      // asm("bkpt");
+      transmit_single_package(1);
 
-      unsigned int expectedCrcValue = 0xFFFFFFFF;
-      unsigned int sentCrcValue;
+      enable_rx_and_listen();
+      tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
+      while ((osCoreFunctions[readTimerFunctionPtr].funcNoArg() - tStart) < tx_config->autoRetransmitDelay) {}
+      disable_rx();
 
-      if (endpointIsRaspberryPi)
+      if (!(*receivedAckPackage))
       {
-        for (unsigned int i = 0; i < 8; i++)
-        {
-          expectedCrcValue = soft_crc32(expectedCrcValue, inBuffer[i]);
-        }
-
-        char *dst = (char*) &sentCrcValue;
-
-        for (unsigned int i = 8, j = 0; i < 12; i++, j++)
-        {
-          dst[j] = inBuffer[i];
-        }
-
-        if (sentCrcValue == expectedCrcValue)
-        {
-          ackStatus |= RxAckCRCMatch;
-        }
+        tx_observe.retransmitCount++;
       }
-      break;
+      else
+      {
+        tx_observe.timeUntilAckArrived = (tx_observe.timeUntilAckArrived - tStart);
+        tx_observe.totalPackages++;
+        tx_observe.bytesSend += 32;
+        ackStatus |= RxAckReceived;
+
+        unsigned int expectedCrcValue = 0xFFFFFFFF;
+        unsigned int sentCrcValue;
+
+        if (endpointIsRaspberryPi)
+        {
+          for (unsigned int i = 0; i < 8; i++)
+          {
+            expectedCrcValue = soft_crc32(expectedCrcValue, inBuffer[i]);
+          }
+
+          char *dst = (char*) &sentCrcValue;
+
+          for (unsigned int i = 8, j = 0; i < 12; i++, j++)
+          {
+            dst[j] = inBuffer[i];
+          }
+
+          if (sentCrcValue == expectedCrcValue)
+          {
+            ackStatus |= RxAckCRCMatch;
+          }
+        }
+        break;
+      }
     }
   }
 
@@ -384,12 +443,15 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
 
   tx_observe.totalRetransmits += tx_observe.retransmitCount;
   tx_observe.signalStrength = (unsigned int)( (float) ( ((float)  tx_observe.totalPackages / ((float)  tx_observe.totalPackages + (float)  tx_observe.totalRetransmits) )) * 100);
+  
+  osCoreFunctions[deallocateFunctionPtr].funcWithArgAndPtr((unsigned int*) frames);
+  
   return ackStatus;
 }
 
 RxDataStatus_t __attribute__((optimize("O0"))) tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_answer)
 {
-  tx_observe.timeUntilAckArrived = osCoreFunctions[readTimerFunctionPtr]();
+  tx_observe.timeUntilAckArrived = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
   clear_rx_dr_flag();
   char status = get_nrf_status();
   if (status & (1 << 5))

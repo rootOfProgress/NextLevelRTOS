@@ -17,7 +17,8 @@ typedef enum
   getIoBuffer,
   wakeupIoHandler,
   disableIrReception,
-  enableIrReception
+  enableIrReception,
+  getLifetime
 } TrapType_t;
 
 static inline __attribute__((always_inline)) NO_OPT void svcall(unsigned int svc_number)

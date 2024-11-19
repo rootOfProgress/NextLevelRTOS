@@ -4,7 +4,7 @@
 #define RAM_START 0x20000000
 
 #include "runtime_types.h"
-#include "health.h"
+#include "shared/health.h"
 
 typedef struct MemoryResult
 {

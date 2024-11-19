@@ -63,7 +63,7 @@ __asm volatile ("mov r6, %[input]"
 __asm volatile ("svc 0\n");
 }
 
-static inline __attribute__((always_inline)) NO_OPT void svcall_param(unsigned int svc_number,unsigned int parameter)
+static inline __attribute__((always_inline)) NO_OPT void svcall_param(unsigned int svc_number, unsigned int parameter)
 {
 __asm volatile ("mov r6, %[input]"
     : // no C variable outputs

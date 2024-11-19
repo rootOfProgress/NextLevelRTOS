@@ -1,4 +1,5 @@
 #include "soft_crc.h"
+#include <stdint.h>
 
 static const unsigned int crc32_table[256] = 
 {
@@ -36,7 +37,7 @@ static const unsigned int crc32_table[256] =
     0xB3667A2E, 0xC4614AB8, 0x5D681B02, 0x2A6F2B94, 0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D
 };
 
-unsigned int soft_crc32(unsigned int previous_crc, char data) 
+unsigned int soft_crc32(uint32_t previous_crc, uint8_t data) 
 {
     unsigned int crc = previous_crc ^ 0xFFFFFFFF; 
     char byte = data;

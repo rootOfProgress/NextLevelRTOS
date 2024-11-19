@@ -215,13 +215,13 @@ void NO_OPT update_memory_statistic(MemoryLifetime_t *lifetime_info)
   unsigned int msp_position;
   __asm volatile ("mrs %0, msp" : "=r"(msp_position));
 
-  lifetime_info->reservedMemory = (RAM_START + lifetime_info->ram_size) - msp_position;
-  lifetime_info->reservedMemory += (unsigned int) MEM_TABLE_START - RAM_START;
-  lifetime_info->reservedMemory += NUM_OF_SLOTS * sizeof(unsigned int);
-
   lifetime_info->ram_size = mstat_local.ram_size;
   lifetime_info->num_of_allocs = mstat_local.num_of_allocs;
   lifetime_info->num_of_deallocs = mstat_local.num_of_deallocs;
+
+  lifetime_info->reservedMemory = (RAM_START + lifetime_info->ram_size) - msp_position;
+  lifetime_info->reservedMemory += (unsigned int) MEM_TABLE_START - RAM_START;
+  lifetime_info->reservedMemory += NUM_OF_SLOTS * sizeof(unsigned int);
 
   // count alloced spaces
   for (unsigned int index = 0; index < NUM_OF_SLOTS; index += 1)

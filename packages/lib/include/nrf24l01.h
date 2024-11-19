@@ -3,6 +3,8 @@
 #define W_REGISTER(target_reg) (char) ((char) (1 << 5) | (char) target_reg)
 #define R_REGISTER(target_reg) (char) ((char) (0 << 5) | (char) target_reg)
 
+#include <stdint.h>
+
 void spin(int);
 void power_on();
 
@@ -10,7 +12,9 @@ typedef enum RxAckStatusMask
 {
   RxAckNotReceived = 0,
   RxAckReceived = 1 << 1,
-  RxAckCRCMatch = 1 << 2
+  RxAckCRCMatch = 1 << 2,
+  // todo...
+  OutOfMemory = 1 << 3
 } RxAckStatusMask_t;
 
 typedef enum RxDataStatus
@@ -479,10 +483,11 @@ RxDataStatus_t tx_ack_receive_isr(Nrf24l01Registers_t *nrf_registers, char *rx_a
 RxAckStatusMask_t transmit_with_autoack(TxConfig_t *tx_config,
                                         char *receivedAckPackage,
                                         char *outBuffer,
-                                        char *inBuffer);
+                                        char *inBuffer,
+                                        unsigned int payloadSize);
 TxObserve_t get_current_tx_state(void);
 void flush_current_tx_state(void);
-void append_os_core_function(unsigned int (*function_ptr)());
+// void append_os_core_function(unsigned int (*function_ptr)());
 void request_channel_change(TxConfig_t *tx_config, char *receivedAckPackage);
 
 /* --------------------------------------------------- */
@@ -540,7 +545,7 @@ unsigned int enable_crc(void);
  */
 unsigned int disable_crc(void);
 
-unsigned int load_tx_buffer(unsigned int length, char* payload);
+uint8_t load_tx_buffer(unsigned int length, char* payload);
 
 void enable_rx_and_listen(void);
 void disable_rx(void);

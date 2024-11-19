@@ -8,7 +8,7 @@
 #include "uart_common.h"
 #include "externals.h"
 #include "uart.h"
-#include "health.h"
+#include "shared/health.h"
 #include "irq/gpio_isr.h"
 #include "rtc.h"
 #include "memory/memory_globals.h"
@@ -22,7 +22,7 @@ OsErrorInformation_t osErrorLog[DEBUG ? numberOfErrorLogSlots : 0];
 unsigned int osErrorCode;
 static unsigned int osErrorCodeLoggingIdx = 0;
 
-OsLifetime_t lifetime_statistic = { .version.version_number = 1, 
+OsLifetime_t lifetime_statistic = { .version.version_number = VersionOfLifetimeInfo, 
                                     .version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t), 
                                     .osMeta.git_hash = GIT_HASH,  
                                     .osMeta.os_version = OS_VERSION,
@@ -36,7 +36,7 @@ unsigned int rx_state;
 char *generalPurposeBuffer;
 void (*subtasks[maxNumOfWaitingKernelSubtasks])();
 
-static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) stat(void)
+static void __attribute__((__noipa__)) __attribute__((optimize("O0"))) collectOsHealth(void)
 {
   update_memory_statistic(&lifetime_statistic.memoryStat);
   update_process_statistic(&lifetime_statistic.processStat);
@@ -101,7 +101,7 @@ void schedule_kernel_subtask(unsigned int task_number)
   switch (task_number)
   {
   case statisticManager:
-    subtask = stat;
+    subtask = collectOsHealth;
     break;
   default:
     break;

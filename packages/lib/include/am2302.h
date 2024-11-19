@@ -39,7 +39,7 @@ typedef enum sensorTimings
 extern Am2302Readings_t readings;
 extern GpioObject_t gpio;
 enum { timerNumber = 2 };
-void append_os_core_function(unsigned int (*function_ptr)());
+// void append_os_core_function(unsigned int (*function_ptr)());
 void am2302_init_peripherials(unsigned int, char);
 void am2302_reset_gpio(void);
 unsigned int am2302_do_measurement(Am2302Readings_t* measurement_results);

@@ -2,7 +2,7 @@ CC := arm-none-eabi-gcc
 CXX := arm-none-eabi-g++
 AS := arm-none-eabi-as
 OBJCP := arm-none-eabi-objcopy
-INC = -I./$(TARGET)/include -I./include -I../os/arch/f401/include/ -I./lib/include
+INC = -I./$(TARGET)/include -I./include -I../os/arch/f401/include/ -I./lib/include -I../os/include/shared
 OUTDIR := ./$(TARGET)/build
 
 CFLAGS = -O0  \

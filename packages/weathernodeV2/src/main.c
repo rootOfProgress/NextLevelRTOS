@@ -14,7 +14,9 @@
 #include "nodeConfig.h"
 #include "util/timeFormats.h"
 #include "rtc.h"
+#include "health.h"
 #include "rxSpecifics.h"
+#include "globals.h"
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
@@ -36,7 +38,7 @@ unsigned short battery;
 
 unsigned int tAckReceived;
 char receivedAckPackage;
-char outBuffer[32];
+char outBuffer[78];
 char *rx_answer;
 
 
@@ -163,6 +165,7 @@ static void init_irq()
 
 char sendConfig()
 {
+  return 0;
 #ifdef REWORK_NEEDED
   char outBuffer[32];
   for (unsigned int i = 0; i < 32; i++)
@@ -211,16 +214,6 @@ void processMeasurement(NodePackage_t *package)
       break;
     }
   }
-
-  observe = get_current_tx_state();
-
-  package->environment.retransmitsForThisPackage = observe.retransmitCount;
-  // @todo : don't cast datatypes
-  package->environment.signalStrength = (char) observe.signalStrength;
-  // @todo : don't cast datatypes
-  package->environment.totalLostPackages = (char) observe.totalLostPackages;
-  // package->environment.batteryHealth = battery;
-  package->environment.currentChannel = observe.currentChannel;
 }
 
 int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((optimize("O0"))) main(void)
@@ -238,17 +231,26 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   rx_answer = (char*) allocate(32);
   receivedAckPackage = 0;
 
-  tx_config.autoRetransmitDelay = 130000;
+  tx_config.autoRetransmitDelay = 170000;
   tx_config.retransmitCount = 7;
   timeToSettle = 150;
 
-  append_os_core_function(read_timer);
+  FunctionPointer fp;
+  fp.funcNoArg = read_timer;
+
+  append_os_core_function(fp, readTimerFunctionPtr);
+
+  fp.funcWithArg = allocate;
+  append_os_core_function(fp, allocateFunctionPtr);
+
+  fp.funcWithArgAndPtr = deallocate;
+  append_os_core_function(fp, deallocateFunctionPtr);
+
   crc_activate();
   apply_nrf_config(&nrf_registers);
   configure_device(&nrf_registers, MASTER);
   init_irq();
 
-  
   // append_os_core_function(read_timer);
   am2302_init_peripherials(0, 'A');
 
@@ -301,21 +303,55 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   while (1)
   {
     char *payloadPtr = outBuffer;
+    unsigned int basePayloadWeight = 0;
     switch (nodeState)
     {
     case NodeOperation_ProcessWeatherdata:
       processMeasurement(package);
+      // basePayloadWeight += sizeof(Am2302Readings_t);
       package->meta.packageType = (char) PackageType_WeatherData;
       break;    
     case NodeOperation_RequestLifetime:
     {
+      basePayloadWeight += sizeof(OsLifetime_t);
+
       break;
     }
     default:
       break;
     }
 
-    RxAckStatusMask_t rxAckStatus = transmit_with_autoack(&tx_config, &receivedAckPackage, outBuffer, rx_answer);
+    observe = get_current_tx_state();
+
+    package->environment.retransmitsForThisPackage = observe.retransmitCount;
+    // @todo : don't cast datatypes
+    package->environment.signalStrength = (char) observe.signalStrength;
+    // @todo : don't cast datatypes
+    package->environment.totalLostPackages = (char) observe.totalLostPackages;
+    // package->environment.batteryHealth = battery;
+    package->environment.currentChannel = observe.currentChannel;
+
+    // @todo: Move to own module
+    // unsigned int numberOfPackages = sizeof
+
+    for (int j = 1; j < 52; j++)
+    {
+      outBuffer[j] = j;
+    }
+    // for (int j = 26; j < 52; j++)
+    // {
+    //   outBuffer[j] = 0xB;
+    // }
+    // for (int j = 52; j < 78; j++)
+    // {
+    //   outBuffer[j] = 0xC;
+    // }
+
+    RxAckStatusMask_t rxAckStatus = transmit_with_autoack(&tx_config, 
+                                                          &receivedAckPackage, 
+                                                          outBuffer, 
+                                                          rx_answer, 
+                                                          27);
     
     if (rxAckStatus & RxAckReceived)
     {
@@ -339,7 +375,10 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
           nodeState = NodeOperation_ProcessWeatherdata;
           break;
         case Ack_RequestLifetime:
-          // send Lifetime
+          // send Lifetime, wip
+          unsigned int *healthPtr = (unsigned int *) allocate(sizeof(OsLifetime_t));
+          svcall_param(13, (unsigned int) healthPtr);
+          OsLifetime_t *health = (OsLifetime_t *) healthPtr;
           nodeState = NodeOperation_RequestLifetime;
           break;
         case Ack_RequestErrorCode:
@@ -362,7 +401,6 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
     }
     // memcpy_custom(&package->meta, rx_answer, 12);
     print((char*) &outBuffer, sizeof(NodePackage_t));
-
     // request_channel_change(&tx_config, &receivedAckPackage);
     adc_start_conv_regular();
 

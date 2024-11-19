@@ -41,25 +41,27 @@ int init_scheduler(void)
   // disable_irq();
   
   RTCErrorCode_t rtcError;
-  
-  if ((rtcError = RTC_init()) == RTC_NoError)
-  {
-    TimeRepresentation_t defaultTime;
-    DateRepresentation_t defaultDate;
-    defaultTime.hour = 0;
-    defaultTime.minute = 0;
-    defaultTime.second = 0;
 
-    defaultDate.year = 0;
-    defaultDate.month = 0;
-    defaultDate.day = 0;
-    defaultDate.weekDay = MONDAY;
-    RTC_setTimeAndDate(&defaultTime, &defaultDate);
-  }
-  else 
-  {
-    writeOsError(OS_RTCInitializationFailed, __FUNCTION__, __LINE__);
-  }
+
+  // @temporary disabled
+  // if ((rtcError = RTC_init()) == RTC_NoError)
+  // {
+  //   TimeRepresentation_t defaultTime;
+  //   DateRepresentation_t defaultDate;
+  //   defaultTime.hour = 0;
+  //   defaultTime.minute = 0;
+  //   defaultTime.second = 0;
+
+  //   defaultDate.year = 0;
+  //   defaultDate.month = 0;
+  //   defaultDate.day = 0;
+  //   defaultDate.weekDay = MONDAY;
+  //   RTC_setTimeAndDate(&defaultTime, &defaultDate);
+  // }
+  // else 
+  // {
+  //   writeOsError(OS_RTCInitializationFailed, __FUNCTION__, __LINE__);
+  // }
 
   currently_running = NULL;
   running_tasks = new_queue();

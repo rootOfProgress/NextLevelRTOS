@@ -107,8 +107,6 @@ void svcall_isr()
     restore_psp();
     return;
   case setExtIoCallback:
-    // @todo: really needed?
-    // type_of_io_handler = ModExternalIo;
     unsigned int io_callback_adress;
     __asm__ volatile ("mov %0, r9" : "=r"(io_callback_adress));
     io_handler = (void (*) (unsigned int)) io_callback_adress;
@@ -138,6 +136,20 @@ void svcall_isr()
     return;
   case enableIrReception:
     enable_irq();
+    restore_psp();
+    return;
+  case getLifetime:
+    // todo
+    OsLifetime_t *lifetime;
+    __asm__ volatile ("mov %0, r9" : "=r"(lifetime));
+    
+    lifetime->version.version_number = VersionOfLifetimeInfo;
+    lifetime->version.size_of_struct = sizeof(OsLifetime_t) - sizeof(VersionOfStructure_t);
+
+    asm("bkpt");
+    update_memory_statistic(&lifetime->memoryStat);
+    update_process_statistic(&lifetime->processStat);
+    asm("bkpt");
     restore_psp();
     return;
   default:
