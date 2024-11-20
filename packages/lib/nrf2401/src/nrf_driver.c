@@ -283,12 +283,13 @@ PackageFrame_t* assemblePackage(char sendTransmitterState,
                                 unsigned int payloadSize,
                                 unsigned int *numberOfPackages)
 {
-  unsigned int numberOfPayloadPackages = (payloadSize / MaxUseablePayloadSize) + ((payloadSize % MaxUseablePayloadSize == 0) ? 0 : 1);
-  unsigned int totalSize = numberOfPayloadPackages * sizeof(char) + 
-                           numberOfPayloadPackages * sizeof(unsigned int) +
+  unsigned int totalPackages = (payloadSize / MaxUseablePayloadSize) + ((payloadSize % MaxUseablePayloadSize == 0) ? 0 : 1);
+  unsigned int totalSize = totalPackages * sizeof(char) + 
+                           totalPackages * sizeof(unsigned int) +
                            payloadSize +
                            (sendTransmitterState ? sizeof(TransmitterState_t) : 0);
-  unsigned int totalPackages = (totalSize + sizeof(PackageFrame_t) - 1) / sizeof(PackageFrame_t);
+  // asm("bkpt");
+  // unsigned int totalPackages = (totalSize + sizeof(PackageFrame_t) - 1) / sizeof(PackageFrame_t);
   *numberOfPackages = totalPackages;
 
   char *packageArray = (char*) osCoreFunctions[allocateFunctionPtr].funcWithArg(totalPackages * sizeof(PackageFrame_t));
@@ -304,6 +305,8 @@ PackageFrame_t* assemblePackage(char sendTransmitterState,
 
   PackageFrame_t *frames = (PackageFrame_t*) packageArray;
 
+  frames[0].containsTransmitterState = sendTransmitterState;
+
   unsigned int payloadSrcPtr = 0;
 
   for (unsigned int packageIndex = 0; packageIndex < totalPackages; packageIndex++)
@@ -314,7 +317,17 @@ PackageFrame_t* assemblePackage(char sendTransmitterState,
     // frames[packageIndex].totalAmountOfPackages = 0;
     unsigned int payloadDstPtr = 0;
 
-    while (payloadDstPtr < MaxUseablePayloadSize && payloadSrcPtr < payloadSize)
+    if (sendTransmitterState && packageIndex == 0)
+    {
+      char *ptrToTxObserve = (char*) &tx_observe;
+      for (unsigned int j = 0; j < sizeof(TransmitterState_t); j++)
+      {
+        // copy tx observe to package start 
+        frames[packageIndex].payload[payloadDstPtr++] = ptrToTxObserve[j];
+      }
+    }
+
+    while (payloadDstPtr < MaxUseablePayloadSize && payloadSrcPtr <= payloadSize)
     {
       frames[packageIndex].payload[payloadDstPtr++] = payload[payloadSrcPtr++];
     }
@@ -328,7 +341,6 @@ PackageFrame_t* assemblePackage(char sendTransmitterState,
       {
         crc = soft_crc32(crc, startOfCurrentFrame[i]);
       }
-      // asm("bkpt");
     } 
     else
     {
@@ -342,10 +354,7 @@ PackageFrame_t* assemblePackage(char sendTransmitterState,
     }
 
     frames[packageIndex].crc = crc;
-    // frames[packageIndex].reserved[0] = 0xFF;
-    // frames[packageIndex].reserved[1] = 0xD;
   }
-  // asm("bkpt");
   return frames;
 }
 
@@ -368,7 +377,7 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
     unsigned int payloadSize)
 {
   unsigned int numberOfPackages;
-  PackageFrame_t *frames = assemblePackage(0, outBuffer, payloadSize, &numberOfPackages);
+  PackageFrame_t *frames = assemblePackage(1, outBuffer, payloadSize, &numberOfPackages);
   RxAckStatusMask_t ackStatus = RxAckNotReceived;
 
   if (!frames)
@@ -378,7 +387,7 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
 
   tx_observe.retransmitCount = 0;
 
-  for (int idOfCurrentPackage = 0; idOfCurrentPackage < numberOfPackages; idOfCurrentPackage++)
+  for (unsigned int idOfCurrentPackage = 0; idOfCurrentPackage < numberOfPackages; idOfCurrentPackage++)
   {
     while (tx_observe.retransmitCount < tx_config->retransmitCount)
     {
@@ -400,46 +409,51 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
         tx_observe.timeUntilAckArrived = (tx_observe.timeUntilAckArrived - tStart);
         tx_observe.totalPackages++;
         tx_observe.bytesSend += 32;
-        ackStatus |= RxAckReceived;
 
-        unsigned int expectedCrcValue = 0xFFFFFFFF;
-        unsigned int sentCrcValue;
-
-        if (endpointIsRaspberryPi)
+        if (idOfCurrentPackage == numberOfPackages - 1)
         {
-          for (unsigned int i = 0; i < 8; i++)
-          {
-            expectedCrcValue = soft_crc32(expectedCrcValue, inBuffer[i]);
-          }
+          ackStatus |= RxAckReceived;
 
-          char *dst = (char*) &sentCrcValue;
+          unsigned int expectedCrcValue = 0xFFFFFFFF;
+          unsigned int sentCrcValue;
 
-          for (unsigned int i = 8, j = 0; i < 12; i++, j++)
+          if (endpointIsRaspberryPi)
           {
-            dst[j] = inBuffer[i];
-          }
+            for (unsigned int i = 0; i < 8; i++)
+            {
+              expectedCrcValue = soft_crc32(expectedCrcValue, inBuffer[i]);
+            }
 
-          if (sentCrcValue == expectedCrcValue)
-          {
-            ackStatus |= RxAckCRCMatch;
+            char *dst = (char*) &sentCrcValue;
+
+            for (unsigned int i = 8, j = 0; i < 12; i++, j++)
+            {
+              dst[j] = inBuffer[i];
+            }
+
+            if (sentCrcValue == expectedCrcValue)
+            {
+              ackStatus |= RxAckCRCMatch;
+            }
           }
         }
         break;
       }
     }
-  }
 
-  if (tx_observe.retransmitCount == tx_config->retransmitCount)
-  {
-    tx_observe.totalLostPackages++;
-  }
+    if (tx_observe.retransmitCount == tx_config->retransmitCount)
+    {
+      tx_observe.totalLostPackages++;
+      // abort
+    }
 
-  if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
-  {
-    tx_observe.maxRetransmits = tx_observe.retransmitCount;
-  }
+    if (tx_observe.retransmitCount > tx_observe.maxRetransmits)
+    {
+      tx_observe.maxRetransmits = tx_observe.retransmitCount;
+    }
 
-  *receivedAckPackage = 0;
+    *receivedAckPackage = 0;
+  }
 
   tx_observe.totalRetransmits += tx_observe.retransmitCount;
   tx_observe.signalStrength = (unsigned int)( (float) ( ((float)  tx_observe.totalPackages / ((float)  tx_observe.totalPackages + (float)  tx_observe.totalRetransmits) )) * 100);

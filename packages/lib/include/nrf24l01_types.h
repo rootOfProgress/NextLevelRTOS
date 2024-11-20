@@ -16,7 +16,8 @@ typedef struct PackageFrame
   unsigned int crc;
   char indexOfThisPackage;
   char totalAmountOfPackages;
-  char reserved[2];
+  char containsTransmitterState;
+  char reserved;
   char payload[MaxUseablePayloadSize];
 } PackageFrame_t;
 
