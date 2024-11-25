@@ -1,11 +1,10 @@
 #include "adc.h"
 #include "gpio/gpio.h"
-#include "test.h"
 #include "spi.h"
 #include "nrf24l01.h"
 #include "rcc.h"
 #include "uart.h"
-#include "os_api.h"
+// #include "os_api.h"
 #include "crc.h"
 #include "exti.h"
 #include "syscfg.h"
@@ -17,6 +16,13 @@
 #include "health.h"
 #include "rxSpecifics.h"
 #include "globals.h"
+
+#define IS_EXTERNAL
+#ifdef IS_EXTERNAL
+#include "gpio_isr_shared.h"
+#include "memory_shared.h"
+#include "scheduler_shared.h"
+#endif
 
 #define SV_YIELD_TASK __asm volatile ("mov r6, 2\n" \
                                   "svc 0\n")
@@ -199,7 +205,7 @@ void led()
   while (1)
   {
     toggle_output_pin(&gpio_a3_notify);
-    sleep(1000);
+    task_sleep(1000);
   }
 }
 
@@ -216,7 +222,7 @@ void processMeasurement(NodePackage_t *package)
   }
 }
 
-int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((optimize("O0"))) main(void)
+int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((optimize("O0"))) weatherNodeV2(void)
 {
   NodePackage_t *package = (NodePackage_t*) outBuffer;
   NodeState_t nodeState = NodeOperation_ProcessWeatherdata;
@@ -235,7 +241,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
   timeToSettle = 150;
 
   FunctionPointer fp;
-  fp.funcNoArg = read_timer;
+  fp.funcNoArg = (unsigned int (*)(void)) read_global_timer;
 
   append_os_core_function(fp, readTimerFunctionPtr);
 
@@ -254,10 +260,11 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
 
   gpio_adc_a1.pin = 1;
   gpio_adc_a1.port = 'A';
-  adc_init(&gpio_adc_a1);
-  adc_enable_interrupts();
-  adc_turn_on();
-  link_adc_isr(adc_isr);
+
+//   adc_init(&gpio_adc_a1);
+//   adc_enable_interrupts();
+//   adc_turn_on();
+//   link_adc_isr(adc_isr);
 
   gpio_a3_notify.pin = 3;
   gpio_a3_notify.port = 'A';
@@ -349,7 +356,7 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
         case Ack_RequestLifetime:
           // send Lifetime, wip
           unsigned int *healthPtr = (unsigned int *) allocate(sizeof(OsLifetime_t));
-          svcall_param(13, (unsigned int) healthPtr);
+        //   svcall_param(13, (unsigned int) healthPtr);
           OsLifetime_t *health = (OsLifetime_t *) healthPtr;
           nodeState = NodeOperation_RequestLifetime;
           break;
@@ -372,9 +379,9 @@ int __attribute((section(".main"))) __attribute__((__noipa__)) __attribute__((op
       }
     }
     // print((char*) &outBuffer, sizeof(NodePackage_t));
-    adc_start_conv_regular();
+    // adc_start_conv_regular();
 
-    sleep(3000);
+    task_sleep(3000);
   }
   return 0;
 }

@@ -99,6 +99,10 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
   {
     return;
   }
+  // else 
+  // {
+  //   bytes_received = 0;
+  // }
 
   *internal_rx_state = *((unsigned int*)uart_rx_buffer) & 0xFF;
 
@@ -112,6 +116,5 @@ void __attribute__((interrupt))  __attribute__((optimize("O0"))) uart_isr_handle
     wakeup_pid(kernel_pids.external_io_runner);
     break;
   }
-
   bytes_received = 0;
 }

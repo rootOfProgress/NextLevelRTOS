@@ -2,7 +2,7 @@
 #define GPIO_ISR_H
 #include "gpio/gpio.h"
 
-int link_exti_src(void (*isr_callback)(), GpioObject_t *gpio_pin);
+
 void empty_isr(void);
 void init_exti_isr_handling(void);
 

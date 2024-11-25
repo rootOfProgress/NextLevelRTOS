@@ -1,5 +1,6 @@
 #include "data/queue.h"
 #include "memory.h"
+#include "memory_shared.h"
 #include "lang.h"
 #include "panic.h"
 

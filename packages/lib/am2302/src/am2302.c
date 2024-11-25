@@ -68,31 +68,31 @@ unsigned int __attribute__((optimize("O0"))) am2302_do_measurement(Am2302Reading
   for (unsigned int i = 0; i < 2000; i++) {}
 
   set_pin_off(&gpio);
-  unsigned int tStart = osCoreFunctions[0]();
-  while ((osCoreFunctions[0]() - tStart) < HostPullsLow) {}
+  unsigned int tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
+  while ((osCoreFunctions[readTimerFunctionPtr].funcNoArg() - tStart) < HostPullsLow) {}
 
   // wait for sensor response
-  tStart = osCoreFunctions[0]();
+  tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
   set_pin_on(&gpio);
-  while ((osCoreFunctions[0]() - tStart) < SensorOutputZero) {}
+  while ((osCoreFunctions[readTimerFunctionPtr].funcNoArg() - tStart) < SensorOutputZero) {}
   set_pin_off(&gpio);
 
   // am2302_wait_for_sensor
   set_moder(&gpio, InputMode);
 
-  tStart = osCoreFunctions[0]();
+  tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
   while (!read_pin(&gpio))
   {
-    if (osCoreFunctions[0]() - tStart > 15000)
+    if (osCoreFunctions[readTimerFunctionPtr].funcNoArg() - tStart > 15000)
     {
       return 0;
     }
   }
-  tStart = osCoreFunctions[0]();
+  tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
 
   while (read_pin(&gpio))
   {
-    if (osCoreFunctions[0]() - tStart > 15000)
+    if (osCoreFunctions[readTimerFunctionPtr].funcNoArg() - tStart > 15000)
     {
       return 0;
     }
@@ -107,15 +107,17 @@ unsigned int __attribute__((optimize("O0"))) am2302_do_measurement(Am2302Reading
 
   unsigned int t_now;
   unsigned int current_state;
-  tStart = osCoreFunctions[0]();
 
-  while ((osCoreFunctions[0]() - tStart) < 10000) // 10 ms
+  
+  tStart = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
+
+  while ((osCoreFunctions[readTimerFunctionPtr].funcNoArg() - tStart) < 10000) // 10 ms
   {
     current_state = read_pin(&gpio);
     // rising edge
     if (prev_state < current_state)
     {
-      t_now = osCoreFunctions[0]();
+      t_now = osCoreFunctions[readTimerFunctionPtr].funcNoArg();
 
 #ifdef DEBUG
       debug[round % BUFFERS].previous_state = prev_state;
@@ -130,7 +132,7 @@ unsigned int __attribute__((optimize("O0"))) am2302_do_measurement(Am2302Reading
     // falling edge
     else if (prev_state > current_state)
     {
-      if (!((osCoreFunctions[0]() - t_now) < SensorOutputZero))
+      if (!((osCoreFunctions[readTimerFunctionPtr].funcNoArg() - t_now) < SensorOutputZero))
       {
         result |= (1ULL << iteration);
       }
@@ -147,21 +149,28 @@ unsigned int __attribute__((optimize("O0"))) am2302_do_measurement(Am2302Reading
     }
   }
 
-  measurement_results->rh = (unsigned short) (result >> 24);
+  measurement_results->rh = (unsigned short) (result >> 24) & 0xFFFF;
   measurement_results->temp = (unsigned short) (result >> 8) & 0xFFFF;
+  measurement_results->flags = 0;
+
+  if (measurement_results->temp & 1 << 15)
+  {
+    measurement_results->flags |= TemperatureIsNegative;
+  }
+
   measurement_results->crc = (char) result & 0xFF;
-  measurement_results->is_valid = 0;
 
   if ((char)((measurement_results->rh & 0xFF) +
              (measurement_results->rh >> 8) +
              (measurement_results->temp & 0xFF) +
              (measurement_results->temp >> 8)) == measurement_results->crc)
   {
-    measurement_results->is_valid = 1;
+    measurement_results->flags |= CrcIsValid;
   }
 
   set_pin_on(&gpio);
     __asm ("CPSIE I");
 
-  return measurement_results->is_valid;
+  measurement_results->temp &= ~(1 << 15);
+  return measurement_results->flags & CrcIsValid;
 }

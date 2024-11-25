@@ -25,8 +25,9 @@ unsigned int __errno = 0;
 // @todo: call gpio / uart driver directly
 void setup_devices(void)
 {
-  GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
-  init_uart(t);
+  // GpioObject_t *t = (GpioObject_t*) allocate(sizeof(GpioObject_t));
+  GpioObject_t t;
+  init_uart(&t);
   init_isr();
 }
 

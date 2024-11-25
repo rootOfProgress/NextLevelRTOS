@@ -21,7 +21,7 @@ compile_c: $(SRC)
 	mv *.o $(OUTDIR)
 
 build_platform_f401:
-	make -C ../../../os/arch/f401 HWFP=0
+	make -C ../../../os/arch/f401 HWFP=0 ARCH=f401
 	mv ../../../os/arch/f401/build/*.o ./build
 
 archive: 

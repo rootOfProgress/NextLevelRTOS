@@ -1,9 +1,11 @@
 #include "process/scheduler.h"
 #include "hw/cpu.h"
 #include "memory.h"
+#include "memory_shared.h"
 #include "panic.h"
 #include "rtc.h"
 #include "runtime_types.h"
+
 
 Queue_t* running_tasks = NULL;
 Queue_t* waiting_tasks = NULL;
@@ -44,24 +46,24 @@ int init_scheduler(void)
 
 
   // @temporary disabled
-  // if ((rtcError = RTC_init()) == RTC_NoError)
-  // {
-  //   TimeRepresentation_t defaultTime;
-  //   DateRepresentation_t defaultDate;
-  //   defaultTime.hour = 0;
-  //   defaultTime.minute = 0;
-  //   defaultTime.second = 0;
+  if ((rtcError = RTC_init()) == RTC_NoError)
+  {
+    TimeRepresentation_t defaultTime;
+    DateRepresentation_t defaultDate;
+    defaultTime.hour = 0;
+    defaultTime.minute = 0;
+    defaultTime.second = 0;
 
-  //   defaultDate.year = 0;
-  //   defaultDate.month = 0;
-  //   defaultDate.day = 0;
-  //   defaultDate.weekDay = MONDAY;
-  //   RTC_setTimeAndDate(&defaultTime, &defaultDate);
-  // }
-  // else 
-  // {
-  //   writeOsError(OS_RTCInitializationFailed, __FUNCTION__, __LINE__);
-  // }
+    defaultDate.year = 0;
+    defaultDate.month = 0;
+    defaultDate.day = 0;
+    defaultDate.weekDay = MONDAY;
+    RTC_setTimeAndDate(&defaultTime, &defaultDate);
+  }
+  else 
+  {
+    writeOsError(OS_RTCInitializationFailed, __FUNCTION__, __LINE__);
+  }
 
   currently_running = NULL;
   running_tasks = new_queue();

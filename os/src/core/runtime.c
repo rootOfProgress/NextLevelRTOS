@@ -2,6 +2,7 @@
 #include "process/scheduler.h"
 #include "hw/cpu.h"
 #include "memory.h"
+#include "memory_shared.h"
 #include "dma.h"
 #include "dma_types.h"
 #include "process/task.h"
@@ -11,7 +12,7 @@
 #include "shared/health.h"
 #include "irq/gpio_isr.h"
 #include "rtc.h"
-#include "memory/memory_globals.h"
+#include "scheduler_shared.h"
 
 typedef enum RebootTypes RebootTypes_t;
 

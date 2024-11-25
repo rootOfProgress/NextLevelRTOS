@@ -280,14 +280,20 @@ unsigned int transmit_single_package(char settle)
 
 PackageFrame_t* assemblePackage(char sendTransmitterState, 
                                 char *payload, 
-                                unsigned int payloadSize,
+                                unsigned int rawPayloadSize,
                                 unsigned int *numberOfPackages)
 {
-  unsigned int totalPackages = (payloadSize / MaxUseablePayloadSize) + ((payloadSize % MaxUseablePayloadSize == 0) ? 0 : 1);
-  unsigned int totalSize = totalPackages * sizeof(char) + 
-                           totalPackages * sizeof(unsigned int) +
-                           payloadSize +
+  if (rawPayloadSize == 0)
+  {
+    return RxAckNotReceived;
+  }
+
+  unsigned int numberOfRawPayloadPackages = (rawPayloadSize / MaxUseablePayloadSize) + ((rawPayloadSize % MaxUseablePayloadSize == 0) ? 0 : 1);
+  unsigned int totalSize = numberOfRawPayloadPackages * sizeof(unsigned int) + 
+                           numberOfRawPayloadPackages * sizeof(unsigned int) +
+                           rawPayloadSize +
                            (sendTransmitterState ? sizeof(TransmitterState_t) : 0);
+  unsigned int totalPackages = (totalSize / MaxPayloadWeight) + ((totalSize % MaxPayloadWeight == 0) ? 0 : 1);
   // asm("bkpt");
   // unsigned int totalPackages = (totalSize + sizeof(PackageFrame_t) - 1) / sizeof(PackageFrame_t);
   *numberOfPackages = totalPackages;
@@ -327,7 +333,7 @@ PackageFrame_t* assemblePackage(char sendTransmitterState,
       }
     }
 
-    while (payloadDstPtr < MaxUseablePayloadSize && payloadSrcPtr <= payloadSize)
+    while (payloadDstPtr < MaxUseablePayloadSize && payloadSrcPtr < rawPayloadSize)
     {
       frames[packageIndex].payload[payloadDstPtr++] = payload[payloadSrcPtr++];
     }
@@ -377,7 +383,7 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
     unsigned int payloadSize)
 {
   unsigned int numberOfPackages;
-  PackageFrame_t *frames = assemblePackage(1, outBuffer, payloadSize, &numberOfPackages);
+  PackageFrame_t *frames = assemblePackage(0, outBuffer, payloadSize, &numberOfPackages);
   RxAckStatusMask_t ackStatus = RxAckNotReceived;
 
   if (!frames)
@@ -391,8 +397,9 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
   {
     while (tx_observe.retransmitCount < tx_config->retransmitCount)
     {
-      load_tx_buffer(31, (char*) &frames[idOfCurrentPackage]);
-      // asm("bkpt");
+      ackStatus = RxAckNotReceived;
+
+      load_tx_buffer(MaxPayloadWeight, (char*) &frames[idOfCurrentPackage]);
       transmit_single_package(1);
 
       enable_rx_and_listen();
@@ -444,7 +451,7 @@ RxAckStatusMask_t __attribute__((optimize("O0"))) transmit_with_autoack(TxConfig
     if (tx_observe.retransmitCount == tx_config->retransmitCount)
     {
       tx_observe.totalLostPackages++;
-      // abort
+      // return ackStatus;
     }
 
     if (tx_observe.retransmitCount > tx_observe.maxRetransmits)

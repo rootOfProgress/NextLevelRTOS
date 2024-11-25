@@ -1,7 +1,7 @@
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 NON_OS_SRC := ../modules
-INC = -Iinclude -I$(NON_OS_SRC)/include/ -I./arch/$(ARCH)/include/
+INC = -Iinclude -Iinclude/shared -I$(NON_OS_SRC)/include/ -I./arch/$(ARCH)/include/
 LINK = link.ld
 
 CFLAGS = -O3  \
